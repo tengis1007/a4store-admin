@@ -1,0 +1,21 @@
+{
+  "hosting": {
+    "public": "build",
+    "predeploy": "npm run build",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "rewrites": [
+      {
+        "source": "/share",
+        "function": "prerender"
+      },
+      {
+        "source": "**",
+        "destination": "/index.html"
+      }
+    ]
+  }
+}

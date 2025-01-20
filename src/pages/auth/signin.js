@@ -19,7 +19,7 @@ import VisibilityIcon from "@mui/icons-material/Visibility";
 import EmailIcon from "@mui/icons-material/Email";
 import KeyIcon from "@mui/icons-material/Key";
 import { Navigate, useNavigate } from "react-router-dom";
-
+import { signOut } from "firebase/auth";
 const BRANDING = {
   logo: (
     <img
@@ -55,6 +55,11 @@ export default function BrandingSignInPage() {
 
     try {
       // Sign in with Firebase Authentication
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
 
       // Fetch user data from Firestore
       const userQuery = query(
@@ -75,13 +80,17 @@ export default function BrandingSignInPage() {
       // Check if the user role is 'admin'
       if (userData.role === "admin") {
         // Navigate to the home page for admin users
-        const userCredential = await signInWithEmailAndPassword(
-          auth,
-          email,
-          password
-        );
         navigation("/home");
       } else {
+           signOut(auth)
+              .then(() => {
+                console.log("User signed out");
+                localStorage.clear();
+                navigation("/"); // Redirect to login page after logout
+              })
+              .catch((error) => {
+                console.error("Error signing out:", error);
+              });
         setError("Та админ эрхгүй байна");
       }
     } catch (error) {

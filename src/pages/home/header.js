@@ -24,7 +24,8 @@ import { auth } from "../../firebase/firebaseConfig"; // Assuming you have a fir
 import { useNavigate } from "react-router-dom";
 import InventoryIcon from '@mui/icons-material/Inventory';
 import AddProduct from "../products/addProduct";
-import Category  from "../products/category";
+import Category from "../products/category";
+import TotalProducts from "../products/totalProduct"
 const NAVIGATION = [
   {
     kind: "header",
@@ -58,6 +59,11 @@ const NAVIGATION = [
     icon: <InventoryIcon />,
     children: [
       {
+        segment: "totalProduct",
+        title: "Нийт бүтээгдэхүүн",
+        icon: <InventoryIcon />,
+      },
+      {
         segment: "new",
         title: "Бүтээгдэхүүн нэмэх",
         icon: <ShoppingCartIcon />,
@@ -70,6 +76,7 @@ const NAVIGATION = [
     ],
   },
 ];
+
 const demoTheme = createTheme({
   cssVariables: {
     colorSchemeSelector: "data-toolpad-color-scheme",
@@ -92,6 +99,7 @@ function DemoPageContent({ pathname }) {
     <div>
       {pathname === "/products/new" && <AddProduct />}  {/* Check for the full path */}
       {pathname === "/products/category" && <Category />}
+      {pathname === "/products/totalProduct" && <TotalProducts />}
     </div>
   );
 }
@@ -122,6 +130,7 @@ function ToolbarActionsSearch() {
     setAnchorEl(event.currentTarget);
     setIsMenuOpen(true);
   };
+  
   const navigate = useNavigate();
   const handleLogout = () => {
     signOut(auth)
@@ -134,6 +143,7 @@ function ToolbarActionsSearch() {
         console.error("Error signing out:", error);
       });
   };
+
   const handleMenuClose = () => {
     setIsMenuOpen(false);
   };
