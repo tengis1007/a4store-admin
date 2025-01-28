@@ -24,8 +24,9 @@ import { auth } from "../../firebase/firebaseConfig"; // Assuming you have a fir
 import { useNavigate } from "react-router-dom";
 import InventoryIcon from '@mui/icons-material/Inventory';
 import AddProduct from "../products/addProduct";
-import Category from "../products/category";
+import Category from "../Category/category";
 import TotalProducts from "../products/totalProduct"
+import OrderHistory from "../Order/OrderHistory"
 const NAVIGATION = [
   {
     kind: "header",
@@ -37,18 +38,13 @@ const NAVIGATION = [
     icon: <DashboardIcon />,
   },
   {
-    segment: "orders",
-    title: "Orders",
+    segment: "order",
+    title: "Захиалга",
     icon: <ShoppingCartIcon />,
     children: [
       {
-        segment: "pending",
-        title: "Pending Orders",
-        icon: <CloudCircleIcon />,
-      },
-      {
-        segment: "completed",
-        title: "Completed Orders",
+        segment: "orderhistory",
+        title: "Захиалгын түүх",
         icon: <CheckCircleIcon />,
       },
     ],
@@ -100,6 +96,8 @@ function DemoPageContent({ pathname }) {
       {pathname === "/products/new" && <AddProduct />}  {/* Check for the full path */}
       {pathname === "/products/category" && <Category />}
       {pathname === "/products/totalProduct" && <TotalProducts />}
+      {pathname === "/order/orderhistory" && <OrderHistory />}
+      
     </div>
   );
 }

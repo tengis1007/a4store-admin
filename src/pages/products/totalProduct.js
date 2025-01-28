@@ -1,83 +1,92 @@
-import React, { useState, useEffect } from "react";
-import { Grid2, CircularProgress, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
-import { collection, getDocs, addDoc } from "firebase/firestore";
-import { firestore, storage } from "../../firebase/firebaseConfig"; // Adjust based on your Firebase config
-import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
-import ProductCard from "./ProdcutCard";
+import React, { useState, useEffect, useCallback } from "react";
+import {
+  Grid2,
+  CircularProgress,
+  Button,
+  Snackbar,
+  Alert,
+} from "@mui/material";
+import { collection, getDocs } from "firebase/firestore";
+import { firestore } from "../../firebase/firebaseConfig";
+import ProductCard from "./ProductCard";
+import DeleteProduct from "./DeleteProduct";
+import EditProduct from "./EditProduct";
+import AddIcon from "@mui/icons-material/Add";
+import AddProduct from "./AddProducts";
 
-const CategoryList = () => {
+const ProductList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [openDialog, setOpenDialog] = useState(false);
-  const [categoryTitle, setCategoryTitle] = useState("");
-  const [categoryImage, setCategoryImage] = useState(null);
-  const [uploading, setUploading] = useState(false);
+  const [openNewProductDialog, setOpenNewProductDialog] = useState(false);
+  const [deleteDialogOpen, setDeleteDialogOpen] = useState(false);
+  const [selectedProduct, setSelectedProduct] = useState(null);
+  const [editDialogOpen, setEditDialogOpen] = useState(false);
+  const [snackbarOpen, setSnackbarOpen] = useState(false);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    const fetchProducts = async () => {
       try {
         const productCollection = collection(firestore, "products");
         const productSnapshot = await getDocs(productCollection);
-        const productlist = productSnapshot.docs.map((doc) => ({
+        const productList = productSnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
-
-        setData(productlist);
+        setData(productList);
       } catch (error) {
-        console.error("Error fetching categories: ", error);
+        console.error("Error fetching products: ", error);
       } finally {
         setLoading(false);
       }
     };
 
-    fetchCategories();
+    fetchProducts();
   }, []);
 
-  const handleSubmit = async () => {
-    if (categoryTitle && categoryImage) {
-      try {
-        setUploading(true);
-        // Upload image to Firebase Storage
-        const imageRef = ref(storage, `categoryImages/${categoryImage.name}`);
-        await uploadBytes(imageRef, categoryImage);
-        const imageUrl = await getDownloadURL(imageRef);
+  const handleOpenNewProductDialog = () => setOpenNewProductDialog(true);
+  const handleCloseProductDialog = () => setOpenNewProductDialog(false);
 
-        // Save category title and image URL to Firestore
-        await addDoc(collection(firestore, "categories"), {
-          title: categoryTitle,
-          img:imageUrl,
-          timestamp: new Date()
-        });
-
-        // Close dialog and reset fields
-        setCategoryTitle("");
-        setCategoryImage(null);
-        setOpenDialog(false);
-      } catch (error) {
-        console.error("Error saving category: ", error);
-      } finally {
-        setUploading(false);
-      }
-    } else {
-      console.log("Title and image are required!");
-    }
+  const handleOpenDeleteDialog = (product) => {
+    setSelectedProduct(product);
+    setDeleteDialogOpen(true);
   };
 
-  const handleDialogOpen = () => {
-    setOpenDialog(true);
+  const handleCloseDeleteDialog = () => {
+    setDeleteDialogOpen(false);
+    setSelectedProduct(null);
   };
 
-  const handleDialogClose = () => {
-    setOpenDialog(false);
+  const handleOpenEditDialog = (product) => {
+    setSelectedProduct(product);
+    setEditDialogOpen(true);
   };
 
-  const handleImageChange = (e) => {
-    const file = e.target.files[0];
-    if (file) {
-      setCategoryImage(file);
-    }
+  const handleCloseEditDialog = () => {
+    setEditDialogOpen(false);
+    setSelectedProduct(null);
   };
+
+  const handleDeleteProduct = useCallback((productId) => {
+    setData((prevData) =>
+      prevData.filter((product) => product.id !== productId)
+    );
+    setSnackbarOpen(true);
+  }, []);
+
+  const handleSaveEditedProduct = useCallback((productId, updatedProduct) => {
+    setData((prevData) =>
+      prevData.map((product) =>
+        product.id === productId ? { ...product, ...updatedProduct } : product
+      )
+    );
+  }, []);
+
+  const handleSaveNewProduct = (newProduct) => {
+    setData((prevData) => [...prevData, newProduct]);
+    setOpenNewProductDialog(false);
+  };
+
+  const handleSnackbarClose = () => setSnackbarOpen(false);
 
   if (loading) {
     return (
@@ -86,56 +95,74 @@ const CategoryList = () => {
       </div>
     );
   }
-  const handleDeleteProduct = (productToDelete) => {
-    // Logic to delete the product from the state or database
 
-    console.log("Product deleted:", productToDelete);
-  };
   return (
     <>
-      <Button onClick={handleDialogOpen}>Add Category</Button>
-
-      <Dialog open={openDialog} onClose={handleDialogClose}>
-        <DialogTitle>Add New Category</DialogTitle>
-        <DialogContent>
-          <TextField
-            autoFocus
-            margin="dense"
-            label="Category Title"
-            fullWidth
-            value={categoryTitle}
-            onChange={(e) => setCategoryTitle(e.target.value)}
+      <Button
+        size="large"
+        sx={{ margin: "2vh" }}
+        onClick={handleOpenNewProductDialog}
+        variant="contained"
+        startIcon={<AddIcon />}
+      >
+        Бүтээгдэхүүн нэмэх
+      </Button>
+      <Grid2 sx={{ margin: "2vh" }} container spacing={2}>
+        {data.map((product) => (
+          <ProductCard
+            key={product.id}
+            product={product}
+            onDelete={() => handleOpenDeleteDialog(product)}
+            onEdit={() => handleOpenEditDialog(product)}
           />
-          <input
-            type="file"
-            onChange={handleImageChange}
-            accept="image/*"
-            style={{ marginTop: "10px" }}
-          />
-        </DialogContent>
-        <DialogActions>
-          <Button onClick={handleDialogClose} color="primary">Cancel</Button>
-          <Button onClick={handleSubmit} color="primary" disabled={uploading}>
-            {uploading ? "Uploading..." : "Save"}
-          </Button>
-        </DialogActions>
-      </Dialog>
+        ))}
+      </Grid2>
 
-      <div style={{ display: "flex", width: "100%" }}>
-        <Grid2
-          sx={{
-            margin: "2vh",
-          }}
-          container
-          spacing={1.2}
+      {/* Add Product Dialog */}
+      {openNewProductDialog && (
+        <AddProduct
+          open={openNewProductDialog}
+          onClose={handleCloseProductDialog}
+          onSave={handleSaveNewProduct}
+        />
+      )}
+
+      {/* Delete Product Dialog */}
+      {deleteDialogOpen && (
+        <DeleteProduct
+          product={selectedProduct}
+          onClose={handleCloseDeleteDialog}
+          onDelete={handleDeleteProduct}
+        />
+      )}
+
+      {/* Edit Product Dialog */}
+      {editDialogOpen && (
+        <EditProduct
+          product={selectedProduct}
+          onClose={handleCloseEditDialog}
+          onSave={handleSaveEditedProduct}
+        />
+      )}
+
+      {/* Snackbar */}
+      <Snackbar
+        open={snackbarOpen}
+        autoHideDuration={4000}
+        onClose={handleSnackbarClose}
+        anchorOrigin={{ vertical: "top", horizontal: "center" }}
+      >
+        <Alert
+          onClose={handleSnackbarClose}
+          severity="success"
+          variant="filled"
+          sx={{ width: "100%" }}
         >
-          {data.map((product) => (
-            <ProductCard key={product.id} product={product} onDelete={handleDeleteProduct}/>
-          ))}
-        </Grid2>
-      </div>
+          Бүтээгдэхүүн амжилттай устгагдлаа!
+        </Alert>
+      </Snackbar>
     </>
   );
 };
 
-export default CategoryList;
+export default ProductList;

@@ -1,10 +1,19 @@
 import React, { useState, useEffect } from "react";
-import { Grid2, CircularProgress, Button, Dialog, DialogActions, DialogContent, DialogTitle, TextField } from "@mui/material";
+import {
+  Grid2,
+  CircularProgress,
+  Button,
+  Dialog,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  TextField,
+} from "@mui/material";
 import { collection, getDocs, addDoc } from "firebase/firestore";
 import { firestore, storage } from "../../firebase/firebaseConfig"; // Adjust based on your Firebase config
 import { ref, uploadBytes, getDownloadURL } from "firebase/storage";
 import CategoryCard from "./CategoryCard";
-
+import AddIcon from "@mui/icons-material/Add";
 const CategoryList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -46,8 +55,8 @@ const CategoryList = () => {
         // Save category title and image URL to Firestore
         await addDoc(collection(firestore, "categories"), {
           title: categoryTitle,
-          img:imageUrl,
-          timestamp: new Date()
+          img: imageUrl,
+          timestamp: new Date(),
         });
 
         // Close dialog and reset fields
@@ -89,7 +98,15 @@ const CategoryList = () => {
 
   return (
     <>
-      <Button onClick={handleDialogOpen}>Add Category</Button>
+      <Button
+        size="large"
+        sx={{ margin: "2vh" }}
+        variant="contained"
+        startIcon={<AddIcon />}
+        onClick={handleDialogOpen}
+      >
+        Add Category
+      </Button>
 
       <Dialog open={openDialog} onClose={handleDialogClose}>
         <DialogTitle>Add New Category</DialogTitle>
@@ -110,7 +127,9 @@ const CategoryList = () => {
           />
         </DialogContent>
         <DialogActions>
-          <Button onClick={handleDialogClose} color="primary">Cancel</Button>
+          <Button onClick={handleDialogClose} color="primary">
+            Cancel
+          </Button>
           <Button onClick={handleSubmit} color="primary" disabled={uploading}>
             {uploading ? "Uploading..." : "Save"}
           </Button>
