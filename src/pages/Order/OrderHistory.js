@@ -25,34 +25,34 @@ import { DataGrid } from "@mui/x-data-grid";
 // Firebase Imports
 import { firestore } from "../../firebase/firebaseConfig";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
-
+import DeleteIcon from "@mui/icons-material/Delete";
 // Date Picker Imports
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
-import Table from "@mui/material/Table";
-import TableBody from "@mui/material/TableBody";
-import TableCell from "@mui/material/TableCell";
-import TableContainer from "@mui/material/TableContainer";
-import TableHead from "@mui/material/TableHead";
-import TableRow from "@mui/material/TableRow";
+import DeleteOrderHistory from "./DeleteOrderHistory";
 const Example = () => {
   const [data, setData] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [isFetching, setIsFetching] = useState(true);
+  const [deleteDialog, setDeleteDialog] = useState(false);
+  const [deleteOrder, setDeleteOrder] = useState(null);
 
   useEffect(() => {
-    const fetchOrdersWithUserDetails = async () => {
-      try {
-        const ordersCollection = collection(firestore, "orders");
-        const snapshot = await getDocs(ordersCollection);
+    fetchOrdersWithUserDetails();
+  }, [isFetching]);
+  const fetchOrdersWithUserDetails = async () => {
+    try {
+      const ordersCollection = collection(firestore, "orders");
+      const snapshot = await getDocs(ordersCollection);
 
-        const ordersList = [];
-        for (const orderDoc of snapshot.docs) {
+      const ordersList = await Promise.all(
+        snapshot.docs.map(async (orderDoc) => {
           const orderData = { id: orderDoc.id, ...orderDoc.data() };
 
           if (orderData.userId) {
             const userRef = doc(firestore, "users", orderData.userId);
             const userSnap = await getDoc(userRef);
-
             orderData.userDetails = userSnap.exists()
               ? {
                   firstName: userSnap.data().firstName,
@@ -64,18 +64,36 @@ const Example = () => {
               : null;
           }
 
-          ordersList.push(orderData);
+          return orderData;
+        })
+      );
+
+      const sortedData = ordersList.sort((a, b) => {
+        // Compare based on seconds first
+        if (a.deliveryDate.seconds !== b.deliveryDate.seconds) {
+          return a.deliveryDate.seconds - b.deliveryDate.seconds;
         }
+        // If seconds are equal, compare nanoseconds
+        return a.deliveryDate.nanoseconds - b.deliveryDate.nanoseconds;
+      });
 
-        setData(ordersList);
-      } catch (error) {
-        console.error("Error fetching orders or user details:", error);
-      }
-    };
+      setData(sortedData.reverse());
+    } catch (error) {
+      console.error("Error fetching orders or user details:", error);
+    } finally {
+      setIsFetching(false); // Update isFetching to false after data is fetched
+      setIsLoading(false); // Update isLoading to false after loading is complete
+    }
+  };
+  const handleSave = () => {
+    setIsFetching(true);
+  };
 
-    fetchOrdersWithUserDetails();
-  }, []);
-
+  const deleteOpenDialogHandler = (order) => {
+    setDeleteOrder(order);
+    setDeleteDialog(true);
+    console.log("Dialog Opened: ", order, deleteDialog);
+  };
   const columns = useMemo(
     () => [
       {
@@ -134,6 +152,8 @@ const Example = () => {
           },
           {
             accessorFn: (row) => {
+              if (!row.orderDate) return null; // Check if orderDate is null or undefined
+
               const { seconds, nanoseconds } = row.orderDate;
               return dayjs
                 .unix(seconds)
@@ -149,7 +169,7 @@ const Example = () => {
               const value = cell.getValue();
               return value
                 ? value.format("YYYY-MM-DD HH:mm:ss")
-                : "Огноо байхгүй";
+                : "Огноо байхгүй"; // If value is null, display this text
             },
           },
           {
@@ -160,37 +180,10 @@ const Example = () => {
             size: 50,
           },
           {
-            accessorFn: (row) => {
-              const { seconds, nanoseconds } = row.deliveryDate;
-              return dayjs
-                .unix(seconds)
-                .add(nanoseconds / 1000000, "millisecond");
-            },
-            id: "deliveryDate",
-            header: "Хүргэлт хийсэн огноо",
-            filterVariant: "date",
-            filterFn: "lessThan",
-            size: 300,
-            sortingFn: "datetime",
-            Cell: ({ cell }) => {
-              const value = cell.getValue();
-              return value
-                ? value.format("YYYY-MM-DD HH:mm:ss")
-                : "Огноо байхгүй";
-            },
-          },
-          {
             accessorKey: "status",
             enableClickToCopy: true,
             filterVariant: "autocomplete",
             header: "Хүргэлтийн төлөв",
-            size: 100,
-          },
-          {
-            accessorKey: "shippingMethod",
-            enableClickToCopy: true,
-            filterVariant: "autocomplete",
-            header: "Хүргэлтийн хэрэгсэл",
             size: 100,
           },
         ],
@@ -202,20 +195,25 @@ const Example = () => {
   const table = useMaterialReactTable({
     columns,
     data,
-    enableColumnFilterModes: true,
-    enableColumnOrdering: true,
-    enableGrouping: true,
-    enableColumnPinning: true,
-    enableFacetedValues: true,
+    enableColumnFilterModes: false,
+    enableColumnOrdering: false,
+    enableGrouping: false,
+    enableColumnPinning: false,
+    enableFacetedValues: false,
     enableRowActions: true,
-    enableRowSelection: true,
+    enableRowSelection: false,
     initialState: {
-      showColumnFilters: true,
-      showGlobalFilter: true,
+      showColumnFilters: false,
+      showGlobalFilter: false,
+
       columnPinning: {
         left: ["mrt-row-expand", "mrt-row-select"],
         right: ["mrt-row-actions"],
       },
+    },
+    state: {
+      isLoading,
+      showProgressBars: isFetching,
     },
     paginationDisplayMode: "pages",
     positionToolbarAlertBanner: "bottom",
@@ -242,17 +240,6 @@ const Example = () => {
         );
       }
       const rows = [row.original.shippingAddress];
-      console.log(rows);
-      const columns = [
-        { field: "aimag", headerName: "ID", width: 100 },
-        { field: "sum", headerName: "Name", width: 200 },
-        { field: "bag", headerName: "Age", width: 150 },
-        { field: "email", headerName: "City", width: 180 },
-        { field: "phone", headerName: "City", width: 180 },
-        { field: "address", headerName: "City", width: 180 },
-        { field: "fullAddress", headerName: "City", width: 180 },
-        // Add other columns as needed
-      ];
       return (
         <>
           <Typography
@@ -371,7 +358,7 @@ const Example = () => {
                             <strong>Гэрийн хаяг:</strong> {row.address}
                           </Typography>
                         </Grid2>
-          
+
                         <Grid2 item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>Дэлгэрэнгүй хаяг:</strong> {row.fullAddress}
@@ -405,18 +392,18 @@ const Example = () => {
         </>
       );
     },
-    renderRowActionMenuItems: ({ closeMenu }) => [
-      <MenuItem key={0} onClick={closeMenu}>
+    renderRowActionMenuItems: ({ row }) => [
+      <MenuItem key={0}>
         <ListItemIcon>
           <AccountCircle />
         </ListItemIcon>
         View Profile
       </MenuItem>,
-      <MenuItem key={1} onClick={closeMenu}>
+      <MenuItem key={1} onClick={() => deleteOpenDialogHandler(row.original)}>
         <ListItemIcon>
-          <Send />
+          <DeleteIcon sx={{ color: "red" }} />
         </ListItemIcon>
-        Send Email
+        Устгах
       </MenuItem>,
     ],
     renderTopToolbar: ({ table }) => {
@@ -443,50 +430,60 @@ const Example = () => {
       };
 
       return (
-        <Box
-          sx={(theme) => ({
-            backgroundColor: lighten(theme.palette.background.default, 0.05),
-            display: "flex",
-            gap: "0.5rem",
-            p: "8px",
-            justifyContent: "space-between",
-          })}
-        >
-          <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <MRT_GlobalFilterTextField table={table} />
-            <MRT_ToggleFiltersButton table={table} />
+        <>
+          <Box
+            sx={(theme) => ({
+              backgroundColor: lighten(theme.palette.background.default, 0.05),
+              display: "flex",
+              gap: "0.5rem",
+              p: "8px",
+              justifyContent: "space-between",
+            })}
+          >
+            <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+              <MRT_GlobalFilterTextField table={table} />
+              <MRT_ToggleFiltersButton table={table} />
+            </Box>
+            <Box sx={{ display: "flex", gap: "0.5rem" }}>
+              <Button
+                color="error"
+                disabled={!table.getIsSomeRowsSelected()}
+                onClick={handleDeactivate}
+                variant="contained"
+              >
+                Deactivate
+              </Button>
+              <Button
+                color="success"
+                disabled={!table.getIsSomeRowsSelected()}
+                onClick={handleActivate}
+                variant="contained"
+              >
+                Activate
+              </Button>
+              <Button
+                color="info"
+                disabled={!table.getIsSomeRowsSelected()}
+                onClick={handleContact}
+                variant="contained"
+              >
+                Contact
+              </Button>
+            </Box>
           </Box>
-          <Box sx={{ display: "flex", gap: "0.5rem" }}>
-            <Button
-              color="error"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleDeactivate}
-              variant="contained"
-            >
-              Deactivate
-            </Button>
-            <Button
-              color="success"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleActivate}
-              variant="contained"
-            >
-              Activate
-            </Button>
-            <Button
-              color="info"
-              disabled={!table.getIsSomeRowsSelected()}
-              onClick={handleContact}
-              variant="contained"
-            >
-              Contact
-            </Button>
-          </Box>
-        </Box>
+          {deleteDialog && (
+            <DeleteOrderHistory
+              order={deleteOrder}
+              onClose={() => setDeleteDialog(false)}
+              onSave={handleSave} // Pass the function reference directly, without parentheses
+            />
+          )}
+          
+        </>
       );
     },
   });
-
+  console.log("deleteDialog", deleteDialog);
   return <MaterialReactTable table={table} />;
 };
 

@@ -1,332 +1,471 @@
-import React, { useMemo, useEffect } from "react";
-
-//MRT Imports
+/* eslint-disable react/jsx-pascal-case */
+import { useMemo, useState } from "react";
 import {
+  MRT_EditActionButtons,
   MaterialReactTable,
   useMaterialReactTable,
-  MRT_GlobalFilterTextField,
-  MRT_ToggleFiltersButton,
 } from "material-react-table";
-
-//Material UI Imports
 import {
   Box,
   Button,
-  ListItemIcon,
-  MenuItem,
+  DialogActions,
+  DialogContent,
+  DialogTitle,
+  IconButton,
+  Tooltip,
+  TextField,
+  useTheme,
+  ThemeProvider,
+  createTheme,
   Typography,
-  lighten,
 } from "@mui/material";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+  useQuery,
+  useQueryClient,
+} from "@tanstack/react-query";
+import EditIcon from "@mui/icons-material/Edit";
+import DeleteIcon from "@mui/icons-material/Delete";
+import { mkConfig, generateCsv, download } from "export-to-csv";
+import { RiFileExcel2Fill } from "react-icons/ri";
+import dayjs from "dayjs";
+import { doc, deleteDoc } from "firebase/firestore";
 import { firestore } from "../../firebase/firebaseConfig";
-import { collection, getDocs, doc, getDoc } from "firebase/firestore";
-//Icons Imports
-import { AccountCircle, Send } from "@mui/icons-material";
+import { RestaurantMenu } from "@mui/icons-material";
+import { getDocs, collection, query, where } from "firebase/firestore";
 
-//Date Picker Imports - moved to top
-import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
-import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+const csvConfig = mkConfig({
+  filename: `Гишүүд-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
+  fieldSeparator: ",",
+  decimalSeparator: ".",
+  columnHeaders: [
+    {
+      key: "lastName",
+      displayLabel: "Овог",
+    },
+    {
+      key: "firstName",
+      displayLabel: "Нэр",
+    },
+    {
+      key: "phoneNumber",
+      displayLabel: "ID",
+    },
+    {
+      key: "bankName",
+      displayLabel: "Банкны нэр",
+    },
+    {
+      key: "accountNumber",
+      displayLabel: "Дансны дугаар",
+    },
+    {
+      key: "registrationNumber",
+      displayLabel: "Регистрийн дугаар",
+    },
+    {
+      key: "province",
+      displayLabel: "Оршин сугаа хаяг",
+    },
+    {
+      key: "centerName",
+      displayLabel: "Төвийн нэр",
+    },
+  ],
+});
 
-// Example component code...
+// Validation functions
+const validateRequired = (value) =>
+  typeof value === "string" && value.trim().length > 0;
+
+const validatePhone = (phone) => {
+  const re = /^(\d{4})[- ]?(\d{4})$/;
+  return re.test(phone);
+};
+function validateUser(user) {
+  return {
+    lastName: !validateRequired(user.lastName)
+      ? "Овог нэр хоосон байж болохгүй"
+      : "",
+    firstName: !validateRequired(user.firstName)
+      ? "Нэр хоосон байж болохгүй"
+      : "",
+    phoneNumber: !validatePhone(user.phoneNumber)
+      ? "Утасны дугаар зөв форматтай байх ёстой"
+      : "",
+    bankName: !validateRequired(user.bankName)
+      ? "Банк нэр хоосон байж болохгүй"
+      : "",
+    // accountNumber: !validateRequired(user.accountNumber) ? "Дансны дугаар хоосон байж болохгүй" : "",
+    registrationNumber: !validateRequired(user.registrationNumber)
+      ? "Регистрийн дугаар хоосон байж болохгүй"
+      : "",
+    province: !validateRequired(user.province)
+      ? "Оршин сугаа хаяг хоосон байж болохгүй"
+      : "",
+    centerName: !validateRequired(user.centerName)
+      ? "Center Name хоосон байж болохгүй"
+      : "",
+  };
+}
+
+// Export CSV data
+const exportToExcel = (data) => {
+  const columnsToRemove = ["id"];
+  // Function to exclude specific columns from the data
+  const excludeColumns = (data, columnsToRemove) => {
+    return data.map((item) => {
+      const newItem = { ...item }; // Create a copy of the item
+      columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
+      return newItem;
+    });
+  };
+  const removedId = excludeColumns(data, columnsToRemove);
+
+  const csv = generateCsv(csvConfig)(removedId);
+  download(csvConfig)(csv);
+};
+
 const Example = () => {
-  const [data, setData] = useState([]);
+  const [validationErrors, setValidationErrors] = useState({});
+  const [searchTerm, setSearchTerm] = useState(""); // User input for search
+  const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
+  const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
 
-  useEffect(() => {
-    const fetchOrdersWithUserDetails = async () => {
-      try {
-        const ordersCollection = collection(firestore, "orders");
-        const snapshot = await getDocs(ordersCollection);
-
-        // Map the orders data and fetch user details
-        const ordersList = [];
-        for (const orderDoc of snapshot.docs) {
-          const orderData = { id: orderDoc.id, ...orderDoc.data() };
-
-          // Fetch user details for the given userId
-          if (orderData.userId) {
-            const userRef = doc(firestore, "users", orderData.userId);
-            const userSnap = await getDoc(userRef);
-
-            if (userSnap.exists()) {
-              const userData = userSnap.data();
-              orderData.userDetails = {
-                firstName: userData.firstName,
-                lastName: userData.lastName,
-                phone: userData.phone,
-                isMember: userData.isMember,
-                email: userData.email,
-              };
-            } else {
-              orderData.userDetails = null; // Handle case where user is not found
-            }
-          }
-
-          ordersList.push(orderData);
-        }
-
-        setOrders(ordersList);
-      } catch (error) {
-        console.error("Error fetching orders or user details:", error);
-      }
-    };
-
-    fetchOrdersWithUserDetails();
-  }, []);
   const columns = useMemo(
     () => [
+      { accessorKey: "id", header: "id", size: 80 },
+      { accessorKey: "lastName", header: "Овог" },
+      { accessorKey: "firstName", header: "Нэр" },
       {
-        id: "employee", //id used to define `group` column
-        header: "Employee",
-        columns: [
-          {
-            accessorFn: (row) => `${row.firstName} ${row.lastName}`, //accessorFn used to join multiple data into a single cell
-            id: "name", //id is still required when using accessorFn instead of accessorKey
-            header: "Name",
-            size: 250,
-            Cell: ({ renderedCellValue, row }) => (
-              <Box
-                sx={{
-                  display: "flex",
-                  alignItems: "center",
-                  gap: "1rem",
-                }}
-              >
-                <img
-                  alt="avatar"
-                  height={30}
-                  src={row.original.avatar}
-                  loading="lazy"
-                  style={{ borderRadius: "50%" }}
-                />
-                <span>{renderedCellValue}</span>
-              </Box>
-            ),
-          },
-          {
-            accessorKey: "email", //accessorKey used to define `data` column. `id` gets set to accessorKey automatically
-            enableClickToCopy: true,
-            filterVariant: "autocomplete",
-            header: "Email",
-            size: 300,
-          },
-        ],
+        accessorKey: "phone",
+        header: "Утас",
+        size: 80,
+        enableClickToCopy: true,
       },
       {
-        id: "id",
-        header: "Job Info",
-        columns: [
-          {
-            accessorKey: "salary",
-            filterFn: "between",
-            header: "Salary",
-            size: 200,
-            //custom conditional format and styling
-            Cell: ({ cell }) => (
-              <Box
-                component="span"
-                sx={(theme) => ({
-                  backgroundColor:
-                    cell.getValue() < 50_000
-                      ? theme.palette.error.dark
-                      : cell.getValue() >= 50_000 && cell.getValue() < 75_000
-                        ? theme.palette.warning.dark
-                        : theme.palette.success.dark,
-                  borderRadius: "0.25rem",
-                  color: "#fff",
-                  maxWidth: "9ch",
-                  p: "0.25rem",
-                })}
-              >
-                {cell.getValue()?.toLocaleString?.("en-US", {
-                  style: "currency",
-                  currency: "USD",
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
-              </Box>
-            ),
-          },
-          {
-            accessorKey: "jobTitle", //hey a simple column for once
-            header: "Job Title",
-            size: 350,
-          },
-          {
-            accessorFn: (row) => new Date(row.startDate), //convert to Date for sorting and filtering
-            id: "startDate",
-            header: "Start Date",
-            filterVariant: "date",
-            filterFn: "lessThan",
-            sortingFn: "datetime",
-            Cell: ({ cell }) => cell.getValue()?.toLocaleDateString(), //render Date as a string
-            Header: ({ column }) => <em>{column.columnDef.header}</em>, //custom header markup
-            muiFilterTextFieldProps: {
-              sx: {
-                minWidth: "250px",
-              },
-            },
-          },
-        ],
+        accessorKey: "email",
+        header: "И-Мэйл хаяг",
+        enableClickToCopy: true,
       },
+      {
+        accessorKey: "isMember",
+        header: "Гишүүн", // Use `header` instead of `displayLabel`.
+        size: 80,
+        Cell: ({ cell }) => {
+          const type = cell.getValue();
+
+          if (type) {
+            return <span style={{ color: "green" }}>Тийм</span>; // Green for "Yes"
+          }
+          if (!type) {
+            return <span style={{ color: "orange" }}>Үгүй</span>; // Orange for "No"
+          }
+
+          return <span style={{ color: "red" }}>Тодорхойгүй</span>; // Red for "Unknown"
+        },
+      },
+      {
+        accessorKey: "type",
+        header: "Төлөв", // "Status" in Mongolian
+        size: 80,
+        Cell: ({ cell }) => {
+          const type = cell.getValue(); // Get the value of 'Type' (e.g., 'pending', 'success', 'cancel')
+          switch (type) {
+            case "орлого":
+              return <span style={{ color: "green" }}>{type}</span>;
+            case "зарлага":
+              return <span style={{ color: "orange" }}>{type}</span>;
+            default:
+              return <span style={{ color: "red" }}>Тодорхойгүй</span>;
+          }
+        },
+      },
+      {
+        accessorFn: (row) => {
+          if (!row.date) return null; // Check if orderDate is null or undefined
+
+          const { seconds, nanoseconds } = row.date;
+          return dayjs.unix(seconds).add(nanoseconds / 1000000, "millisecond");
+        },
+        id: "orderDate",
+        header: "Захиалга хийсэн огноо",
+        filterVariant: "date",
+        filterFn: "lessThan",
+        size: 300,
+        sortingFn: "datetime",
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return value ? value.format("YYYY-MM-DD HH:mm:ss") : "Огноо байхгүй"; // If value is null, display this text
+        },
+      },
+      { accessorKey: "transactionId", header: "Гүйлгээний дугаар" },
+
+      { accessorKey: "description", header: "Гүйлгээний утга" },
     ],
     []
   );
 
+  console.log("asfd", fetchedUsers);
+
+  //READ hook (get users from api)
+
+  function useGetUsers(searchTerm, fetchAll = true) {
+    return useQuery({
+      queryKey: ["Members", searchTerm, fetchAll],
+      queryFn: async () => {
+        try {
+          // Fetch all users from Firestore
+          if (fetchAll) {
+            const usersCollection = collection(firestore, "users"); // Referring to the 'users' collection in Firestore
+            const snapshot = await getDocs(usersCollection);
+            const usersList = snapshot.docs.map((doc) => ({
+              id: doc.id,
+              ...doc.data(),
+            }));
+            console.log("userlist", usersList);
+            let outputData = [];
+            // Process each user to extract their transaction history
+            usersList.forEach((user) => {
+              if (user.wallet && user.wallet.transactionHistory) {
+                user.wallet.transactionHistory.forEach((transaction) => {
+                  outputData.push({
+                    ...transaction,
+                    id: user.id,
+                    lastName: user.lastName,
+                    photoURL: user.photoURL,
+                    phone: user.phone,
+                    isMember: user.isMember,
+                    email: user.email,
+                    firstName: user.firstName,
+                  });
+                });
+              }
+            });
+            const sortedData = outputData.sort((a, b) => {
+              // Compare based on seconds first
+              if (a.date.seconds !== b.date.seconds) {
+                return a.date.seconds - b.date.seconds;
+              }
+              // If seconds are equal, compare nanoseconds
+              return a.date.nanoseconds - b.date.nanoseconds;
+            });
+            return sortedData.reverse(); // Return the processed list of transactions along with user details
+          } else if (searchTerm.length === 8) {
+            // If search term is a valid phone number, search for users by phone
+            const snapshot = await getDocs(
+              query(
+                collection(firestore, "Members"),
+                where("phoneNumber", "==", searchTerm)
+              )
+            );
+            return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
+          } else {
+            return [];
+          }
+        } catch (error) {
+          console.error("Error fetching users:", error);
+          throw new Error("Failed to fetch users");
+        }
+      },
+      enabled: fetchAll || Boolean(searchTerm),
+      refetchOnWindowFocus: true,
+    });
+  }
+
+  const renderValidationErrors = (errors) => {
+    return Object.entries(errors).map(([key, message]) =>
+      message ? (
+        <Typography color="error" key={key}>
+          {message}
+        </Typography>
+      ) : null
+    );
+  };
+
   const table = useMaterialReactTable({
     columns,
-    data,
-    enableColumnFilterModes: true,
-    enableColumnOrdering: true,
-    enableGrouping: true,
-    enableColumnPinning: true,
-    enableFacetedValues: true,
-    enableRowActions: true,
-    enableRowSelection: true,
-    initialState: {
-      showColumnFilters: true,
-      showGlobalFilter: true,
-      columnPinning: {
-        left: ["mrt-row-expand", "mrt-row-select"],
-        right: ["mrt-row-actions"],
-      },
-    },
-    paginationDisplayMode: "pages",
-    positionToolbarAlertBanner: "bottom",
-    muiSearchTextFieldProps: {
-      size: "small",
-      variant: "outlined",
-    },
-    muiPaginationProps: {
-      color: "secondary",
-      rowsPerPageOptions: [10, 20, 30],
-      shape: "rounded",
-      variant: "outlined",
-    },
-    renderDetailPanel: ({ row }) => (
-      <Box
-        sx={{
-          alignItems: "center",
-          display: "flex",
-          justifyContent: "space-around",
-          left: "30px",
-          maxWidth: "1000px",
-          position: "sticky",
-          width: "100%",
-        }}
-      >
-        <img
-          alt="avatar"
-          height={200}
-          src={row.original.avatar}
-          loading="lazy"
-          style={{ borderRadius: "50%" }}
-        />
-        <Box sx={{ textAlign: "center" }}>
-          <Typography variant="h4">Signature Catch Phrase:</Typography>
-          <Typography variant="h1">
-            &quot;{row.original.signatureCatchPhrase}&quot;
-          </Typography>
-        </Box>
+    data: fetchedUsers,
+    createDisplayMode: "modal",
+    editDisplayMode: "modal",
+    enableEditing: true,
+    getRowId: (row) => row.id,
+    muiToolbarAlertBannerProps: isError
+      ? { color: "error", children: "Error loading data" }
+      : undefined,
+    muiTableContainerProps: { sx: { minHeight: "500px" } },
+    onCreatingRowCancel: () => setValidationErrors({}),
+    onEditingRowCancel: () => setValidationErrors({}),
+    renderCreateRowDialogContent: ({ table, row }) => (
+      <>
+        <DialogTitle variant="h3">Худалдан авалт нэмэх</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
+        >
+          {renderValidationErrors(validationErrors)}
+          <TextField
+            label="ID"
+            variant="outlined"
+            fullWidth
+            value={row.original?.id || ""}
+            onChange={(e) =>
+              row.table.setRowEditing({ ...row.original, id: e.target.value })
+            }
+            inputProps={{
+              maxLength: 8,
+              inputMode: "numeric",
+              pattern: "[0-9]*",
+            }}
+          />
+          {/* Add more fields here as needed */}
+        </DialogContent>
+        <DialogActions>
+          <MRT_EditActionButtons variant="text" table={table} row={row} />
+        </DialogActions>
+      </>
+    ),
+    renderEditRowDialogContent: ({ table, row, internalEditComponents }) => (
+      <>
+        <DialogTitle variant="h3">Edit User</DialogTitle>
+        <DialogContent
+          sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
+        >
+          {internalEditComponents}
+          {renderValidationErrors(validationErrors)}
+        </DialogContent>
+        <DialogActions>
+          <MRT_EditActionButtons variant="text" table={table} row={row} />
+        </DialogActions>
+      </>
+    ),
+    renderRowActions: ({ row, table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Tooltip title="Edit">
+          <IconButton>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+        <Tooltip title="Delete">
+          <IconButton>
+            <DeleteIcon />
+          </IconButton>
+        </Tooltip>
       </Box>
     ),
-    renderRowActionMenuItems: ({ closeMenu }) => [
-      <MenuItem
-        key={0}
-        onClick={() => {
-          closeMenu();
-        }}
-        sx={{ m: 0 }}
+    renderTopToolbarCustomActions: ({ table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+      <Button
+        variant="contained"
+        startIcon={<RiFileExcel2Fill />}
+        onClick={() => exportToExcel(fetchedUsers)}
+        sx={{ fontSize: "0.8rem" }} // Correct way to set text size
       >
-        <ListItemIcon>
-          <AccountCircle />
-        </ListItemIcon>
-        View Profile
-      </MenuItem>,
-      <MenuItem
-        key={1}
-        onClick={() => {
-          closeMenu();
-        }}
-        sx={{ m: 0 }}
-      >
-        <ListItemIcon>
-          <Send />
-        </ListItemIcon>
-        Send Email
-      </MenuItem>,
-    ],
-    renderTopToolbar: ({ table }) => {
-      const handleDeactivate = () => {
-        table.getSelectedRowModel().flatRows.map((row) => {
-          alert("deactivating " + row.getValue("name"));
-        });
-      };
-
-      const handleActivate = () => {
-        table.getSelectedRowModel().flatRows.map((row) => {
-          alert("activating " + row.getValue("name"));
-        });
-      };
-
-      const handleContact = () => {
-        table.getSelectedRowModel().flatRows.map((row) => {
-          alert("contact " + row.getValue("name"));
-        });
-      };
-
-      return (
-        <Box
-          sx={(theme) => ({
-            backgroundColor: lighten(theme.palette.background.default, 0.05),
-            display: "flex",
-            gap: "0.5rem",
-            p: "8px",
-            justifyContent: "space-between",
-          })}
-        >
-          <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-            <MRT_GlobalFilterTextField table={table} />
-            <MRT_ToggleFiltersButton table={table} />
-          </Box>
-          <Box>
-            <Box sx={{ display: "flex", gap: "0.5rem" }}>
-              <Button
-                color="error"
-                disabled={!table.getIsSomeRowsSelected()}
-                onClick={handleDeactivate}
-                variant="contained"
-              >
-                Deactivate
-              </Button>
-              <Button
-                color="success"
-                disabled={!table.getIsSomeRowsSelected()}
-                onClick={handleActivate}
-                variant="contained"
-              >
-                Activate
-              </Button>
-              <Button
-                color="info"
-                disabled={!table.getIsSomeRowsSelected()}
-                onClick={handleContact}
-                variant="contained"
-              >
-                Contact
-              </Button>
-            </Box>
-          </Box>
-        </Box>
-      );
+        Татаж авах
+      </Button>
+    </Box>
+    ),
+    initialState: {
+      columnVisibility: {
+        id: false, // Hide the unixTime column by default
+        transactionId: false,
+      },
+    },
+    state: {
+      isLoading: isLoading,
+      showAlertBanner: isError,
     },
   });
 
-  return <MaterialReactTable table={table} />;
+  return (
+    <Box>
+      <Box sx={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
+        <TextField
+          label="ID оруулах"
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setFetchAll(false);
+            queryClient.invalidateQueries(["promotion"]);
+          }}
+          variant="filled"
+          size="small"
+        />
+        <Button
+          variant="outlined"
+          onClick={() => {
+            setFetchAll(true); // Fetch all data
+            setSearchTerm(""); // Clear search term
+            queryClient.invalidateQueries(["promotion"]);
+          }}
+        >
+          Бүгд
+        </Button>
+      </Box>
+      <MaterialReactTable table={table} />
+    </Box>
+  );
 };
 
-const ExampleWithLocalizationProvider = () => (
-  <LocalizationProvider dateAdapter={AdapterDayjs}>
-    <Example />
-  </LocalizationProvider>
-);
+const queryClient = new QueryClient();
 
-export default ExampleWithLocalizationProvider;
+const MemberRegistration = () => {
+  const globalTheme = useTheme(); //(optional) if you already have a theme defined in your app root, you can import here
+  const tableTheme = useMemo(
+    () =>
+      createTheme({
+        palette: {
+          mode: globalTheme.palette.mode, //let's use the same dark/light mode as the global theme
+          primary: globalTheme.palette.secondary, //swap in the secondary color as the primary for the table
+          info: {
+            main: "rgb(255,122,0)", //add in a custom color for the toolbar alert background stuff
+          },
+          background: {
+            default:
+              globalTheme.palette.mode === "light"
+                ? "rgb(254,255,244)" //random light yellow color for the background in light mode
+                : "#000", //pure black table in dark mode for fun
+          },
+        },
+        typography: {
+          button: {
+            textTransform: "none", //customize typography styles for all buttons in table by default
+            fontSize: "1.2rem",
+          },
+        },
+        components: {
+          MuiTooltip: {
+            styleOverrides: {
+              tooltip: {
+                fontSize: "1.1rem", //override to make tooltip font size larger
+              },
+            },
+          },
+          MuiSwitch: {
+            styleOverrides: {
+              thumb: {
+                color: "pink", //change the color of the switch thumb in the columns show/hide menu to pink
+              },
+            },
+          },
+        },
+      }),
+    [globalTheme]
+  );
+  return (
+    <QueryClientProvider client={queryClient}>
+      <Typography color="inherit" variant="h4" align="center">
+        Төлбөрийн түүх
+      </Typography>
+      <Box marginLeft={"2rem"}>
+      <ThemeProvider theme={tableTheme} >
+        <Example />
+      </ThemeProvider>
+      </Box>
+    </QueryClientProvider>
+
+  );
+};
+
+export default MemberRegistration;

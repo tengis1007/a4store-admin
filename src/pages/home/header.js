@@ -22,11 +22,17 @@ import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { signOut } from "firebase/auth";
 import { auth } from "../../firebase/firebaseConfig"; // Assuming you have a firebase.js file for Firebase config
 import { useNavigate } from "react-router-dom";
-import InventoryIcon from '@mui/icons-material/Inventory';
+import InventoryIcon from "@mui/icons-material/Inventory";
 import AddProduct from "../products/addProduct";
 import Category from "../Category/category";
-import TotalProducts from "../products/totalProduct"
-import OrderHistory from "../Order/OrderHistory"
+import TotalProducts from "../products/totalProduct";
+import OrderHistory from "../Order/OrderHistory";
+import PaymentIcon from "@mui/icons-material/Payment";
+import PaymentHistory from "../Order/paymentHistory";
+import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
+import ListSharpIcon from "@mui/icons-material/ListSharp";
+import Banner from "../banner/Banner";
+import Dashboard from "../dashboard/Dashboard";
 const NAVIGATION = [
   {
     kind: "header",
@@ -47,6 +53,11 @@ const NAVIGATION = [
         title: "Захиалгын түүх",
         icon: <CheckCircleIcon />,
       },
+      {
+        segment: "paymenthistory",
+        title: "Төлбөрийн түүх",
+        icon: <PaymentIcon />,
+      },
     ],
   },
   {
@@ -64,12 +75,17 @@ const NAVIGATION = [
         title: "Бүтээгдэхүүн нэмэх",
         icon: <ShoppingCartIcon />,
       },
-      {
-        segment: "category",
-        title: "Төрөл",
-        icon: <CheckCircleIcon />,
-      },
     ],
+  },
+  {
+    segment: "category",
+    title: "Ангилал",
+    icon: <ListSharpIcon />,
+  },
+  {
+    segment: "banner",
+    title: "Зарлалын самбар",
+    icon: <ViewCarouselIcon />,
   },
 ];
 
@@ -93,11 +109,14 @@ function DemoPageContent({ pathname }) {
   console.log(pathname);
   return (
     <div>
-      {pathname === "/products/new" && <AddProduct />}  {/* Check for the full path */}
-      {pathname === "/products/category" && <Category />}
+      {pathname === "/dashboard" && <Dashboard />}
+      {pathname === "/products/new" && <AddProduct />}{" "}
+      {/* Check for the full path */}
       {pathname === "/products/totalProduct" && <TotalProducts />}
       {pathname === "/order/orderhistory" && <OrderHistory />}
-      
+      {pathname === "/order/paymenthistory" && <PaymentHistory />}
+      {pathname === "/category" && <Category />}
+      {pathname === "/banner" && <Banner />}
     </div>
   );
 }
@@ -128,7 +147,7 @@ function ToolbarActionsSearch() {
     setAnchorEl(event.currentTarget);
     setIsMenuOpen(true);
   };
-  
+
   const navigate = useNavigate();
   const handleLogout = () => {
     signOut(auth)
