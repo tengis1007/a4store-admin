@@ -1,9 +1,8 @@
 import { initializeApp } from 'firebase/app';
 import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
-import { getStorage } from 'firebase/storage';
 import { getDatabase } from 'firebase/database';
-
+import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
 const firebaseConfig = {
   apiKey: "AIzaSyAn8nE09zLwpymWCAUAofE7R31ZOIN0GjA",
   authDomain: "a4youandme-store.firebaseapp.com",
@@ -23,4 +22,4 @@ const firestore = getFirestore(app);  // Firestore initialization
 const storage = getStorage(app);
 const database = getDatabase(app);
 
-export { auth, firestore, signInWithEmailAndPassword, storage, database };  // Export Firestore and other modules
+export { auth, firestore, signInWithEmailAndPassword, storage, database, ref, uploadBytes, getDownloadURL };  // Export Firestore and other modules

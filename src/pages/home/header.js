@@ -33,6 +33,10 @@ import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import ListSharpIcon from "@mui/icons-material/ListSharp";
 import Banner from "../banner/Banner";
 import Dashboard from "../dashboard/Dashboard";
+import FeedIcon from '@mui/icons-material/Feed';
+import Blog from "../blog/blog";
+import Users from "../users/users"
+import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
 const NAVIGATION = [
   {
     kind: "header",
@@ -42,6 +46,11 @@ const NAVIGATION = [
     segment: "dashboard",
     title: "Dashboard",
     icon: <DashboardIcon />,
+  },
+  {
+    segment: "users",
+    title: "Хэрэглэгч",
+    icon: <PeopleAltIcon />,
   },
   {
     segment: "order",
@@ -87,6 +96,11 @@ const NAVIGATION = [
     title: "Зарлалын самбар",
     icon: <ViewCarouselIcon />,
   },
+  {
+    segment: "blog",
+    title: "Мэдээ мэдээлэл",
+    icon: <FeedIcon />,
+  },
 ];
 
 const demoTheme = createTheme({
@@ -117,6 +131,8 @@ function DemoPageContent({ pathname }) {
       {pathname === "/order/paymenthistory" && <PaymentHistory />}
       {pathname === "/category" && <Category />}
       {pathname === "/banner" && <Banner />}
+      {pathname === "/blog" && <Blog />}
+      {pathname === "/users" && <Users />}
     </div>
   );
 }

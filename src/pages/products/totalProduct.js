@@ -5,15 +5,18 @@ import {
   Button,
   Snackbar,
   Alert,
+  TextField,
+  InputAdornment,
+  Box
 } from "@mui/material";
-import { collection, getDocs } from "firebase/firestore";
+import { collection, getDocs, onSnapshot } from "firebase/firestore";
 import { firestore } from "../../firebase/firebaseConfig";
 import ProductCard from "./ProductCard";
 import DeleteProduct from "./DeleteProduct";
 import EditProduct from "./EditProduct";
 import AddIcon from "@mui/icons-material/Add";
 import AddProduct from "./AddProducts";
-
+import SearchIcon from "@mui/icons-material/Search"; // Import SearchIcon
 const ProductList = () => {
   const [data, setData] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -22,7 +25,31 @@ const ProductList = () => {
   const [selectedProduct, setSelectedProduct] = useState(null);
   const [editDialogOpen, setEditDialogOpen] = useState(false);
   const [snackbarOpen, setSnackbarOpen] = useState(false);
-
+  const [search, setSearch] = useState("");
+  const [searchData, setSearchData] = useState([]);
+  useEffect(() => {
+    const productCollection = collection(firestore, "products");
+  
+    // Subscribe to real-time updates using onSnapshot
+    const unsubscribe = onSnapshot(
+      productCollection,
+      (snapshot) => {
+        const productList = snapshot.docs.map((doc) => ({
+          id: doc.id,
+          ...doc.data(),
+        }));
+        setData(productList); // Update state with new data
+        setLoading(false); // Stop loading once data is fetched
+      },
+      (error) => {
+        console.error("Error fetching products: ", error);
+        setLoading(false); // Stop loading in case of an error
+      }
+    );
+  
+    // Cleanup subscription on component unmount
+    return () => unsubscribe();
+  }, []);
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -39,10 +66,16 @@ const ProductList = () => {
         setLoading(false);
       }
     };
-
     fetchProducts();
   }, []);
-
+  const handleSearchChange = (event) => {
+    const value = event.target.value;
+    const searchResult = data.filter((item) =>
+      item.title.toLowerCase().includes(value.toLowerCase())
+    );
+    setSearch(value);
+    setSearchData(searchResult);
+  };
   const handleOpenNewProductDialog = () => setOpenNewProductDialog(true);
   const handleCloseProductDialog = () => setOpenNewProductDialog(false);
 
@@ -98,6 +131,20 @@ const ProductList = () => {
 
   return (
     <>
+      <TextField
+        label="Search"
+        variant="outlined"
+        value={search}
+        onChange={handleSearchChange}
+        sx={{ margin: "2vh", marginLeft: "4vh" }}
+        InputProps={{
+          startAdornment: (
+            <InputAdornment position="start">
+              <SearchIcon />
+            </InputAdornment>
+          ),
+        }}
+      />
       <Button
         size="large"
         sx={{ margin: "2vh" }}
@@ -108,16 +155,20 @@ const ProductList = () => {
         Бүтээгдэхүүн нэмэх
       </Button>
       <Grid2 sx={{ margin: "2vh" }} container spacing={2}>
-        {data.map((product) => (
-          <ProductCard
-            key={product.id}
-            product={product}
-            onDelete={() => handleOpenDeleteDialog(product)}
-            onEdit={() => handleOpenEditDialog(product)}
-          />
-        ))}
+      <Box sx={{ width: "100%" }}>
+        <Grid2 sx={{ margin: "2vh" }} container spacing={2}>
+          {/* Use nullish coalescing and optional chaining for concise logic */}
+          {(searchData?.length ? searchData : data || []).map((product) => (
+            <ProductCard
+              key={product.id} // Ensure `id` is unique
+              product={product}
+              onDelete={() => handleOpenDeleteDialog(product)} // Pass product to delete handler
+              onEdit={() => handleOpenEditDialog(product)} // Pass product to edit handler
+            />
+          ))}
+        </Grid2>
+        </Box>
       </Grid2>
-
       {/* Add Product Dialog */}
       {openNewProductDialog && (
         <AddProduct

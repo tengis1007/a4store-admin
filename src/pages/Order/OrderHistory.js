@@ -189,7 +189,7 @@ const Example = () => {
         ],
       },
     ],
-    []
+    [isFetching]
   );
 
   const table = useMaterialReactTable({
@@ -207,8 +207,8 @@ const Example = () => {
       showGlobalFilter: false,
 
       columnPinning: {
-        left: ["mrt-row-expand", "mrt-row-select"],
-        right: ["mrt-row-actions"],
+        right: ["mrt-row-expand", "mrt-row-select"],
+        left: ["mrt-row-actions"],
       },
     },
     state: {
@@ -397,7 +397,7 @@ const Example = () => {
         <ListItemIcon>
           <AccountCircle />
         </ListItemIcon>
-        View Profile
+        Засах
       </MenuItem>,
       <MenuItem key={1} onClick={() => deleteOpenDialogHandler(row.original)}>
         <ListItemIcon>

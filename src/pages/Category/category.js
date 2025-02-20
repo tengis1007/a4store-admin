@@ -48,7 +48,7 @@ const CategoryList = () => {
       try {
         setUploading(true);
         // Upload image to Firebase Storage
-        const imageRef = ref(storage, `categoryImages/${categoryImage.name}`);
+        const imageRef = ref(storage, `categories/${categoryImage.name}`);
         await uploadBytes(imageRef, categoryImage);
         const imageUrl = await getDownloadURL(imageRef);
 

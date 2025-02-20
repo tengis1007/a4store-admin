@@ -52,33 +52,28 @@ export default function BrandingSignInPage() {
     }
 
     setLoading(true);
-
     try {
-      // Sign in with Firebase Authentication
       const userCredential = await signInWithEmailAndPassword(
         auth,
         email,
         password
       );
-
       // Fetch user data from Firestore
       const userQuery = query(
         collection(firestore, "users"),
         where("email", "==", email)
       );
       const querySnapshot = await getDocs(userQuery);
-
+      console.log(querySnapshot);
       if (querySnapshot.empty) {
         setError("Та бүртгэлгүй байна.");
         return;
       }
-
+      console.log("test");
       const userDoc = querySnapshot.docs[0];
       const userData = userDoc.data();
-      console.log("User data fetched from Firestore:", userData);
-      localStorage.setItem('userData', JSON.stringify(userData));
       // Check if the user role is 'admin'
-      if (userData.role === "admin") {
+      if (userData.role === "admin" && !userData.empty) {
         // Navigate to the home page for admin users
         navigation("/home");
       } else {
@@ -95,15 +90,31 @@ export default function BrandingSignInPage() {
       }
     } catch (error) {
       const errorCode = error.code;
-      const errorMessage =
-        errorCode === "auth/user-not-found"
-          ? "No user found with this email."
-          : errorCode === "auth/wrong-password"
-            ? "Нууц үг алдаатай байна."
-            : "Sign-in failed. Please try again.";
+      let errorMessage = ""; // Define errorMessage
 
+      if (errorCode === "auth/user-not-found") {
+        errorMessage = "No user found with this email.";
+      } else if (errorCode === "auth/wrong-password") {
+        errorMessage = "Нууц үг алдаатай байна.";
+      } else if (errorCode === "permission-denied") { // Likely error code from Firestore rules
+        errorMessage = "You don't have permission to access this resource.";
+        
+        signOut(auth)
+          .then(() => {
+            console.log("User signed out");
+            localStorage.clear();
+            navigation("/"); // Redirect to login page after logout
+          })
+          .catch((error) => {
+            console.error("Error signing out:", error);
+          });
+      } else {
+        errorMessage = "Sign-in failed. Please try again.";
+      }
+      
       setError(errorMessage);
-      console.error("Sign-in error:", error);
+      console.log(errorMessage);
+      
     } finally {
       setLoading(false);
     }
@@ -309,3 +320,4 @@ export default function BrandingSignInPage() {
     </AppProvider>
   );
 }
+

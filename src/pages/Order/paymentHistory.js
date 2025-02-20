@@ -33,9 +33,8 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import dayjs from "dayjs";
 import { doc, deleteDoc } from "firebase/firestore";
 import { firestore } from "../../firebase/firebaseConfig";
-import { RestaurantMenu } from "@mui/icons-material";
 import { getDocs, collection, query, where } from "firebase/firestore";
-
+import relativeTime from "dayjs/plugin/relativeTime";
 const csvConfig = mkConfig({
   filename: `Гишүүд-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
@@ -110,7 +109,6 @@ function validateUser(user) {
       : "",
   };
 }
-
 // Export CSV data
 const exportToExcel = (data) => {
   const columnsToRemove = ["id"];
@@ -132,13 +130,10 @@ const Example = () => {
   const [validationErrors, setValidationErrors] = useState({});
   const [searchTerm, setSearchTerm] = useState(""); // User input for search
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
-  const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
-
+  const { data: fetchedUsers = [], isError, isLoading } = useGetUsers(fetchAll);
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "id", size: 80 },
-      { accessorKey: "lastName", header: "Овог" },
-      { accessorKey: "firstName", header: "Нэр" },
       {
         accessorKey: "phone",
         header: "Утас",
@@ -146,135 +141,131 @@ const Example = () => {
         enableClickToCopy: true,
       },
       {
-        accessorKey: "email",
-        header: "И-Мэйл хаяг",
-        enableClickToCopy: true,
+        accessorKey: "tranAmount",
+        header: "Мөнгөн дүн",
       },
       {
-        accessorKey: "isMember",
-        header: "Гишүүн", // Use `header` instead of `displayLabel`.
+        accessorKey: "statementId",
+        header: "Statement Id",
+      },
+      {
+        accessorKey: "tranDesc",
+        header: "Гүйлгээний утга",
+      },
+      {
+        accessorKey: "tranDescEdit",
+        header: "Зассан гүйлгээний утга",
+      },
+      {
+        accessorKey: "type",
+        header: "Төрөл", // Use `header` instead of `displayLabel`.
         size: 80,
         Cell: ({ cell }) => {
           const type = cell.getValue();
 
-          if (type) {
-            return <span style={{ color: "green" }}>Тийм</span>; // Green for "Yes"
+          if (type === "Credit") {
+            return <span style={{ color: "green" }}>Орлого</span>; // Green for "Yes"
           }
-          if (!type) {
-            return <span style={{ color: "orange" }}>Үгүй</span>; // Orange for "No"
+          if (type === "Debit") {
+            return <span style={{ color: "orange" }}>Зарлага</span>; // Orange for "No"
           }
-
           return <span style={{ color: "red" }}>Тодорхойгүй</span>; // Red for "Unknown"
         },
       },
       {
-        accessorKey: "type",
-        header: "Төлөв", // "Status" in Mongolian
-        size: 80,
-        Cell: ({ cell }) => {
-          const type = cell.getValue(); // Get the value of 'Type' (e.g., 'pending', 'success', 'cancel')
-          switch (type) {
-            case "орлого":
-              return <span style={{ color: "green" }}>{type}</span>;
-            case "зарлага":
-              return <span style={{ color: "orange" }}>{type}</span>;
-            default:
-              return <span style={{ color: "red" }}>Тодорхойгүй</span>;
-          }
-        },
-      },
-      {
-        accessorFn: (row) => {
-          if (!row.date) return null; // Check if orderDate is null or undefined
-
-          const { seconds, nanoseconds } = row.date;
-          return dayjs.unix(seconds).add(nanoseconds / 1000000, "millisecond");
-        },
-        id: "orderDate",
-        header: "Захиалга хийсэн огноо",
+        id: "tranPostedDate",
+        accessorKey: "tranPostedDate",
+        header: "Огноо",
         filterVariant: "date",
         filterFn: "lessThan",
         size: 300,
         sortingFn: "datetime",
         Cell: ({ cell }) => {
           const value = cell.getValue();
-          return value ? value.format("YYYY-MM-DD HH:mm:ss") : "Огноо байхгүй"; // If value is null, display this text
+          const date = new Date(value);
+          const formattedDate =
+            date.toISOString().split("T")[0] +
+            " " +
+            date.toTimeString().slice(0, 5);
+          return formattedDate;
         },
       },
-      { accessorKey: "transactionId", header: "Гүйлгээний дугаар" },
-
-      { accessorKey: "description", header: "Гүйлгээний утга" },
     ],
     []
   );
-
-  console.log("asfd", fetchedUsers);
-
+  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
+  useDeleteUser();
   //READ hook (get users from api)
-
-  function useGetUsers(searchTerm, fetchAll = true) {
+  function useGetUsers(fetchAll = true) {
     return useQuery({
-      queryKey: ["Members", searchTerm, fetchAll],
+      queryKey: ["Members", fetchAll], // Unique key for caching
       queryFn: async () => {
         try {
-          // Fetch all users from Firestore
-          if (fetchAll) {
-            const usersCollection = collection(firestore, "users"); // Referring to the 'users' collection in Firestore
-            const snapshot = await getDocs(usersCollection);
-            const usersList = snapshot.docs.map((doc) => ({
-              id: doc.id,
-              ...doc.data(),
-            }));
-            console.log("userlist", usersList);
-            let outputData = [];
-            // Process each user to extract their transaction history
-            usersList.forEach((user) => {
-              if (user.wallet && user.wallet.transactionHistory) {
-                user.wallet.transactionHistory.forEach((transaction) => {
-                  outputData.push({
-                    ...transaction,
-                    id: user.id,
-                    lastName: user.lastName,
-                    photoURL: user.photoURL,
-                    phone: user.phone,
-                    isMember: user.isMember,
-                    email: user.email,
-                    firstName: user.firstName,
-                  });
-                });
-              }
-            });
-            const sortedData = outputData.sort((a, b) => {
-              // Compare based on seconds first
-              if (a.date.seconds !== b.date.seconds) {
-                return a.date.seconds - b.date.seconds;
-              }
-              // If seconds are equal, compare nanoseconds
-              return a.date.nanoseconds - b.date.nanoseconds;
-            });
-            return sortedData.reverse(); // Return the processed list of transactions along with user details
-          } else if (searchTerm.length === 8) {
-            // If search term is a valid phone number, search for users by phone
-            const snapshot = await getDocs(
-              query(
-                collection(firestore, "Members"),
-                where("phoneNumber", "==", searchTerm)
-              )
-            );
-            return snapshot.docs.map((doc) => ({ id: doc.id, ...doc.data() }));
-          } else {
-            return [];
-          }
+          if (!fetchAll) return []; // Return empty array if fetchAll is false
+
+          // Reference to the Firestore "statements" collection
+          const usersRef = collection(firestore, "statements");
+
+          // Fetch all documents in the collection
+          const querySnapshot = await getDocs(usersRef);
+
+          // Transform the fetched data
+          const data = querySnapshot.docs.map((doc) => {
+            const timestamp = doc.data().tranPostedDate?.toDate() || null;
+            const docData = doc.data();
+            return {
+              ...docData,
+              id: doc.id, // Include the document ID
+              tranPostedDate: timestamp ? timestamp.toISOString() : null,
+            };
+          });
+
+          // Sort the data by tranPostedDate, ensuring proper Date comparison
+          data.sort((a, b) => {
+            const dateA = a.tranPostedDate ? new Date(a.tranPostedDate) : null;
+            const dateB = b.tranPostedDate ? new Date(b.tranPostedDate) : null;
+            return dateB - dateA; // Ascending order
+          });
+
+          return data; // Return the transformed and sorted data
         } catch (error) {
-          console.error("Error fetching users:", error);
-          throw new Error("Failed to fetch users");
+          console.error("Error fetching users:", error); // Log any errors
+          throw new Error("Failed to fetch users"); // Throw an error to propagate failure
         }
       },
-      enabled: fetchAll || Boolean(searchTerm),
-      refetchOnWindowFocus: true,
+      enabled: fetchAll, // Only run the query if fetchAll is true
+      refetchOnWindowFocus: true, // Refetch data when the window regains focus
     });
   }
-
+  function useDeleteUser() {
+    const queryClient = useQueryClient();
+  
+    return useMutation({
+      mutationFn: async (id) => {
+        const userRef = doc(firestore, "statements", id); // Firestore document reference
+        await deleteDoc(userRef); // Delete Firestore document
+      },
+      onMutate: (id) => {
+        queryClient.setQueryData(["statements"], (prevUsers) =>
+          prevUsers?.filter((user) => user.id !== id)
+        );
+      },
+      onSettled: () => queryClient.invalidateQueries(["statements"]), // Fix query key
+    });
+  }
+  
+  const openDeleteConfirmModal = async (row) => {
+    if (window.confirm("Are you sure you want to delete this user?")) {
+      try {
+        await deleteUser(row.original.id); // Await the delete operation
+        console.log("User deleted successfully");
+      } catch (error) {
+        console.error("Failed to delete user:", error);
+      }
+    }
+  };
+  
+  
   const renderValidationErrors = (errors) => {
     return Object.entries(errors).map(([key, message]) =>
       message ? (
@@ -343,12 +334,12 @@ const Example = () => {
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
-          <IconButton>
+        <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-          <IconButton>
+        <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -356,20 +347,20 @@ const Example = () => {
     ),
     renderTopToolbarCustomActions: ({ table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
-      <Button
-        variant="contained"
-        startIcon={<RiFileExcel2Fill />}
-        onClick={() => exportToExcel(fetchedUsers)}
-        sx={{ fontSize: "0.8rem" }} // Correct way to set text size
-      >
-        Татаж авах
-      </Button>
-    </Box>
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => exportToExcel(fetchedUsers)}
+          sx={{ fontSize: "0.8rem" }} // Correct way to set text size
+        >
+          Татаж авах
+        </Button>
+      </Box>
     ),
     initialState: {
       columnVisibility: {
         id: false, // Hide the unixTime column by default
-        transactionId: false,
+        statementId: false,
       },
     },
     state: {
@@ -393,11 +384,10 @@ const Example = () => {
           size="small"
         />
         <Button
-          variant="outlined"
           onClick={() => {
             setFetchAll(true); // Fetch all data
             setSearchTerm(""); // Clear search term
-            queryClient.invalidateQueries(["promotion"]);
+            queryClient.invalidateQueries(["Members"]); // Refetch data
           }}
         >
           Бүгд
@@ -459,12 +449,11 @@ const MemberRegistration = () => {
         Төлбөрийн түүх
       </Typography>
       <Box marginLeft={"2rem"}>
-      <ThemeProvider theme={tableTheme} >
-        <Example />
-      </ThemeProvider>
+        <ThemeProvider theme={tableTheme}>
+          <Example />
+        </ThemeProvider>
       </Box>
     </QueryClientProvider>
-
   );
 };
 

@@ -1,0 +1,62 @@
+.App {
+	text-align: center;
+  }
+  
+  .App-logo {
+	height: 5vmin;
+	pointer-events: none;
+	filter: invert(100%);
+	margin-top: 1%;
+  }
+  
+  .App-header {
+	background-color: #282c34;
+	min-height: 10vh;
+	display: flex;
+	flex-direction: column;
+	align-items: center;
+	justify-content: center;
+	font-size: calc(6px + 1vmin);
+	color: white;
+  }
+  
+  .text-editor {
+	height: 80vh;
+	display: flex;
+	flex-direction: column;
+  }
+  
+  .editor {
+	width: 900px;
+	height: 50%;
+	margin-left: 20%;
+	margin-top: 50px;
+	border: 0.5px solid gray;
+  }
+  
+  .text {
+	text-decoration: underline;
+	margin-top: 5%;
+  }
+  
+  .text-area {
+	width: 900px;
+	font-weight: 800;
+	height: 30%;
+	margin-left: 20%;
+	border: 0.5px solid gray;
+  }
+  
+  @media (max-width: 1125px) {
+	.editor {
+	  width: 100%;
+	  margin-left: 0;
+	}
+	.text-area {
+	  width: 100%;
+	  margin-left: 0;
+	}
+	.text {
+	  margin-top: 15%;
+	}
+  }

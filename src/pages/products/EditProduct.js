@@ -39,8 +39,9 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
   const [deletedImages, setDeletedImages] = useState([]);
   const [uploadedImages, setUploadedImages] = useState([]);
   const [categories, setCategories] = useState([]);
-  const [category, setCategory] = useState(product.category || ""); // Add category state
+  const [category, setCategory] = useState(product.category || ""); // Ангилалын төлөв
   const [status, setStatus] = useState(product.status);
+
   useEffect(() => {
     const fetchCategories = async () => {
       const categoriesCollection = collection(firestore, "categories");
@@ -54,7 +55,6 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
   const handleImageUpload = async (e) => {
     const files = e.target.files;
     const newImageUrls = [];
-
     for (let i = 0; i < files.length; i++) {
       const file = files[i];
       const imageRef = ref(storage, `products/thumbnails/${file.name}`);
@@ -63,10 +63,9 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         const downloadURL = await getDownloadURL(imageRef);
         newImageUrls.push(downloadURL);
       } catch (error) {
-        console.error("Error uploading image:", error);
+        console.error("Зураг хуулахад алдаа гарлаа:", error);
       }
     }
-
     setImages((prevImages) => [...prevImages, ...newImageUrls]);
     setUploadedImages((prevUploaded) => [...prevUploaded, ...newImageUrls]);
   };
@@ -76,26 +75,25 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
       const decodedImageUrl = decodeURIComponent(imageUrl);
       const fileName = decodedImageUrl.split("/").pop().split("?")[0];
       const imageRef = ref(storage, `products/thumbnails/${fileName}`);
-
       const imageExists = await checkImageExists(imageRef);
       if (imageExists) {
         await deleteObject(imageRef);
         setImages((prevImages) => prevImages.filter((img) => img !== imageUrl));
         setDeletedImages((prevDeleted) => [...prevDeleted, imageUrl]);
-        console.log("Image deleted successfully from Firebase Storage.");
+        console.log("Зураг амжилттай устгагдлаа.");
       } else {
-        console.log(`Image not found, skipping deletion: ${imageUrl}`);
+        console.log(`Зураг олдсонгүй, устгахаас болих: ${imageUrl}`);
       }
     } catch (error) {
-      console.error("Error deleting image:", error);
+      console.error("Зураг устгахад алдаа гарлаа:", error);
     }
   };
 
   const handleSave = async () => {
     try {
       const updatedProductData = {};
-
-      if (product.title !== productName) updatedProductData.title = productName;
+      if (product.title !== productName)
+        updatedProductData.title = productName;
       if (product.ingredients !== productDescription)
         updatedProductData.ingredients = productDescription;
       if (product.price !== productPrice)
@@ -106,8 +104,8 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         updatedProductData.moreDetails = moreDetails;
       if (product.instructions !== instructions)
         updatedProductData.instructions = instructions;
-      if (product.category !== category) updatedProductData.category = category;
-
+      if (product.category !== category)
+        updatedProductData.category = category;
       if (
         product.imgs.thumbnails.length !== images.length ||
         !images.every((img, index) => img === product.imgs.thumbnails[index])
@@ -118,20 +116,19 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
       if (Object.keys(updatedProductData).length > 0) {
         const productDocRef = doc(firestore, "products", product.id);
         await updateDoc(productDocRef, updatedProductData);
-        console.log(`Product with ID: ${product.id} updated successfully.`);
+        console.log(`Бүтээгдэхүүний ID: ${product.id} амжилттай шинэчлэгдлээ.`);
       }
 
       for (const imageUrl of deletedImages) {
         let decodedImageUrl = decodeURIComponent(imageUrl);
         const fileName = decodedImageUrl.split("/").pop().split("?")[0];
         const imageRef = ref(storage, `products/thumbnails/${fileName}`);
-
         const imageExists = await checkImageExists(imageRef);
         if (imageExists) {
           await deleteObject(imageRef);
-          console.log(`Deleted image from Firebase Storage: ${imageUrl}`);
+          console.log(`Firebase Storage-аас зураг амжилттай устгагдлаа: ${imageUrl}`);
         } else {
-          console.log(`Image not found, skipping deletion: ${imageUrl}`);
+          console.log(`Зураг олдсонгүй, устгахаас болих: ${imageUrl}`);
         }
       }
 
@@ -143,12 +140,11 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         moreDetails,
         instructions,
         imgs: { thumbnails: images },
-        category, // Include category in the updated data
+        category, // Ангиллыг шинэчилсэн мэдээлэлд оруулна
       });
-
       onClose();
     } catch (error) {
-      console.error("Error updating product:", error);
+      console.error("Бүтээгдэхүүний мэдээллийг шинэчлэхэд алдаа гарлаа:", error);
     }
   };
 
@@ -164,17 +160,17 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
 
   return (
     <Dialog open={Boolean(product)} onClose={onClose}>
-      <DialogTitle>Edit Product</DialogTitle>
+      <DialogTitle>Бүтээгдэхүүний мэдээллийг засварлах</DialogTitle>
       <DialogContent>
         <TextField
-          label="Product Name"
+          label="Бүтээгдэхүүний нэр"
           value={productName}
           onChange={(e) => setProductName(e.target.value)}
           fullWidth
           margin="normal"
         />
         <TextField
-          label="Price"
+          label="Үнэ"
           type="number"
           value={productPrice}
           onChange={(e) => setProductPrice(e.target.value)}
@@ -182,28 +178,21 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
           margin="normal"
         />
         <TextField
-          label="Discounted Price"
+          label="Хямдруулсан үнэ"
           type="number"
           value={discountedPrice}
           onChange={(e) => setDiscountedPrice(e.target.value)}
           fullWidth
           margin="normal"
         />
-        <TextField
-          label="Product Description"
-          value={status}
-          onChange={(e) => setStatus(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
         <FormControl fullWidth margin="normal" required>
-          <InputLabel>Category</InputLabel>
+          <InputLabel>Ангилал</InputLabel>
           <Select
             value={category}
             onChange={(e) => setCategory(e.target.value)}
-            label="Category"
+            label="Ангилал"
           >
-            <MenuItem value="">Select a Category</MenuItem>
+            <MenuItem value="">Ангилал сонгох</MenuItem>
             {categories.map((cat, index) => (
               <MenuItem key={index} value={cat}>
                 {cat}
@@ -212,21 +201,21 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
           </Select>
         </FormControl>
         <TextField
-          label="Product Description"
+          label="Найрлага"
           value={productDescription}
           onChange={(e) => setProductDescription(e.target.value)}
           fullWidth
           margin="normal"
         />
         <TextField
-          label="More Details"
+          label="Тайлбар"
           value={moreDetails}
           onChange={(e) => setMoreDetails(e.target.value)}
           fullWidth
           margin="normal"
         />
         <TextField
-          label="Instructions"
+          label="Заавар"
           value={instructions}
           onChange={(e) => setInstructions(e.target.value)}
           fullWidth
@@ -242,7 +231,7 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         />
         {images.length > 0 && (
           <div>
-            <h4>Uploaded Images:</h4>
+            <h4>Зурагнууд:</h4>
             {images.map((img, index) => (
               <div
                 key={index}
@@ -250,7 +239,7 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
               >
                 <img
                   src={img}
-                  alt={`Product Thumbnail ${index}`}
+                  alt={`Бүтээгдэхүүний зураг ${index}`}
                   width="100"
                   height="100"
                 />
@@ -268,10 +257,10 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
       </DialogContent>
       <DialogActions>
         <Button onClick={onClose} color="primary">
-          Cancel
+          Цуцлах
         </Button>
         <Button onClick={handleSave} color="secondary">
-          Save
+          Хадгалах
         </Button>
       </DialogActions>
     </Dialog>

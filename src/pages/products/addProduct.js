@@ -216,8 +216,6 @@ const AddProduct = () => {
     const updatedPreviews = product.thumbnails.filter((_, i) => i !== index);
     setProduct({ ...product, thumbnails: updatedPreviews });
   };
-
-  console.log(product);
   useEffect(() => {
     return () => {
       product.previews.forEach((file) => URL.revokeObjectURL(file));
