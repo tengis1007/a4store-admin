@@ -5,6 +5,7 @@
   "short_name": "A4STORE-ADMIN",
   "id": "A4STORE-ADMIN",
   "description": "Онлайн цахим худалдааны дэлгүүр",
+  "display": "standalone",
   "start_url": "/",
   "icons": [
     {
