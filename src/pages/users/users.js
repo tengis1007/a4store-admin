@@ -348,9 +348,8 @@ const Example = () => {
     {
       field: "tranAmount",
       headerName: "Мөнгөн дүн",
-      width: 150,
+      width: 150, // Ensure this is a fixed numeric value
       valueFormatter: (params) => {
-        console.log("params", params);
         if (params == null) {
           return ""; // Display empty string for null or undefined values
         }
@@ -564,6 +563,9 @@ const Example = () => {
           >
             Татаж авах
           </Button>
+        </Box>
+        <Box sx={{ display: "flex", gap: "0.5rem" }}>
+          <Typography>Нийт тоо:{tableData.length}</Typography>
         </Box>
       </Box>
     ),

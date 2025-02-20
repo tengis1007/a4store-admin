@@ -252,6 +252,9 @@ const Example = () => {
             Татаж авах
           </Button>
         </Box>
+        <Box sx={{ display: "flex", gap: "0.5rem" }}>
+          <Typography>Нийт тоо:{tableData.length}</Typography>
+        </Box>
       </Box>
     ),
     renderEmptyRowsFallback: () => (
