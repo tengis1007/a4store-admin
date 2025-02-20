@@ -102,6 +102,7 @@ const Example = () => {
       throw error; // Re-throw the error to handle it in the calling function
     }
   };
+
   const handleSearch = async (e) => {
     if (e.length === 8) {
       setIsLoading(true);
@@ -331,11 +332,18 @@ const Example = () => {
               );
             },
           },
+          {
+            accessorKey: "inviterNumber",
+            filterVariant: "autocomplete",
+            header: "Уригч",
+            size: "auto",
+          },
         ],
       },
     ],
     []
   );
+
   const columnsTransaction = [
     {
       field: "tranAmount",
