@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid } from "@mui/x-data-grid";
-import * as XLSX from "xlsx";
+import * as XLSX from 'xlsx';
 import { AccountCircle, Send } from "@mui/icons-material";
 // Firestore Imports
 import { collection, getDocs, query, where, doc } from "firebase/firestore";
@@ -102,7 +102,6 @@ const Example = () => {
       throw error; // Re-throw the error to handle it in the calling function
     }
   };
-
   const handleSearch = async (e) => {
     if (e.length === 8) {
       setIsLoading(true);
@@ -168,8 +167,8 @@ const Example = () => {
           },
           columnHeaders: {
             // Vibrant blue for headers
-            textAlign: "center", // Center-align text
-            justifyContent: "center", // Center content horizontally
+             textAlign: "center", // Center-align text
+  justifyContent: "center", // Center content horizontally
             fontSize: "14px", // Slightly smaller font for balance
             fontWeight: "bold", // Bold text for emphasis
             borderBottom: "2px solid #1976d2", // Stronger border under headers
@@ -332,24 +331,18 @@ const Example = () => {
               );
             },
           },
-          {
-            accessorKey: "inviterNumber",
-            filterVariant: "autocomplete",
-            header: "Уригч",
-            size: "auto",
-          },
         ],
       },
     ],
     []
   );
-
   const columnsTransaction = [
     {
       field: "tranAmount",
       headerName: "Мөнгөн дүн",
-      width: 150, // Ensure this is a fixed numeric value
+      width: 150,
       valueFormatter: (params) => {
+        console.log("params", params);
         if (params == null) {
           return ""; // Display empty string for null or undefined values
         }
@@ -558,14 +551,11 @@ const Example = () => {
             color="primary"
             disabled={tableData.length < 1}
             startIcon={<RiFileExcel2Fill />}
-            onClick={handleExport}
+             onClick={handleExport}
             variant="outlined"
           >
             Татаж авах
           </Button>
-        </Box>
-        <Box sx={{ display: "flex", gap: "0.5rem" }}>
-          <Typography>Нийт тоо:{tableData.length}</Typography>
         </Box>
       </Box>
     ),
@@ -575,49 +565,31 @@ const Example = () => {
       </Typography>
     ),
   });
-
   const handleExport = () => {
     // Convert tableData to an array of objects
     const data = tableData.map((user) => ({
       id: user.id,
-      Овог: user.lastName,
-      Нэр: user.firstName,
-      "И-мэйл": user.email,
-      Утас: user.phone,
-      Хэтэвч: user.wallets?.[0]?.balance || 0, // Handle undefined wallets
-      Оноо: user.points?.[0]?.balance || 0, // Handle undefined points
-      "Бүртгүүлсэн огноо": user.createdAt
-        ? new Date(
-            user.createdAt.seconds * 1000 + user.createdAt.nanoseconds / 1000000
-          ) // Keep as Date object
-        : "",
-      Төрөл: user.isMember ? "Гишүүн" : "Хэрэглэгч",
+      lastName: user.lastName,
+      firstName:user.firstName,
+      email: user.email,
+      phone: user.phone,
+      walletBalance: user.wallets?.[0]?.balance,
+      Points: user.points?.[0]?.balance,
+      createdAt: dayjs(
+        new Date(user.createdAt.seconds * 1000 + user.createdAt.nanoseconds / 1000000)
+      ).format('YYYY-MM-DD HH:mm'), // Convert Firestore Timestamp to Date and format
+      isMember: user.isMember,
     }));
-
     // Convert the data to a worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);
 
-    // Ensure Excel recognizes "Бүртгүүлсэн огноо" as a date column
-    worksheet["!cols"] = [
-      { wch: 10 }, // ID column width
-      { wch: 15 }, // Last Name
-      { wch: 15 }, // First Name
-      { wch: 25 }, // Email
-      { wch: 15 }, // Phone
-      { wch: 10 }, // Wallet
-      { wch: 10 }, // Points
-      { wch: 20 }, // Date Registered (Bigger width for better display)
-      { wch: 12 }, // Type
-    ];
-
     // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
 
     // Export the workbook as an Excel file
-    XLSX.writeFile(workbook, "Гишүүний мэдээлэл.xlsx");
+    XLSX.writeFile(workbook, 'data.xlsx');
   };
-
   return <MaterialReactTable table={table} />;
 };
 

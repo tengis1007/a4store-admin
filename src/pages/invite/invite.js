@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid } from "@mui/x-data-grid";
-import * as XLSX from "xlsx";
+import * as XLSX from 'xlsx';
 import { AccountCircle, Send } from "@mui/icons-material";
 // Firestore Imports
 import { collection, getDocs, query, where, doc } from "firebase/firestore";
@@ -35,7 +35,6 @@ import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { RiFileExcel2Fill } from "react-icons/ri";
-
 const Example = () => {
   // State to hold the table data
   const [tableData, setTableData] = useState([]);
@@ -62,21 +61,40 @@ const Example = () => {
   const fetchDataFromAPI = async () => {
     try {
       // Reference to the "users" collection
-      const inviteRef = collection(firestore, "inviteFriend");
-      const querySnapshot = await getDocs(inviteRef);
+      const usersCollection = collection(firestore, "users");
+      const querySnapshot = await getDocs(usersCollection);
 
-      const combinedData = querySnapshot.docs.map((doc) => {
-        const data = doc.data();
+      // Extract data from the documents and store it in an array
+      const usersData = querySnapshot.docs.map((doc) => ({
+        id: doc.id, // Document ID
+        ...doc.data(), // Document data
+      }));
 
-        // Convert Firestore timestamps to ISO strings
-        Object.keys(data).forEach((key) => {
-          if (data[key] instanceof Object && data[key].toDate) {
-            data[key] = data[key].toDate().toISOString();
-          }
-        });
+      // Fetch wallet and point data concurrently for all users
+      const combinedData = await Promise.all(
+        usersData.map(async (user) => {
+          const [walletSnapshot, pointSnapshot] = await Promise.all([
+            getDocs(collection(firestore, `users/${user.id}/wallet`)),
+            getDocs(collection(firestore, `users/${user.id}/point`)),
+          ]);
 
-        return { id: doc.id, ...data };
-      });
+          const walletsData = walletSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          const pointsData = pointSnapshot.docs.map((doc) => ({
+            id: doc.id,
+            ...doc.data(),
+          }));
+
+          return {
+            ...user,
+            wallets: walletsData ?? 0,
+            points: pointsData ?? 0,
+          };
+        })
+      );
 
       return combinedData;
     } catch (error) {
@@ -89,7 +107,7 @@ const Example = () => {
       setIsLoading(true);
 
       try {
-        const usersCollection = collection(firestore, "inviteFriend");
+        const usersCollection = collection(firestore, "users");
         const q = query(usersCollection, where("phone", "==", e));
         const querySnapshot = await getDocs(q);
 
@@ -98,10 +116,34 @@ const Example = () => {
           return null;
         }
 
-        const combinedData = querySnapshot.docs.map((doc) => ({
+        const users = querySnapshot.docs.map((doc) => ({
           id: doc.id,
           ...doc.data(),
         }));
+
+        // Fetch wallets and points in parallel
+        const combinedData = await Promise.all(
+          users.map(async (user) => {
+            const userRef = doc(firestore, "users", user.id); // ✅ Corrected this line
+
+            const [walletSnapshot, pointSnapshot] = await Promise.all([
+              getDocs(collection(userRef, "wallet")), // ✅ Now correctly referencing the subcollection
+              getDocs(collection(userRef, "point")),
+            ]);
+
+            return {
+              ...user,
+              wallets: walletSnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              })),
+              points: pointSnapshot.docs.map((doc) => ({
+                id: doc.id,
+                ...doc.data(),
+              })),
+            };
+          })
+        );
 
         setTableData(combinedData);
       } catch (error) {
@@ -113,33 +155,270 @@ const Example = () => {
   };
   // Dynamic columns for wallet and point data
 
+  const theme = createTheme({
+    components: {
+      MuiDataGrid: {
+        styleOverrides: {
+          root: {
+            border: "1px solid rgba(51, 46, 46, 0.51)", // Subtle border for the grid
+            borderRadius: "8px", // Rounded corners for a modern look
+            overflow: "hidden", // Ensures no overflow issues
+            boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.1)", // Adds depth with a soft shadow
+          },
+          columnHeaders: {
+            // Vibrant blue for headers
+             textAlign: "center", // Center-align text
+  justifyContent: "center", // Center content horizontally
+            fontSize: "14px", // Slightly smaller font for balance
+            fontWeight: "bold", // Bold text for emphasis
+            borderBottom: "2px solid #1976d2", // Stronger border under headers
+            "& .MuiDataGrid-columnHeaderTitle": {
+              textTransform: "uppercase", // Uppercase titles for a clean look
+              letterSpacing: "0.5px", // Adds spacing between letters
+            },
+          },
+          cell: {
+            fontSize: "14px", // Consistent font size
+            padding: "12px", // Increased padding for better readability
+            borderBottom: "1px solid rgba(224, 224, 224, 0.5)", // Subtle row divider
+            "&:nth-of-type(odd)": {
+              backgroundColor: "#fafafa", // Light gray for alternating rows
+            },
+            "&:hover": {
+              backgroundColor: "#f0f8ff", // Light blue hover effect for interactivity
+            },
+          },
+          row: {
+            "&:hover": {
+              backgroundColor: "#e3f2fd", // Soft blue background on row hover
+            },
+          },
+          footerContainer: {
+            borderTop: "1px solid rgba(224, 224, 224, 0.5)", // Divider above pagination
+            backgroundColor: "#ffffff", // Clean white background for footer
+          },
+        },
+      },
+    },
+  });
+
   const columns = useMemo(
     () => [
       {
-        accessorKey: "inviterPhone", //access nested data with dot notation
-        header: "Уригчийн утас",
-        size: 150,
-        Cell: ({ cell }) => cell.getValue() || "",
-      },
-      {
-        accessorKey: "phone",
-        header: "Уригдагчийн утас",
-        size: 150,
-      },
-      {
-        accessorKey: "timestamp", //normal accessorKey
-        header: "Огноо",
-        size: 200,
-        Cell: ({ cell }) => {
-          const value = cell.getValue();
-          return value
-            ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
-            : "Огноо байхгүй";
-        },
+        id: "employee",
+        header: "Хэрэглэгч",
+        columns: [
+          {
+            accessorFn: (row) =>
+              `${row.lastName ?? ""} ${row.firstName ?? ""}`.trim(),
+            id: "name",
+            header: "Овог нэр",
+            size: "auto",
+            Cell: ({ renderedCellValue }) => (
+              <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
+                <span>{renderedCellValue}</span>
+              </Box>
+            ),
+          },
+          {
+            accessorKey: "phone",
+            enableClickToCopy: true,
+            filterVariant: "autocomplete",
+            header: "Утас",
+            size: "auto",
+          },
+          {
+            accessorKey: "email",
+            enableClickToCopy: true,
+            filterVariant: "autocomplete",
+            header: "И-мэйл",
+            size: "auto",
+          },
+          {
+            accessorFn: (row) => row.points?.[0]?.balance ?? 0,
+            header: "Оноо",
+            size: "auto",
+            Cell: ({ cell }) => {
+              const value = cell.getValue() ?? 0;
+              const formatted = value
+                .toFixed(0)
+                .replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+              return (
+                <Box
+                  component="span"
+                  sx={(theme) => ({
+                    backgroundColor:
+                      value < 1
+                        ? theme.palette.success.dark // No background when value < 1
+                        : value >= 200000
+                          ? theme.palette.warning.dark // Orange for values >= 200,000
+                          : theme.palette.success.dark, // Green for values > 1 and < 200,000
+                    borderRadius: "0.25rem",
+                    color: "#fff",
+                    maxWidth: "9ch",
+                    p: "0.25rem",
+                  })}
+                >
+                  {formatted} P
+                </Box>
+              );
+            },
+          },
+          {
+            accessorFn: (row) => row.wallets?.[0]?.balance ?? 0,
+            header: "Хэтэвч",
+            size: "auto",
+            Cell: ({ cell }) => {
+              const value = cell.getValue() ?? 0;
+              return (
+                <Box
+                  component="span"
+                  sx={(theme) => ({
+                    backgroundColor:
+                      value < 1
+                        ? theme.palette.success.dark // No background when value < 1
+                        : value >= 200000
+                          ? theme.palette.warning.dark // Orange for values >= 200,000
+                          : theme.palette.success.dark, // Green for values > 1 and < 200,000
+                    borderRadius: "0.25rem",
+                    color: "#fff",
+                    maxWidth: "9ch",
+                    p: "0.25rem",
+                  })}
+                >
+                  {value.toLocaleString("MN-mn", {
+                    style: "currency",
+                    currency: "MNT",
+                    minimumFractionDigits: 0,
+                    maximumFractionDigits: 0,
+                  })}
+                </Box>
+              );
+            },
+          },
+          {
+            accessorFn: (row) => {
+              if (!row.createdAt) return null;
+              const { seconds, nanoseconds } = row.createdAt;
+              return dayjs
+                .unix(seconds)
+                .add(nanoseconds / 1000000, "millisecond");
+            },
+            id: "createdAt",
+            header: "Бүргүүлсэн огноо",
+            filterVariant: "date",
+            filterFn: "lessThan",
+            size: "auto",
+            sortingFn: "datetime",
+            Cell: ({ cell }) => {
+              const value = cell.getValue();
+              return value
+                ? value.format("YYYY-MM-DD HH:mm:ss")
+                : "Огноо байхгүй";
+            },
+          },
+          {
+            accessorKey: "isMember",
+            filterVariant: "autocomplete",
+            header: "Төрөл",
+            size: "auto",
+            Cell: ({ cell }) => {
+              const value = cell.getValue();
+              return value ? (
+                <span style={{ color: "green" }}>Гишүүн</span>
+              ) : (
+                <span style={{ color: "orange" }}>Хэрэглэгч</span>
+              );
+            },
+          },
+        ],
       },
     ],
     []
   );
+  const columnsTransaction = [
+    {
+      field: "tranAmount",
+      headerName: "Мөнгөн дүн",
+      width: 150,
+      valueFormatter: (params) => {
+        console.log("params", params);
+        if (params == null) {
+          return ""; // Display empty string for null or undefined values
+        }
+        return params.toLocaleString("mn-MN", {
+          style: "currency",
+          currency: "MNT",
+          minimumFractionDigits: 0,
+          maximumFractionDigits: 0,
+        });
+      },
+    },
+    {
+      field: "type",
+      headerName: "Төрөл",
+      width: 150,
+      renderCell: (params) => {
+        const value = params.row.type;
+        return (
+          <span
+            style={{
+              color:
+                value === "Debit"
+                  ? "orange"
+                  : value === "Credit"
+                    ? "green"
+                    : "black",
+            }}
+          >
+            {value === "Debit" ? "Зарлага" : value === "Credit" ? "Орлого" : ""}
+          </span>
+        );
+      },
+    },
+    {
+      field: "date",
+      headerName: "Огноо",
+      width: "auto",
+      valueGetter: (params) => {
+        try {
+          // Handle missing or invalid row
+          if (!params) {
+            console.error("Row data is missing or undefined");
+            return "N/A";
+          }
+
+          // Handle missing or invalid date
+          const dateField = params;
+          if (!dateField) {
+            console.error("Date field is missing or undefined");
+            return "N/A";
+          }
+
+          console.log("Debugging params.row.date:", dateField); // Log the date field
+
+          // Case 1: Firestore Timestamp
+          if (
+            dateField &&
+            typeof dateField === "object" &&
+            typeof dateField.seconds === "number"
+          ) {
+            const { seconds, nanoseconds } = dateField;
+            return dayjs
+              .unix(seconds)
+              .add(nanoseconds / 1_000_000, "millisecond")
+              .format("YYYY-MM-DD HH:mm:ss");
+          }
+
+          // Default fallback
+          return "N/A";
+        } catch (error) {
+          console.error("Error processing date:", error);
+          return "N/A";
+        }
+      },
+    },
+  ];
 
   const table = useMaterialReactTable({
     columns,
@@ -175,6 +454,32 @@ const Example = () => {
       isLoading,
       showProgressBars: isLoading,
     },
+    renderDetailPanel: ({ row }) => (
+      <ThemeProvider theme={theme}>
+        <CssBaseline />
+        <Box sx={{ marginLeft: "90px", height: "auto", width: "28%" }}>
+          <DataGrid
+            rows={
+              row.original.wallets?.[0]?.transactionHistory?.map(
+                (transaction, index) => ({
+                  ...transaction,
+                  id: transaction.statementId || index, // Ensure there's a unique id for each row
+                })
+              ) || []
+            }
+            columns={columnsTransaction}
+            initialState={{
+              pagination: {
+                paginationModel: {
+                  pageSize: 5,
+                },
+              },
+            }}
+            pageSizeOptions={[5]}
+          />
+        </Box>
+      </ThemeProvider>
+    ),
     renderRowActionMenuItems: ({ closeMenu }) => [
       <MenuItem
         key={0}
@@ -246,14 +551,11 @@ const Example = () => {
             color="primary"
             disabled={tableData.length < 1}
             startIcon={<RiFileExcel2Fill />}
-            onClick={handleExport}
+             onClick={handleExport}
             variant="outlined"
           >
             Татаж авах
           </Button>
-        </Box>
-        <Box sx={{ display: "flex", gap: "0.5rem" }}>
-          <Typography>Нийт тоо:{tableData.length}</Typography>
         </Box>
       </Box>
     ),
@@ -263,31 +565,31 @@ const Example = () => {
       </Typography>
     ),
   });
-
   const handleExport = () => {
     // Convert tableData to an array of objects
-    const data = tableData.map((value) => ({
-      id: value.id,
-      "Уригчийн утас": value.inviterPhone || "", // Ensure empty values for undefined
-      "Уригдагчийн утас": value.phone || "",
-      Огноо: value.timestamp ? new Date(value.timestamp).toLocaleString() : "", // Convert Firestore Timestamp to Date
+    const data = tableData.map((user) => ({
+      id: user.id,
+      lastName: user.lastName,
+      firstName:user.firstName,
+      email: user.email,
+      phone: user.phone,
+      walletBalance: user.wallets?.[0]?.balance,
+      Points: user.points?.[0]?.balance,
+      createdAt: dayjs(
+        new Date(user.createdAt.seconds * 1000 + user.createdAt.nanoseconds / 1000000)
+      ).format('YYYY-MM-DD HH:mm'), // Convert Firestore Timestamp to Date and format
+      isMember: user.isMember,
     }));
-
     // Convert the data to a worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);
 
-    // Ensure the date column is recognized as a date by Excel
-    const dateCol = XLSX.utils.decode_col("C"); // Assuming "Огноо" is the 3rd column
-    worksheet["!cols"] = [{ wch: 15 }, { wch: 15 }, { wch: 20 }]; // Adjust column width
-
     // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
+    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
 
     // Export the workbook as an Excel file
-    XLSX.writeFile(workbook, "Урилтын мэдээлэл.xlsx");
+    XLSX.writeFile(workbook, 'data.xlsx');
   };
-
   return <MaterialReactTable table={table} />;
 };
 

@@ -92,7 +92,7 @@ const NAVIGATION = [
   },
   {
     segment: "invite",
-    title: "Урилт",
+    title: "Ангилал",
     icon: <PersonAddAlt1Icon />,
   },
   {
