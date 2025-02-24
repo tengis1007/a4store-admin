@@ -37,6 +37,10 @@ import FeedIcon from '@mui/icons-material/Feed';
 import Blog from "../blog/blog";
 import Users from "../users/users"
 import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import Invite from "../invite/invite";
+
+
 const NAVIGATION = [
   {
     kind: "header",
@@ -87,6 +91,11 @@ const NAVIGATION = [
     ],
   },
   {
+    segment: "invite",
+    title: "Урилт",
+    icon: <PersonAddAlt1Icon />,
+  },
+  {
     segment: "category",
     title: "Ангилал",
     icon: <ListSharpIcon />,
@@ -133,6 +142,7 @@ function DemoPageContent({ pathname }) {
       {pathname === "/banner" && <Banner />}
       {pathname === "/blog" && <Blog />}
       {pathname === "/users" && <Users />}
+      {pathname === "/invite" && <Invite />}
     </div>
   );
 }
