@@ -1,0 +1,33 @@
+[debug] [2025-02-20T02:25:56.138Z] ----------------------------------------------------------------------
+[debug] [2025-02-20T02:25:56.140Z] Command:       C:\Program Files\nodejs\node.exe C:\Users\tengi\AppData\Roaming\npm\node_modules\firebase-tools\lib\bin\firebase.js deploy
+[debug] [2025-02-20T02:25:56.141Z] CLI Version:   13.29.2
+[debug] [2025-02-20T02:25:56.141Z] Platform:      win32
+[debug] [2025-02-20T02:25:56.141Z] Node Version:  v20.18.0
+[debug] [2025-02-20T02:25:56.141Z] Time:          Thu Feb 20 2025 10:25:56 GMT+0800 (Ulaanbaatar Standard Time)
+[debug] [2025-02-20T02:25:56.141Z] ----------------------------------------------------------------------
+[debug] 
+[debug] [2025-02-20T02:25:56.349Z] > command requires scopes: ["email","openid","https://www.googleapis.com/auth/cloudplatformprojects.readonly","https://www.googleapis.com/auth/firebase","https://www.googleapis.com/auth/cloud-platform"]
+[debug] [2025-02-20T02:25:56.349Z] > authorizing via signed-in user (tengis1007@gmail.com)
+[debug] [2025-02-20T02:25:56.349Z] [iam] checking project a4youandme-store for permissions ["firebase.projects.get","firebasehosting.sites.update"]
+[debug] [2025-02-20T02:25:56.351Z] Checked if tokens are valid: false, expires at: 1739955991647
+[debug] [2025-02-20T02:25:56.351Z] Checked if tokens are valid: false, expires at: 1739955991647
+[debug] [2025-02-20T02:25:56.351Z] > refreshing access token with scopes: []
+[debug] [2025-02-20T02:25:56.353Z] >>> [apiv2][query] POST https://www.googleapis.com/oauth2/v3/token [none]
+[debug] [2025-02-20T02:25:56.353Z] >>> [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-02-20T02:25:56.910Z] <<< [apiv2][status] POST https://www.googleapis.com/oauth2/v3/token 200
+[debug] [2025-02-20T02:25:56.910Z] <<< [apiv2][body] POST https://www.googleapis.com/oauth2/v3/token [omitted]
+[debug] [2025-02-20T02:25:56.935Z] >>> [apiv2][query] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions [none]
+[debug] [2025-02-20T02:25:56.935Z] >>> [apiv2][(partial)header] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions x-goog-quota-user=projects/a4youandme-store
+[debug] [2025-02-20T02:25:56.935Z] >>> [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-02-20T02:25:57.899Z] <<< [apiv2][status] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions 200
+[debug] [2025-02-20T02:25:57.899Z] <<< [apiv2][body] POST https://cloudresourcemanager.googleapis.com/v1/projects/a4youandme-store:testIamPermissions {"permissions":["firebase.projects.get","firebasehosting.sites.update"]}
+[debug] [2025-02-20T02:25:57.900Z] Checked if tokens are valid: true, expires at: 1740021955910
+[debug] [2025-02-20T02:25:57.900Z] Checked if tokens are valid: true, expires at: 1740021955910
+[debug] [2025-02-20T02:25:57.900Z] >>> [apiv2][query] GET https://firebase.googleapis.com/v1beta1/projects/a4youandme-store [none]
+[debug] [2025-02-20T02:25:58.533Z] <<< [apiv2][status] GET https://firebase.googleapis.com/v1beta1/projects/a4youandme-store 200
+[debug] [2025-02-20T02:25:58.533Z] <<< [apiv2][body] GET https://firebase.googleapis.com/v1beta1/projects/a4youandme-store {"projectId":"a4youandme-store","projectNumber":"719925501283","displayName":"a4youandme-store","name":"projects/a4youandme-store","resources":{"hostingSite":"a4youandme-store","realtimeDatabaseInstance":"a4youandme-store-default-rtdb"},"state":"ACTIVE","etag":"1_7e4af4f2-2718-49c7-ac29-f1085ff96e2a"}
+[info] 
+[info] === Deploying to 'a4youandme-store'...
+[info] 
+[info] i  deploying hosting 
+[info] Running command: npm run build

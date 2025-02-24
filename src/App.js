@@ -7,12 +7,10 @@ import Home from "./home";
 import Signin from "./pages/auth/signin";
 import Signup from "./pages/auth/Signup";
 import CircularProgress from '@mui/material/CircularProgress';
-
 const AppContent = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // Use navigate hook here
-
   // Listen to authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
