@@ -1,7 +1,7 @@
 // ProtectedRoute.js
 import React from 'react';
 import { Navigate } from 'react-router-dom';  // Use Navigate to redirect in React Router v6
-import { auth } from './firebase/firebaseConfig';  // Import Firebase auth
+import { auth } from './refrence/storeConfig';  // Import Firebase auth
 
 const ProtectedRoute = ({ children, redirectTo }) => {
   const user = auth.currentUser;  // Check if the user is logged in

@@ -1,0 +1,121 @@
+/* Org Chart Container */
+.orgchart-container {
+  width: 100% !important;
+  height: 800px !important;
+  border: 2px solid #1e1e2f !important;
+  border-radius: 12px;
+  overflow: auto !important;
+  background-color: #f4f6f9 !important; /* Subtle background for a modern look */
+  box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Soft shadow for container */
+}
+/* Org Chart Connectors */
+.orgchart.myChart > ul > li > ul li::before {
+  border-top-color: #000000;
+}
+
+.orgchart.myChart > ul > li > ul li .oc-node::before,
+.orgchart.myChart ul li .oc-node:not(:only-child)::after {
+  background-color: #000000;
+}
+
+/* Node Design */
+.orgchart.myChart .oc-node .position {
+  box-sizing: border-box;
+  color: #ffffff;
+  width: 200px;
+  height: 50px;
+  padding: 12px;
+  background-color: #000000; /* Modern blue tone */
+
+  text-align: center;
+  font-weight: bold;
+  font-size: 1rem;
+}
+
+.orgchart.myChart .oc-node .fullname {
+  box-sizing: border-box;
+  color: #444444;
+  background-color: #ffffff;
+  width: 200px;
+  height: 90px;
+  padding: 12px;
+  border: 1px solid #000000;
+  text-align: center;
+  font-size: 0.9rem;
+  line-height: 1.4;
+  box-shadow: 0 6px 10px rgba(0, 0, 0, 0.1);
+}
+
+/* Toolbar */
+.toolbar {
+  padding: 16px;
+  margin: 20px 0;
+  border: 1px solid #ccc;
+  background-color: #ffffff; /* Light background for contrast */
+  border-radius: 12px;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+}
+
+/* Buttons */
+button {
+  box-sizing: border-box;
+  padding: 12px 24px;
+  font-size: 1rem;
+  font-weight: bold;
+  text-align: center;
+  cursor: pointer;
+  color: #ffffff;
+  background-color: #000000;
+  border: 2px solid #28a745;
+  border-radius: 6px;
+  transition: all 0.3s ease;
+}
+
+button:hover,
+button:focus,
+button:active {
+  color: #28a745;
+  background-color: #ffffff;
+  border-color: #28a745;
+  box-shadow: 0 6px 12px rgba(0, 0, 0, 0.15);
+}
+
+button[disabled] {
+  cursor: not-allowed;
+  opacity: 0.6;
+}
+
+/* Hover Effects */
+.orgchart.myChart .oc-node:hover {
+  transform: translateY(-3px);
+  transition: transform 0.3s ease, box-shadow 0.3s ease;
+  border-color: #3498db;
+  box-shadow: 0 8px 14px rgba(0, 0, 0, 0.2);
+}
+
+/* Mobile Fixes */
+@media (max-width: 768px) {
+  .orgchart.myChart .oc-node .fullname,
+  .orgchart.myChart .oc-node .position {
+    width: 200px;
+  }
+
+  .toolbar {
+    flex-direction: column;
+    gap: 12px;
+  }
+}
+
+/* Desktop Cursor Handling */
+@media (min-width: 769px) {
+  .orgchart.myChart {
+    cursor: grab; /* Enable grab cursor for desktop users */
+  }
+
+  .orgchart.myChart:active {
+    cursor: grabbing;
+  }
+}

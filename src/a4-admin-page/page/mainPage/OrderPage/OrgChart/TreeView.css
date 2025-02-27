@@ -1,0 +1,73 @@
+.orgchart.myChart {
+  background-image: linear-gradient(
+      90deg,
+      rgba(33, 90, 136, 0.15) 10%,
+      rgba(0, 0, 0, 0) 10%
+    ),
+    linear-gradient(rgba(33, 90, 136, 0.15) 10%, rgba(0, 0, 0, 0) 10%) !important;
+}
+
+.orgchart.myChart > ul > li > ul li::before {
+  border-top-color: #215a88;
+}
+
+.orgchart.myChart > ul > li > ul li .oc-node::before,
+.orgchart.myChart ul li .oc-node:not(:only-child)::after {
+  background-color: #215a88;
+}
+
+.orgchart.myChart .oc-node .position {
+  box-sizing: border-box;
+  color: #fff;
+  width: 200px;
+  height: 30px;
+  padding: 2px;
+}
+
+.orgchart.myChart .oc-node .fullname {
+  box-sizing: border-box;
+  color: #215a88;
+  background-color: #fff;
+  width: 200px;
+  height: 80px;
+  padding: 2px;
+  border: 1px solid #215a88;
+  font-size: small;
+}
+.items {
+  background-color: #000000;
+}
+.toolbar {
+  padding: 0.5rem;
+  margin: 10px;
+  border: 1px solid #aaa;
+}
+
+button {
+  box-sizing: border-box;
+  padding: 6px 12px;
+  font-size: 1rem;
+  text-align: center;
+  white-space: nowrap;
+  vertical-align: middle;
+  touch-action: manipulation;
+  cursor: pointer;
+  user-select: none;
+  color: #fff;
+  background-color: #5cb85c;
+  border: 2px solid #5cb85c;
+}
+
+button[disabled] {
+  cursor: not-allowed;
+  box-shadow: none;
+  opacity: 0.3;
+}
+
+
+button:hover,
+button:focus,
+button:active {
+  color: #5cb85c;
+  background-color: #fff;
+}

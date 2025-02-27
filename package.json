@@ -5,6 +5,7 @@
   "dependencies": {
     "@ckeditor/ckeditor5-build-classic": "^44.1.0",
     "@ckeditor/ckeditor5-react": "^9.4.0",
+    "@dabeng/react-orgchart": "^1.0.3",
     "@emotion/react": "^11.14.0",
     "@emotion/styled": "^11.14.0",
     "@material-tailwind/react": "^2.1.10",
@@ -16,17 +17,20 @@
     "@mui/x-tree-view": "^7.24.1",
     "@react-spring/web": "^9.7.5",
     "@react-three/drei": "^9.121.1",
+    "@react-three/fiber": "^9.0.4",
     "@tailwindcss/postcss": "^4.0.3",
     "@tanstack/react-query": "^5.65.1",
     "@toolpad/core": "^0.12.0",
-    "axios": "^1.7.9",
+    "axios": "^1.8.1",
     "browser-image-compression": "^2.0.2",
+    "chart.js": "^4.4.8",
     "ckeditor5-premium-features": "^44.1.0",
     "cra-template": "1.2.0",
     "dayjs": "^1.11.13",
     "draft-js": "^0.11.7",
     "draftjs-to-html": "^0.9.1",
     "es6-shim": "^0.35.8",
+    "eslint-import-resolver-alias": "^1.1.2",
     "export-to-csv": "^1.4.0",
     "firebase": "^11.2.0",
     "firebase-admin": "^13.0.2",
@@ -34,7 +38,9 @@
     "material-react-table": "^3.1.0",
     "mdb-react-ui-kit": "^9.0.0",
     "postcss-loader": "^8.1.1",
+    "primereact": "^10.9.2",
     "prop-types": "^15.8.1",
+    "pullstate": "^1.25.0",
     "react": "^19.0.0",
     "react-dom": "^19.0.0",
     "react-draft-wysiwyg": "^1.15.0",
@@ -50,7 +56,7 @@
     "build": "react-scripts build",
     "test": "react-scripts test",
     "eject": "react-scripts eject",
-    "deploy":"firebase deploy --only hosting"
+    "deploy": "firebase deploy --only hosting"
   },
   "eslintConfig": {
     "extends": [
@@ -72,7 +78,7 @@
   },
   "devDependencies": {
     "autoprefixer": "^10.4.20",
-    "postcss": "^8.5.1",
-    "tailwindcss": "^4.0.3"
+    "postcss": "^8.5.3",
+    "tailwindcss": "^4.0.9"
   }
 }
