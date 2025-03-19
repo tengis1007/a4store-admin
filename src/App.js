@@ -4,8 +4,9 @@ import {
   Routes,
   Route,
   useNavigate,
+  useLocation
 } from "react-router-dom";
-import { auth } from "./refrence/storeConfig"; // Use the pre-configured Firebase auth instance
+import { auth,firebase } from "./refrence/storeConfig"; // Use the pre-configured Firebase auth instance
 import { onAuthStateChanged } from "firebase/auth";
 import ProtectedRoute from "./ProtectedRoute";
 import Home from "./user-page/pages/home";
@@ -20,23 +21,31 @@ import { PrimeReactProvider } from "primereact"; // Adjust the import path as ne
 import BottomTab from "./user-page/components/BottomTab";
 import Header from "./user-page/components/HeaderTab";
 import Wallet from "./user-page/pages/wallet/wallet";
+import Transaction from "./user-page/pages/wallet/transaction";
 import MyAccount from "./user-page/pages/myAccount/myAccount";
 import Organizations from "./user-page/pages/organizations/organizations";
 import Settings from "./user-page/pages/settings/settings";
 import A4Header from "./a4-admin-page/header";
 import OrgChart from "./user-page/pages/OrgChart/OrgChart";
 import "./index.css";
+import axios from "./axios";
 const AppContent = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // Use navigate hook here
+  const location = useLocation();
+
   // Listen to authentication state changes
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         setUser(user);
+        console.log("User is signed in:", user);
+        // If user is signed in, navigate to home page (only once)
+        if (window.location.pathname == "/signin") {
+          navigate("/wallet");
+        }
       } else {
-        navigate("/signin");
         setUser(null);
         console.log("No user is signed in.");
       }
@@ -44,7 +53,7 @@ const AppContent = () => {
     });
 
     return () => unsubscribe(); // Cleanup listener on unmount
-  }, [navigate]); // Add navigate to dependencies so it's updated properly
+  }, [navigate]);
   const theme = createTheme({
     cssVariables: true,
     palette: {
@@ -89,6 +98,16 @@ const AppContent = () => {
                   <Header />
                   <BottomTab />
                   <MyAccount />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/transaction"
+              element={
+                <ProtectedRoute redirectTo="/signin">
+                  <Header />
+                  <BottomTab />
+                  <Transaction />
                 </ProtectedRoute>
               }
             />

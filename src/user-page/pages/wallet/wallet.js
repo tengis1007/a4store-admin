@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState, useEffect} from "react"
 import {
   Card,
   CardContent,
@@ -13,6 +13,9 @@ import { styled } from "@mui/system";
 import { FaCoins } from "react-icons/fa";
 import { MdHistory } from "react-icons/md";
 import Rank from "../rank/rank";
+import { useNavigate } from "react-router-dom";
+import { doc, onSnapshot  } from "firebase/firestore"; // Ensure you're importing firestore methods
+import { auth, firestore } from "refrence/storeConfig"; 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
   background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",
@@ -78,11 +81,43 @@ const HistoryButton = styled(Button)(({ theme }) => ({
 }));
 
 const RewardsCard = () => {
+  const [balance, setBalance] = useState(null)
+    const navigation = useNavigate();
   const theme = useTheme();
+    const user = auth.currentUser; 
+  
+  const getUserData = () => {
+    try {
+      const users = localStorage.getItem("user"); // Get the stored data
+      if (users) {
+        return JSON.parse(users); // Parse the JSON string into an object
+      }
+      return null; // Return null if no data exists
+    } catch (error) {
+      console.error("Error parsing localStorage.users:", error.message);
+      return null; // Handle errors gracefully
+    }
+  };
+  const userData = getUserData();
 
+  useEffect(() => {
+    const balanceRef = doc(firestore, "users", user.uid, "point", "balance");
+
+    // Subscribe to real-time updates with onSnapshot
+    const unsubscribe = onSnapshot(balanceRef, (docSnap) => {
+      if (docSnap.exists()) {
+        setBalance(docSnap.data().balance);  // Update state with new balance
+      } else {
+        console.log("No such document!");
+        setBalance(null);
+      }
+    });
+    return () => {
+      unsubscribe();
+    }; }, [user.uid]);
   return (
     <>
-      <Rank />
+      {/* <Rank /> */}
 
       <Box sx={{ margin: "10px", marginBottom: "70px" }}>
         <StyledCard>
@@ -104,13 +139,13 @@ const RewardsCard = () => {
               Овог нэр
             </Typography>
             <Typography variant="h5" sx={{ mt: 1, fontWeight: 600 }}>
-              Narangerel Tengis
+             {`${userData.lastName} ${userData.firstName}`}
             </Typography>
 
             <PointsWrapper>
               <FaCoins size={24} />
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
-                1,000
+                {balance}
               </Typography>
               <Typography variant="subtitle1" sx={{ opacity: 0.8 }}>
                 pts
@@ -123,7 +158,7 @@ const RewardsCard = () => {
             >
               1 point = $1
             </Typography>
-
+{/* 
             <AmountWrapper>
               <Typography variant="body1" sx={{ opacity: 0.8 }}>
                 Багт орох эрх:
@@ -131,16 +166,16 @@ const RewardsCard = () => {
               <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
                 1
               </Typography>
-            </AmountWrapper>
+            </AmountWrapper> */}
           </ContentWrapper>
         </StyledCard>
         <Box sx={{ maxWidth: 400, margin: "auto", mt: 3 }}>
           <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
             <ActionButton fullWidth variant="contained">
-              Deposit
+              Цэнэглэх
             </ActionButton>
-            <ActionButton fullWidth variant="contained">
-              Withdraw
+            <ActionButton onClick={() => navigation("/transaction")} fullWidth variant="contained">
+              Шилжүүлэх
             </ActionButton>
           </Stack>
           <HistoryButton
@@ -148,7 +183,7 @@ const RewardsCard = () => {
             variant="contained"
             startIcon={<MdHistory />}
           >
-            Transaction History
+            Хуулга
           </HistoryButton>
         </Box>
       </Box>

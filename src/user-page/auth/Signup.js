@@ -1,413 +1,277 @@
-import * as React from "react";
-import { AppProvider } from "@toolpad/core/AppProvider";
-import { useTheme } from "@mui/material/styles";
-import { auth, firestore } from "../../refrence/storeConfig";
+import React, { useState } from "react";
 import {
-  getAuth,
-  setPersistence,
-  browserLocalPersistence,
-  createUserWithEmailAndPassword,
-} from "firebase/auth";
-import { getFirestore, doc, setDoc } from "firebase/firestore";
-import {
-  CircularProgress,
-  Snackbar,
-  Alert,
-  TextField,
+  Box,
   Button,
   Card,
-  Typography,
-  InputAdornment,
+  CardContent,
+  Container,
   IconButton,
+  InputAdornment,
+  Stepper,
+  Step,
+  StepLabel,
+  TextField,
+  Typography,
+  useTheme,
+  styled,
+  CircularProgress,
 } from "@mui/material";
-import { useNavigate } from "react-router-dom";
-import BadgeIcon from "@mui/icons-material/Badge";
-import BadgeOutlinedIcon from "@mui/icons-material/BadgeOutlined";
-import EmailIcon from "@mui/icons-material/Email";
-import KeyIcon from "@mui/icons-material/Key";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-const BRANDING = {
-  logo: (
-    <img
-      src="https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/789456.png?alt=media&token=f8572a7a-cf71-4de3-908d-66da285897a3"
-      alt="MUI logo"
-      style={{ height: 120 }}
-    />
-  ),
-};
+import { MdPhone, MdVisibility, MdVisibilityOff } from "react-icons/md";
+import { motion } from "framer-motion";
+import { useNavigate } from "react-router-dom"; // Import react-router-dom for navigation
 
-export default function BrandingSignUpPage() {
+const StyledCard = styled(Card)(({ theme }) => ({
+  background: "rgba(255, 255, 255, 0.9)",
+  borderRadius: 16,
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.1)",
+  padding: theme.spacing(4),
+  maxWidth: 450,
+  width: "100%",
+}));
+
+const Background = styled(Box)({
+  background: "#1976d2",
+  minHeight: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "20px",
+});
+
+const RegisterStepper = () => {
   const theme = useTheme();
-  const [firstName, setFirstName] = React.useState("");
-  const [lastName, setLastName] = React.useState("");
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [confirmPassword, setConfirmPassword] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState("");
-  const [emailError, setEmailError] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState("");
-  const [confirmPasswordError, setConfirmPasswordError] = React.useState("");
-  const [firstNameError, setFirstNameError] = React.useState("");
-  const [lastNameError, setLastNameError] = React.useState("");
-  const [passwordVisible, setPasswordVisible] = React.useState(false);
-  const navigation = useNavigate();
+  const navigate = useNavigate(); // Use the navigate function to navigate between pages
+  const [activeStep, setActiveStep] = useState(0);
+  const [phone, setPhone] = useState("");
+  const [otp, setOtp] = useState("");
+  const [otpSent, setOtpSent] = useState(false);
+  const [formData, setFormData] = useState({
+    firstName: "",
+    lastName: "",
+    registerNumber: "",
+  });
+  const [loading, setLoading] = useState(false);
+  const [errors, setErrors] = useState({});
 
-  const signUp = async ({ firstName, lastName, email, password }) => {
-    if (!firstName || !lastName || !email || !password || !confirmPassword) {
-      setError("All fields are required.");
-      return;
+  const steps = ["Phone Number", "OTP Confirmation", "User Details"];
+
+  const handleNext = () => {
+    if (activeStep === 0) {
+      // Validate phone number
+      if (!phone || phone.length !== 8) {
+        setErrors({ phone: "Утасны дугаар 8 оронтой байх ёстой" });
+        return;
+      }
+      setErrors({});
+      setOtpSent(true);
+    } else if (activeStep === 1) {
+      // Validate OTP
+      if (!otp || otp.length !== 6) {
+        setErrors({ otp: "OTP 6 оронтой байх ёстой" });
+        return;
+      }
+      setErrors({});
+    } else if (activeStep === 2) {
+      // Validate user details
+      if (!formData.firstName || !formData.lastName || !formData.registerNumber) {
+        setErrors({ userDetails: "Бүх талбарыг бөглөнө үү" });
+        return;
+      }
+      setErrors({});
+      console.log("Registration successful:", { phone, otp, ...formData });
+      // If registration is successful, navigate to the login page
+      navigate("/login");
     }
-
-    if (password !== confirmPassword) {
-      setConfirmPasswordError("Passwords do not match.");
-      return;
-    }
-
-    setLoading(true);
-
-    try {
-      // Set persistence to local storage (optional)
-      await setPersistence(auth, browserLocalPersistence);
-      // Create a new user with email and password
-      const userCredential = await createUserWithEmailAndPassword(
-        auth,
-        email,
-        password
-      );
-
-      console.log("User signed up successfully:", userCredential.user);
-
-      const db = getFirestore();
-      const userRef = doc(db, "users", userCredential.user.uid); // Use the UID as the document ID
-      // Set user data in Firestore
-      await setDoc(userRef, {
-        firstName,
-        lastName,
-        email,
-        createdAt: new Date(),
-        role: "user",
-      });
-
-      console.log("User data saved to Firestore");
-      // Optionally: You could save the user's first and last name in the database (Firestore, Realtime Database, etc.)
-      // Example: firebase.firestore().collection('users').doc(userCredential.user.uid).set({ firstName, lastName });
-
-      // Navigate to the home page after successful signup
-      
-    } catch (error) {
-      // Provide a more user-friendly error message
-      const errorCode = error.code;
-      const errorMessage =
-        errorCode === "auth/email-already-in-use"
-          ? "This email is already in use."
-          : errorCode === "auth/invalid-email"
-            ? "Invalid email format."
-            : "Signup failed. Please try again.";
-
-      setError(errorMessage);
-      console.error("Signup error:", error);
-    } finally {
-      setLoading(false);
-    }
+    setActiveStep((prevStep) => prevStep + 1);
   };
 
-  const handleFirstNameChange = (e) => {
-    setFirstName(e.target.value);
-    setFirstNameError(""); // Clear error when user starts typing
-  };
-
-  const handleLastNameChange = (e) => {
-    setLastName(e.target.value);
-    setLastNameError(""); // Clear error when user starts typing
-  };
-
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    setEmailError(""); // Clear error when user starts typing
-  };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-    setPasswordError(""); // Clear error when user starts typing
-  };
-
-  const handleConfirmPasswordChange = (e) => {
-    setConfirmPassword(e.target.value);
-    setConfirmPasswordError(""); // Clear error when user starts typing
-  };
-
-  const isEmailValid = () => {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailPattern.test(email);
-  };
-  const togglePasswordVisibility = () => {
-    setPasswordVisible((prevState) => !prevState);
-  };
-  const isPasswordValid = (password) => {
-    return password.length >= 6; // You can extend this check to require digits or special characters
+  const handleBack = () => {
+    setActiveStep((prevStep) => prevStep - 1);
   };
 
   return (
-    <AppProvider branding={BRANDING} theme={theme}>
-      <div
-        style={{
-          display: "flex",
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          width: "100%",
-          padding: "16px",
-          boxSizing: "border-box",
-          background: "#f4f4f4",
-        }}
-      >
-        {/* Card with Shadow */}
-        <Card
-          elevation={10}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            maxWidth: "400px",
-            padding: "24px",
-            boxSizing: "border-box",
-            backgroundColor: "#fff",
-            borderRadius: "8px",
-          }}
+    <Background>
+      <Container component="main" maxWidth="xs">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.5 }}
         >
-          {/* Branding Section */}
-          <div
-            style={{
-              marginBottom: "24px",
-              textAlign: "center",
-              fontSize: "24px",
-              fontWeight: "bold",
-            }}
-          >
-            {BRANDING.logo}
-            <div>{BRANDING.title}</div>
-          </div>
+          <StyledCard>
+            <CardContent>
+              <Box display="flex" flexDirection="column" alignItems="center">
+                <img
+                  src="https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/789456.png?alt=media&token=f8572a7a-cf71-4de3-908d-66da285897a3"
+                  style={{
+                    width: 150,
+                    height: 100,
+                  }}
+                />
+                <Typography
+                  component="h1"
+                  variant="h4"
+                  gutterBottom
+                  sx={{ fontWeight: 700 }}
+                >
+                  Бүртгүүлэх
+                </Typography>
 
-          {/* Title */}
-          <Typography
-            variant="h5"
-            component="div"
-            style={{
-              marginBottom: "16px",
-              fontWeight: "bold",
-              textAlign: "center",
-              color: "#1769aa",
-            }}
-          >
-            Бүртгүүлэх
-          </Typography>
+                <Stepper activeStep={activeStep} alternativeLabel>
+                  {steps.map((label) => (
+                    <Step key={label}>
+                      <StepLabel>{label}</StepLabel>
+                    </Step>
+                  ))}
+                </Stepper>
 
-          {/* Name, Email, and Password Fields */}
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              gap: "16px",
-            }}
-          >
-            <TextField
-              label="Овог"
-              variant="outlined"
-              value={lastName}
-              placeholder="Овог"
-              onChange={handleLastNameChange}
-              fullWidth
-              required
-              inputProps={{
-                style: { fontSize: "14px", padding: "12px" },
-              }}
-              style={{ backgroundColor: "#fff" }}
-              error={!!lastNameError}
-              helperText={lastNameError}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <BadgeIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <TextField
-              label="Нэр"
-              variant="outlined"
-              value={firstName}
-              onChange={handleFirstNameChange}
-              fullWidth
-              required
-              placeholder="Нэр"
-              inputProps={{
-                style: { fontSize: "14px", padding: "12px" },
-              }}
-              style={{ backgroundColor: "#fff" }}
-              error={!!firstNameError}
-              helperText={firstNameError}
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <BadgeOutlinedIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
+                <Box sx={{ mt: 3, width: "100%" }}>
+                  {activeStep === 0 && (
+                    <Box>
+                      <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="phone"
+                        label="Утас"
+                        name="phone"
+                        placeholder="Утас"
+                        autoComplete="tel"
+                        autoFocus
+                        value={phone}
+                        onChange={(e) => setPhone(e.target.value)}
+                        error={!!errors.phone}
+                        helperText={errors.phone}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <MdPhone />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3 }}
+                        onClick={handleNext}
+                      >
+                        {loading ? <CircularProgress size={24} /> : "OTP Илгээх"}
+                      </Button>
+                    </Box>
+                  )}
 
-            <TextField
-              label="И-мэйл хаяг"
-              variant="outlined"
-              value={email}
-              onChange={handleEmailChange}
-              placeholder="Жишээ: example@gmail.com"
-              fullWidth
-              required
-              autoFocus
-              inputProps={{
-                style: { fontSize: "14px", padding: "12px" },
-              }}
-              style={{ backgroundColor: "#fff" }}
-              error={!!emailError || (email && !isEmailValid())}
-              helperText={
-                emailError ||
-                (email && !isEmailValid() && "N-мэйл алдаатай байна")
-              }
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <TextField
-              label="Нууц үг"
-              variant="outlined"
-              type={passwordVisible ? "text" : "password"} // Toggle between text and password
-              value={password}
-              onChange={handlePasswordChange}
-              fullWidth
-              placeholder="Нууц үг"
-              required
-              inputProps={{
-                style: { fontSize: "14px", padding: "12px" },
-              }}
-              style={{ backgroundColor: "#fff" }}
-              error={!!passwordError || !isPasswordValid(password)}
-              helperText={
-                passwordError || (password && !isPasswordValid(password))
-              }
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={togglePasswordVisibility}
-                      edge="end"
-                    >
-                      {passwordVisible ? (
-                        <VisibilityOffIcon />
-                      ) : (
-                        <VisibilityIcon />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <KeyIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <TextField
-              label="Нууц үг баталгаажуулах"
-              variant="outlined"
-              type={passwordVisible ? "text" : "password"} // Toggle between text and password
-              value={confirmPassword}
-              onChange={handleConfirmPasswordChange}
-              fullWidth
-              placeholder="Нууц үг"
-              required
-              inputProps={{
-                style: { fontSize: "14px", padding: "12px" },
-              }}
-              style={{ backgroundColor: "#fff" }}
-              error={!!confirmPasswordError || !isPasswordValid(confirmPassword)}
-              helperText={
-                confirmPasswordError || (confirmPassword && !isPasswordValid(confirmPassword))
-              }
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={togglePasswordVisibility}
-                      edge="end"
-                    >
-                      {passwordVisible ? (
-                        <VisibilityOffIcon />
-                      ) : (
-                        <VisibilityIcon />
-                      )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <KeyIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-           
+                  {activeStep === 1 && (
+                    <Box>
+                      <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="otp"
+                        label="OTP"
+                        name="otp"
+                        placeholder="OTP"
+                        value={otp}
+                        onChange={(e) => setOtp(e.target.value)}
+                        error={!!errors.otp}
+                        helperText={errors.otp}
+                      />
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3 }}
+                        onClick={handleNext}
+                      >
+                        {loading ? <CircularProgress size={24} /> : "Баталгаажуулах"}
+                      </Button>
+                    </Box>
+                  )}
 
-            {/* Sign Up Button */}
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => signUp({ firstName, lastName, email, password })}
-              fullWidth
-              disabled={
-                loading ||
-                !isEmailValid() ||
-                password.length < 6 ||
-                confirmPassword !== password
-              }
-              style={{
-                marginTop: "16px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                padding: "12px",
-                transition: "background-color 0.3s ease",
-              }}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Sign Up"
-              )}
-            </Button>
-          </div>
-        </Card>
+                  {activeStep === 2 && (
+                    <Box>
+                      <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="firstName"
+                        label="Нэр"
+                        name="firstName"
+                        value={formData.firstName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, firstName: e.target.value })
+                        }
+                        error={!!errors.userDetails}
+                        helperText={errors.userDetails}
+                      />
+                      <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="lastName"
+                        label="Овог"
+                        name="lastName"
+                        value={formData.lastName}
+                        onChange={(e) =>
+                          setFormData({ ...formData, lastName: e.target.value })
+                        }
+                        error={!!errors.userDetails}
+                        helperText={errors.userDetails}
+                      />
+                      <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="registerNumber"
+                        label="Бүртгэлийн дугаар"
+                        name="registerNumber"
+                        value={formData.registerNumber}
+                        onChange={(e) =>
+                          setFormData({
+                            ...formData,
+                            registerNumber: e.target.value,
+                          })
+                        }
+                        error={!!errors.userDetails}
+                        helperText={errors.userDetails}
+                      />
+                      <Button
+                        fullWidth
+                        variant="contained"
+                        sx={{ mt: 3 }}
+                        onClick={handleNext}
+                      >
+                        Бүртгүүлэх
+                      </Button>
+                    </Box>
+                  )}
 
-        {/* Error Snackbar */}
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError("")}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert onClose={() => setError("")} severity="error">
-            {error}
-          </Alert>
-        </Snackbar>
-      </div>
-    </AppProvider>
+                  <Box sx={{ mt: 2 }}>
+                    {activeStep > 0 && (
+                      <Button variant="text" onClick={handleBack}>
+                        Буцах
+                      </Button>
+                    )}
+                    {activeStep === 3 && (
+                      <Box sx={{ textAlign: "center", mt: 2 }}>
+                        <Typography variant="body2">
+                          Бүртгэл амжилттай дууссан бол{" "}
+                          <Button
+                            variant="text"
+                            onClick={() => navigate("/login")}
+                          >
+                            Нэвтрэх
+                          </Button>
+                        </Typography>
+                      </Box>
+                    )}
+                  </Box>
+                </Box>
+              </Box>
+            </CardContent>
+          </StyledCard>
+        </motion.div>
+      </Container>
+    </Background>
   );
-}
+};
+
+export default RegisterStepper;

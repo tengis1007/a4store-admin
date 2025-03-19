@@ -1,299 +1,394 @@
-import * as React from "react";
-import { AppProvider } from "@toolpad/core/AppProvider";
-import { useTheme } from "@mui/material/styles";
-import { auth, firestore } from "../../refrence/storeConfig";
-import { doc, getDoc} from "firebase/firestore";
-import { signInWithEmailAndPassword } from "firebase/auth";
+import React, { useState, useEffect } from "react";
 import {
-  CircularProgress,
-  Snackbar,
-  Alert,
+  Box,
   Button,
   Card,
+  CardContent,
+  Container,
+  IconButton,
+  InputAdornment,
+  TextField,
   Typography,
+  useTheme,
+  styled,
+  CircularProgress,
+  Switch,
+  FormControlLabel,
 } from "@mui/material";
-import { IconButton, InputAdornment, TextField } from "@mui/material";
-import VisibilityOffIcon from "@mui/icons-material/VisibilityOff";
-import VisibilityIcon from "@mui/icons-material/Visibility";
-import EmailIcon from "@mui/icons-material/Email";
-import KeyIcon from "@mui/icons-material/Key";
-import { useNavigate } from "react-router-dom";
-const BRANDING = {
-  logo: (
-    <img
-      src="https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/789456.png?alt=media&token=f8572a7a-cf71-4de3-908d-66da285897a3"
-      alt="a4 logo"
-      style={{ height: 120 }}
-    />
-  ),
-};
+import {
+  MdPhone,
+  MdEmail,
+  MdVisibility,
+  MdVisibilityOff,
+} from "react-icons/md";
+import { motion } from "framer-motion";
+import { useNavigate, useLocation } from "react-router-dom";
+import { auth, firestore } from "../../refrence/storeConfig";
+import { doc, getDoc } from "firebase/firestore";
+import { signInWithEmailAndPassword,signInWithCustomToken } from "firebase/auth";
+import AlertComponent from "components/alert";
+import axios from "../../axios";
+const StyledCard = styled(Card)(({ theme }) => ({
+  background: "rgba(255, 255, 255, 0.9)",
+  borderRadius: 16,
+  boxShadow: "0 8px 32px rgba(0, 0, 0, 0.5)",
+  padding: theme.spacing(4),
+  maxWidth: 450,
+  width: "100%",
+}));
 
-const isPasswordValid = (password) => {
-  return password.length >= 6; // You can extend this check to require digits or special characters
-};
+const Background = styled(Box)({
+  minHeight: "100vh",
+  display: "flex",
+  alignItems: "center",
+  justifyContent: "center",
+  padding: "20px",
+});
 
-export default function BrandingSignInPage() {
-  const theme = useTheme();
-  const [email, setEmail] = React.useState("");
-  const [password, setPassword] = React.useState("");
-  const [loading, setLoading] = React.useState(false);
-  const [error, setError] = React.useState("");
-  const [emailError, setEmailError] = React.useState("");
-  const [passwordError, setPasswordError] = React.useState("");
-  const [passwordVisible, setPasswordVisible] = React.useState(false);
+const LoginPage = () => {
   const navigation = useNavigate();
+  const [showPassword, setShowPassword] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [useEmail, setUseEmail] = useState(false);
+  const [formData, setFormData] = useState({
+    phone: "",
+    email: "",
+    password: "",
+  });
+  const [errors, setErrors] = useState({});
+  const [alertState, setAlertState] = useState({
+    open: false,
+    message: "",
+    severity: "", // Can be 'success' or 'error'
+  });
+
+  const location = useLocation();
+//  const queryParams = new URLSearchParams(location.search);
+//   const token = queryParams.get("token"); // Extract the token 
+  // Listen to authentication state changes
+  const token = new URLSearchParams(window.location.search).get("token");
+
+  const handleSignIns = async () => {
+    console.log("Token from query params:", token);
+
+    try {
+      const response = await axios.post(
+        "/createCustomToken",
+        {},
+        {
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+        }
+      );
+
+      console.log("Response:", response.data);
+
+      if (response.data.customToken) {
+        const userCredential = await signInWithCustomToken(
+          auth,
+          response.data.customToken
+        );
+        console.log("User Credential:", userCredential);
+        navigation("/wallet");
+      }
+    } catch (error) {
+      console.error("Error creating custom token:", error);
+    }
+  };
+
+  useEffect(() => {
+    if (token) {
+      handleSignIns();
+    }
+  }, [token]);
+
+
+  const handleChange = (e) => {
+    const { name, value } = e.target;
+    setFormData((prev) => ({ ...prev, [name]: value }));
+
+    if (errors[name]) {
+      setErrors((prev) => ({ ...prev, [name]: "" }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors = {};
+    if (!formData.password) {
+      newErrors.password = "Нууц үг оруулна уу";
+    } else if (formData.password.length < 6) {
+      newErrors.password = "Нууц үг дор хаяж 6 тэмдэгттэй байх ёстой";
+    }
+    if (useEmail) {
+      if (!formData.email) {
+        newErrors.email = "Имэйл хаяг оруулна уу";
+      } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) {
+        newErrors.email = "Зөв имэйл хаяг оруулна уу";
+      }
+    } else {
+      if (!formData.phone) {
+        newErrors.phone = "Утасны дугаар оруулна уу";
+      } else if (formData.phone.length !== 8) {
+        newErrors.phone = "Утасны дугаар 8 оронтой байх ёстой";
+      }
+    }
+    setErrors(newErrors);
+
+    return Object.keys(newErrors).length === 0;
+  };
 
   const signIn = async ({ email, password }) => {
     if (!email || !password) {
-      setError("Email and password are required.");
+      setErrors("Email and password are required.");
       return;
     }
     setLoading(true);
-    const mail = `${email}@a4you.com`;
-  
+
     try {
-      const userCredential = await signInWithEmailAndPassword(auth, mail, password);
+      const userCredential = await signInWithEmailAndPassword(
+        auth,
+        email,
+        password
+      );
       const uid = userCredential.user.uid;
-  
+
       // Fetch user data from Firestore
       const userRef = doc(firestore, "users", uid);
       const userSnap = await getDoc(userRef);
-  
-      if (!userSnap.exists()) {  // Fix: Check if the document exists
-        setError("Та бүртгэлгүй байна.");
+
+      if (!userSnap.exists()) {
+        // Fix: Check if the document exists
+        setErrors("Та бүртгэлгүй байна.");
         setLoading(false);
         return;
       }
-  
+
       const userData = userSnap.data(); // Fix: Get the user data correctly
       delete userData.password;
-      console.log("userData",userData);
-      localStorage.setItem("user", JSON.stringify(userData));
+      console.log("userData", userData);
+      const docRef = doc(firestore, "users", uid, "point", "balance");
+      async function fetchPointBalance() {
+        try {
+          const docSnap = await getDoc(docRef);
+
+          if (docSnap.exists()) {
+            const pointBalance = docSnap.data().balance; // Assuming the balance field exists
+            return pointBalance;
+          } else {
+            console.log("No such document!");
+          }
+        } catch (error) {
+          console.error("Error fetching document: ", error);
+        }
+      }
+
+      const pointBalance = await fetchPointBalance();
+      localStorage.setItem(
+        "user",
+        JSON.stringify({ ...userData, id: uid, point: pointBalance })
+      );
       navigation("/wallet");
       // Example: Check user role
-
-  
     } catch (error) {
       const errorCode = error.code;
       let errorMessage = ""; // Define errorMessage
-  
+
       if (errorCode === "auth/user-not-found") {
-        errorMessage = "No user found with this email.";
+        errorMessage = "Бүртгэлгүй хэрэглэгч байна.";
       } else if (errorCode === "auth/wrong-password") {
         errorMessage = "Нууц үг алдаатай байна.";
-      } else if (errorCode === "permission-denied") { // Firestore rule error
-        errorMessage = "You don't have permission to access this resource.";
+      } else if (errorCode === "permission-denied") {
+        // Firestore rule error
+        errorMessage = "Нэвтэрч чадсангүй. Дахин оролдоно уу.";
       } else {
-        errorMessage = "Sign-in failed. Please try again.";
+        errorMessage = "Нэвтэрч чадсангүй. Дахин оролдоно уу.";
       }
-  
-      setError(errorMessage);
+      setAlertState({
+        open: true,
+        message: errorMessage, // Use errorMessage variable here
+        severity: "warning",
+      });
+      setErrors(errorMessage);
       console.log(errorMessage);
-  
     } finally {
       setLoading(false);
     }
   };
-  
 
-  const handleEmailChange = (e) => {
-    setEmail(e.target.value);
-    setEmailError(""); // Clear error when user starts typing
+  const handleSubmit = (e) => {
+    e.preventDefault();
+    if (validateForm()) {
+      if (useEmail) {
+        signIn({ email: formData.email, password: formData.password });
+      } else {
+        const mail = `${formData.phone}@a4you.com`;
+        signIn({ email: mail, password: formData.password });
+      }
+    }
   };
-
-  const handlePasswordChange = (e) => {
-    setPassword(e.target.value);
-    setPasswordError(""); // Clear error when user starts typing
-  };
-
-  const isEmailValid = () => {
-    const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailPattern.test(email);
-  };
-  const togglePasswordVisibility = () => {
-    setPasswordVisible((prevState) => !prevState);
+  const handleCloseAlert = () => {
+    setAlertState((prevState) => ({
+      ...prevState,
+      open: false,
+    }));
   };
   return (
-    <AppProvider branding={BRANDING} theme={theme}>
-      <div
-        style={{
-          display: "flex",
-
-          flexDirection: "column",
-          justifyContent: "center",
-          alignItems: "center",
-          height: "100vh",
-          width: "100%",
-          padding: "16px",
-          boxSizing: "border-box",
-          background: "#f4f4f4",
-        }}
-      >
-        <Card
-          elevation={10}
-          style={{
-            display: "flex",
-            flexDirection: "column",
-            width: "100%",
-            maxWidth: "400px",
-            padding: "24px",
-            boxSizing: "border-box",
-            backgroundColor: "#fff",
-            borderRadius: "8px",
-          }}
-        >
-          <div
-            style={{
-              marginBottom: "24px",
-              textAlign: "center",
-              fontSize: "24px",
-              fontWeight: "bold",
-            }}
+    <>
+      <Background>
+        <Container component="main" maxWidth="xs">
+          <motion.div
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.5 }}
           >
-            {BRANDING.logo}
-            <div>{BRANDING.title}</div>
-          </div>
+            <StyledCard>
+              <CardContent>
+                <Box display="flex" flexDirection="column" alignItems="center">
+                  <img
+                    src="https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/789456.png?alt=media&token=f8572a7a-cf71-4de3-908d-66da285897a3"
+                    style={{
+                      width: 150,
+                      height: 100,
+                    }}
+                  />
+                </Box>
+                <Box display="flex" flexDirection="column" alignItems="center">
+                  <Typography
+                    component="h1"
+                    variant="h5"
+                    gutterBottom
+                    sx={{ fontWeight: 700 }}
+                  >
+                    Тавтай морил
+                  </Typography>
 
-          <Typography
-            variant="h5"
-            component="div"
-            style={{
-              marginBottom: "16px",
-              fontWeight: "bold",
-              textAlign: "center",
-              color: "#1769aa",
-            }}
-          >
-            Нэвтрэх
-          </Typography>
-
-          <div
-            style={{
-              display: "flex",
-              flexDirection: "column",
-              width: "100%",
-              gap: "16px",
-            }}
-          >
-            <TextField
-              label="И-мэйл хаяг"
-              variant="outlined"
-              value={email}
-              onChange={handleEmailChange}
-              placeholder="Жишээ: example@gmail.com"
-              fullWidth
-              required
-              autoFocus
-              inputProps={{
-                style: { fontSize: "14px", padding: "12px" },
-              }}
-              style={{ backgroundColor: "#fff" }}
-              error={!!emailError || (email && !isEmailValid())}
-              helperText={
-                emailError ||
-                (email && !isEmailValid() && "N-мэйл алдаатай байна")
-              }
-              InputProps={{
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <EmailIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-            <TextField
-              label="Нууц үг"
-              variant="outlined"
-              type={passwordVisible ? "text" : "password"} // Toggle between text and password
-              value={password}
-              onChange={handlePasswordChange}
-              fullWidth
-               placeholder="Нууц үг"
-              required
-              inputProps={{
-                style: { fontSize: "14px", padding: "12px" },
-              }}
-              style={{ backgroundColor: "#fff" }}
-              error={!!passwordError || !isPasswordValid(password)}
-              helperText={
-                passwordError || (password && !isPasswordValid(password))
-              }
-              InputProps={{
-                endAdornment: (
-                  <InputAdornment position="end">
-                    <IconButton
-                      aria-label="toggle password visibility"
-                      onClick={togglePasswordVisibility}
-                      edge="end"
+                  <Typography
+                    variant="body2"
+                    color="textSecondary"
+                    gutterBottom
+                  >
+                    Үргэлжлүүлэхийн тулд нэвтэрнэ үү
+                  </Typography>
+                  <FormControlLabel
+                    control={
+                      <Switch
+                        checked={useEmail}
+                        onChange={() => setUseEmail(!useEmail)}
+                      />
+                    }
+                    label={useEmail ? "Имэйлээр нэвтрэх" : "Утсаар нэвтрэх"}
+                  />
+                  <Box
+                    component="form"
+                    onSubmit={handleSubmit}
+                    noValidate
+                    sx={{ mt: 3, width: "100%" }}
+                  >
+                    {useEmail ? (
+                      <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="email"
+                        label="Имэйл"
+                        name="email"
+                        placeholder="Имэйл"
+                        autoComplete="email"
+                        autoFocus
+                        value={formData.email}
+                        onChange={handleChange}
+                        error={!!errors.email}
+                        helperText={errors.email}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <MdEmail />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    ) : (
+                      <TextField
+                        margin="normal"
+                        required
+                        fullWidth
+                        id="phone"
+                        label="Утас"
+                        name="phone"
+                        placeholder="Утас"
+                        autoComplete="tel"
+                        autoFocus
+                        value={formData.phone}
+                        onChange={handleChange}
+                        error={!!errors.phone}
+                        helperText={errors.phone}
+                        InputProps={{
+                          startAdornment: (
+                            <InputAdornment position="start">
+                              <MdPhone />
+                            </InputAdornment>
+                          ),
+                        }}
+                      />
+                    )}
+                    <TextField
+                      margin="normal"
+                      required
+                      fullWidth
+                      name="password"
+                      label="Нууц үг"
+                      type={showPassword ? "text" : "password"}
+                      id="password"
+                      autoComplete="current-password"
+                      value={formData.password}
+                      onChange={handleChange}
+                      error={!!errors.password}
+                      helperText={errors.password}
+                      InputProps={{
+                        endAdornment: (
+                          <InputAdornment position="end">
+                            <IconButton
+                              onClick={() => setShowPassword(!showPassword)}
+                              edge="end"
+                            >
+                              {showPassword ? (
+                                <MdVisibilityOff />
+                              ) : (
+                                <MdVisibility />
+                              )}
+                            </IconButton>
+                          </InputAdornment>
+                        ),
+                      }}
+                    />
+                    <Button
+                      type="submit"
+                      fullWidth
+                      variant="contained"
+                      sx={{ mt: 3, mb: 2, height: 48 }}
                     >
-                      {passwordVisible ? (
-                        <VisibilityOffIcon />
+                      {loading ? (
+                        <CircularProgress size={24} color="inherit" />
                       ) : (
-                        <VisibilityIcon />
+                        "Нэвтрэх"
                       )}
-                    </IconButton>
-                  </InputAdornment>
-                ),
-                startAdornment: (
-                  <InputAdornment position="start">
-                    <KeyIcon />
-                  </InputAdornment>
-                ),
-              }}
-            />
-
-            <Button
-              variant="contained"
-              color="primary"
-              onClick={() => signIn({ email, password })}
-              fullWidth
-              disabled={
-                loading ||  !isPasswordValid(password)
-              }
-              style={{
-                marginTop: "16px",
-                fontSize: "16px",
-                fontWeight: "bold",
-                padding: "12px",
-                transition: "background-color 0.3s ease",
-              }}
-            >
-              {loading ? (
-                <CircularProgress size={24} color="inherit" />
-              ) : (
-                "Нэвтрэх"
-              )}
-            </Button>
-            <Button
-              variant="outlined"
-              color="primary"
-              onClick={() => navigation("/signup")}
-              fullWidth
-              style={{
-                fontWeight: "bold",
-                fontSize: "16px",
-                textAlign: "center",
-                padding: "12px",
-                transition: "background-color 0.3s ease",
-              }}
-            >
-              Бүртгүүлэх
-            </Button>
-          </div>
-        </Card>
-
-        <Snackbar
-          open={!!error}
-          autoHideDuration={6000}
-          onClose={() => setError("")}
-          anchorOrigin={{ vertical: "top", horizontal: "center" }}
-        >
-          <Alert onClose={() => setError("")} severity="error">
-            {error}
-          </Alert>
-        </Snackbar>
-      </div>
-    </AppProvider>
+                    </Button>
+                  </Box>
+                </Box>
+              </CardContent>
+            </StyledCard>
+          </motion.div>
+        </Container>
+      </Background>
+      <AlertComponent
+        open={alertState.open}
+        message={alertState.message}
+        severity={alertState.severity}
+        onClose={handleCloseAlert}
+      />
+    </>
   );
-}
+};
 
+export default LoginPage;
