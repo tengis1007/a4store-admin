@@ -9,10 +9,7 @@ import {
 import { auth, firebase } from "./refrence/storeConfig"; // Use the pre-configured Firebase auth instance
 import { onAuthStateChanged } from "firebase/auth";
 import ProtectedRoute from "./ProtectedRoute";
-import Home from "./user-page/pages/home";
 import Signin from "./user-page/auth/signin";
-import Signup from "./user-page/auth/Signup";
-import CircularProgress from "@mui/material/CircularProgress";
 import AdminStore from "./store-admin-page/StoreAdmin";
 import { ThemeProvider, createTheme, Box } from "@mui/material";
 import CssBaseline from "@mui/material/CssBaseline";
@@ -27,6 +24,7 @@ import Organizations from "./user-page/pages/organizations/organizations";
 import Settings from "./user-page/pages/settings/settings";
 import A4Header from "./a4-admin-page/header";
 import OrgChart from "./user-page/pages/OrgChart/OrgChart";
+import TransactionHistory from "./user-page/pages/wallet/transactionHisory"
 import "./index.css";
 import axios from "./axios";
 const AppContent = () => {
@@ -141,6 +139,16 @@ const AppContent = () => {
                   <Header />
                   <BottomTab />
                   <Transaction />
+                </ProtectedRoute>
+              }
+            />
+                 <Route
+              path="/transaction-history"
+              element={
+                <ProtectedRoute redirectTo="/signin">
+                  <Header />
+                  <BottomTab />
+                  <TransactionHistory />
                 </ProtectedRoute>
               }
             />

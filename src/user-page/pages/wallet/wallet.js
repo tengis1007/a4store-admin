@@ -186,6 +186,7 @@ const RewardsCard = () => {
           </Stack>
           <HistoryButton
             fullWidth
+            onClick={() => navigation("/transaction-history")}
             variant="contained"
             startIcon={<MdHistory />}
           >

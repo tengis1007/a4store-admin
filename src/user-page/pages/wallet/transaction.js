@@ -60,6 +60,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   maxWidth: "600px",
   margin: "2rem auto",
   borderRadius: "12px",
+  marginBottom:"100px"
 }));
 const StyledButton = styled(Button)(({ theme }) => ({
   margin: "1rem 0.5rem",
