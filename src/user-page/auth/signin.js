@@ -28,6 +28,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { signInWithEmailAndPassword,signInWithCustomToken } from "firebase/auth";
 import AlertComponent from "components/alert";
 import axios from "../../axios";
+import { logout } from "./Logout";
 const StyledCard = styled(Card)(({ theme }) => ({
   background: "rgba(255, 255, 255, 0.9)",
   borderRadius: 16,
@@ -62,12 +63,10 @@ const LoginPage = () => {
     severity: "", // Can be 'success' or 'error'
   });
 
-  const location = useLocation();
-//  const queryParams = new URLSearchParams(location.search);
 //   const token = queryParams.get("token"); // Extract the token 
   // Listen to authentication state changes
   const token = new URLSearchParams(window.location.search).get("token");
-
+ const user = auth.currentUser;
   const handleSignIns = async () => {
     console.log("Token from query params:", token);
 
@@ -82,8 +81,8 @@ const LoginPage = () => {
         }
       );
 
-      console.log("Response:", response.data);
-
+            
+  
       if (response.data.customToken) {
         const userCredential = await signInWithCustomToken(
           auth,
