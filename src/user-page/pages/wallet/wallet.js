@@ -1,4 +1,4 @@
-import React, { useState, useEffect} from "react"
+import React, { useState, useEffect } from "react";
 import {
   Card,
   CardContent,
@@ -14,8 +14,9 @@ import { FaCoins } from "react-icons/fa";
 import { MdHistory } from "react-icons/md";
 import Rank from "../rank/rank";
 import { useNavigate } from "react-router-dom";
-import { doc, onSnapshot  } from "firebase/firestore"; // Ensure you're importing firestore methods
-import { auth, firestore } from "refrence/storeConfig"; 
+import { doc, onSnapshot } from "firebase/firestore"; // Ensure you're importing firestore methods
+import { auth, firestore } from "refrence/storeConfig";
+import { FaShoppingCart, FaArrowRight } from "react-icons/fa";
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
   background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",
@@ -81,11 +82,11 @@ const HistoryButton = styled(Button)(({ theme }) => ({
 }));
 
 const RewardsCard = () => {
-  const [balance, setBalance] = useState(null)
-    const navigation = useNavigate();
+  const [balance, setBalance] = useState(null);
+  const navigation = useNavigate();
   const theme = useTheme();
-    const user = auth.currentUser; 
-  
+  const user = auth.currentUser;
+
   const getUserData = () => {
     try {
       const users = localStorage.getItem("user"); // Get the stored data
@@ -106,7 +107,7 @@ const RewardsCard = () => {
     // Subscribe to real-time updates with onSnapshot
     const unsubscribe = onSnapshot(balanceRef, (docSnap) => {
       if (docSnap.exists()) {
-        setBalance(docSnap.data().balance);  // Update state with new balance
+        setBalance(docSnap.data().balance); // Update state with new balance
       } else {
         console.log("No such document!");
         setBalance(null);
@@ -114,7 +115,8 @@ const RewardsCard = () => {
     });
     return () => {
       unsubscribe();
-    }; }, [user.uid]);
+    };
+  }, [user.uid]);
   return (
     <>
       {/* <Rank /> */}
@@ -139,7 +141,7 @@ const RewardsCard = () => {
               Овог нэр
             </Typography>
             <Typography variant="h5" sx={{ mt: 1, fontWeight: 600 }}>
-             {`${userData.lastName} ${userData.firstName}`}
+              {`${userData.lastName} ${userData.firstName}`}
             </Typography>
 
             <PointsWrapper>
@@ -158,7 +160,7 @@ const RewardsCard = () => {
             >
               1 point = $1
             </Typography>
-{/* 
+            {/* 
             <AmountWrapper>
               <Typography variant="body1" sx={{ opacity: 0.8 }}>
                 Багт орох эрх:
@@ -174,7 +176,11 @@ const RewardsCard = () => {
             <ActionButton fullWidth variant="contained">
               Цэнэглэх
             </ActionButton>
-            <ActionButton onClick={() => navigation("/transaction")} fullWidth variant="contained">
+            <ActionButton
+              onClick={() => navigation("/transaction")}
+              fullWidth
+              variant="contained"
+            >
               Шилжүүлэх
             </ActionButton>
           </Stack>
@@ -185,7 +191,22 @@ const RewardsCard = () => {
           >
             Хуулга
           </HistoryButton>
+          <a
+            href="https://a4store.mn/"
+
+          >
+          
+          <HistoryButton
+            fullWidth
+            variant="contained"
+            startIcon={<FaShoppingCart />}
+          >
+            A4STORE
+          </HistoryButton>
+         
+          </a>
         </Box>
+    
       </Box>
     </>
   );
