@@ -51,8 +51,7 @@ const BottomNavigationBar = () => {
 
   const navigationItems = [
     { label: "Хэтэвч", icon: <FaWallet />, ariaLabel: "Open search", navigate: "/wallet" },
-
-    // { label: "Миний", icon: <FaUser />, ariaLabel: "Go to profile", navigate: "/myaccount" },
+    { label: "Миний", icon: <FaUser />, ariaLabel: "Go to profile", navigate: "/myaccount" },
     // { label: "Байгууллага", icon: <GrOrganization />, ariaLabel: "Go to profile", navigate: "/organizations" },
     // { label: "Тохиргоо", icon: <FaCog />, ariaLabel: "Open settings", navigate: "/settings" },
   ];

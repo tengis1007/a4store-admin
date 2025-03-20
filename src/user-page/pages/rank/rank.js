@@ -5,9 +5,9 @@ import { FaUserTie, FaSitemap, FaTimes } from "react-icons/fa";
 import { useNavigate } from "react-router-dom"; // Import useNavigate for routing
 
 const StyledCard = styled(Card)(({ theme }) => ({
-  maxWidth: 600,
-  margin: "20px auto",
-  padding: "20px",
+  width: "90%",
+  maxHeight: "90vh",
+
   transition: "transform 0.2s",
   "&:hover": {
     transform: "translateY(-5px)"
@@ -50,12 +50,11 @@ const UserProfile = () => {
   const navigate = useNavigate(); // Initialize useNavigate
 
   const userData = {
-    name: "John Anderson",
-    rank: "Senior",
-    role: "Technical Lead",
-    department: "Engineering",
-    profileImage: "https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&auto=format&fit=crop&w=500&q=60",
-    organization: "Tech Solutions Inc."
+    name: "Нарангэрэл Тэнгис",
+    rank: "БАТ",
+    role: "Борлуулалтын ахлах төлөөлөгч",
+    phone: "+976 99001122",
+    profileImage: "https://firebasestorage.googleapis.com/v0/b/a4mongolia.appspot.com/o/BAT.png?alt=media&token=4f229a70-291a-4106-834d-eb0999be80f1",
   };
 
   const handleImageError = (e) => {
@@ -80,7 +79,7 @@ const UserProfile = () => {
               />
               <Tooltip title={`${userData.rank} Level Professional`}>
                 <RankBadge level={userData.rank}>
-                  {userData.rank} Level
+                  {userData.rank}
                 </RankBadge>
               </Tooltip>
             </Grid>
@@ -93,7 +92,7 @@ const UserProfile = () => {
                 {userData.role}
               </Typography>
               <Typography variant="body1" color="textSecondary" paragraph>
-                {userData.department} Department • {userData.organization}
+                 Утас: {userData.phone}
               </Typography>
 
               {/* Update the button to navigate to the OrgChart route */}
@@ -102,9 +101,18 @@ const UserProfile = () => {
                 color="primary"
                 startIcon={<FaSitemap />}
                 onClick={handleViewOrgChart} // Use the navigation handler
+                sx={{marginRight:"2px", mt: 2 }}
+              >
+                Багийн бүтэц
+              </Button>
+              <Button
+                variant="contained"
+                color="primary"
+                startIcon={<FaSitemap />}
+                onClick={handleViewOrgChart} // Use the navigation handler
                 sx={{ mt: 2 }}
               >
-                View Org Chart
+                Багт орох
               </Button>
             </Grid>
           </Grid>
