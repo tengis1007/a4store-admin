@@ -70,8 +70,8 @@ const UserHeader = () => {
       return null; // Handle errors gracefully
     }
   };
-
   const userData = getUserData();
+
   return (
     <StyledAppBar position="static">
       <Container maxWidth="xl">
@@ -109,9 +109,12 @@ const UserHeader = () => {
                   sx={{
                     width: 40,
                     height: 40,
-                    marginRight: "10px",
+                    marginRight: "10px",                                 
                   }}
-                />
+                >
+                  {!userData?.avatarUrl &&
+                    `${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
+                </Avatar>
                 {/* User Name */}
                 <Typography
                   variant="subtitle1"
@@ -140,7 +143,7 @@ const UserHeader = () => {
                   horizontal: "right",
                 }}
                 open={Boolean(anchorEl)}
-                onClose={() => handleLogout()} // Ensure menu closes on logout
+                onClose={() => setAnchorEl(null)} // Ensure menu closes on logout
                 aria-label="User menu" // Accessibility improvement
               >
                 <MenuItem onClick={handleLogout}>

@@ -17,6 +17,9 @@ import { useNavigate } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore"; // Ensure you're importing firestore methods
 import { auth, firestore } from "refrence/storeConfig";
 import { FaShoppingCart, FaArrowRight } from "react-icons/fa";
+import { MdOutlineSavings } from "react-icons/md";
+import { getUserData } from "../../../utils/functions";
+
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
   background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",
@@ -81,24 +84,25 @@ const HistoryButton = styled(Button)(({ theme }) => ({
   },
 }));
 
+const SavingsButton = styled(Button)(({ theme }) => ({
+  borderRadius: 8,
+  color: "#fff",
+  background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",
+  padding: "8px 24px",
+  fontSize: "0.875rem",
+  textTransform: "none",
+  backgroundColor: "rgba(255, 255, 255, 0.1)",
+  marginTop: 16,
+  "&:hover": {
+    backgroundColor: "rgba(255, 255, 255, 0.2)",
+  },
+}));
+
 const RewardsCard = () => {
   const [balance, setBalance] = useState(null);
   const navigation = useNavigate();
-  const theme = useTheme();
   const user = auth.currentUser;
 
-  const getUserData = () => {
-    try {
-      const users = localStorage.getItem("user"); // Get the stored data
-      if (users) {
-        return JSON.parse(users); // Parse the JSON string into an object
-      }
-      return null; // Return null if no data exists
-    } catch (error) {
-      console.error("Error parsing localStorage.users:", error.message);
-      return null; // Handle errors gracefully
-    }
-  };
   const userData = getUserData();
 
   useEffect(() => {
@@ -158,7 +162,7 @@ const RewardsCard = () => {
               variant="caption"
               sx={{ display: "block", mt: 1, opacity: 0.8 }}
             >
-              1 point = $1
+              1 point = 1₮
             </Typography>
             {/* 
             <AmountWrapper>
@@ -192,22 +196,24 @@ const RewardsCard = () => {
           >
             Хуулга
           </HistoryButton>
-          <a
-            href="https://a4store.mn/"
-
-          >
-          
-          <HistoryButton
+          <SavingsButton
             fullWidth
+            onClick={() => navigation("/savings")}
             variant="contained"
-            startIcon={<FaShoppingCart />}
+            startIcon={<MdOutlineSavings />}
           >
-            A4STORE
-          </HistoryButton>
-         
+            Хадгаламж
+          </SavingsButton>
+          <a href="https://a4store.mn/">
+            <HistoryButton
+              fullWidth
+              variant="contained"
+              startIcon={<FaShoppingCart />}
+            >
+              A4STORE
+            </HistoryButton>
           </a>
         </Box>
-    
       </Box>
     </>
   );

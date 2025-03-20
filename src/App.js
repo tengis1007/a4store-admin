@@ -18,6 +18,7 @@ import { PrimeReactProvider } from "primereact"; // Adjust the import path as ne
 import BottomTab from "./user-page/components/BottomTab";
 import Header from "./user-page/components/HeaderTab";
 import Wallet from "./user-page/pages/wallet/wallet";
+import Savings from "./user-page/pages/savings";
 import Transaction from "./user-page/pages/wallet/transaction";
 import MyAccount from "./user-page/pages/myAccount/myAccount";
 import Organizations from "./user-page/pages/organizations/organizations";
@@ -27,6 +28,7 @@ import OrgChart from "./user-page/pages/OrgChart/OrgChart";
 import TransactionHistory from "./user-page/pages/wallet/transactionHisory"
 import "./index.css";
 import axios from "./axios";
+
 const AppContent = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -34,6 +36,7 @@ const AppContent = () => {
   const location = useLocation();
   const token = new URLSearchParams(window.location.search).get("token");
   // Listen to authentication state changes
+  
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -159,6 +162,16 @@ const AppContent = () => {
                   <Header />
                   <BottomTab />
                   <Wallet />
+                </ProtectedRoute>
+              }
+            />
+            <Route
+              path="/savings"
+              element={
+                <ProtectedRoute redirectTo="/signin">
+                  <Header />
+                  <BottomTab />
+                  <Savings />
                 </ProtectedRoute>
               }
             />

@@ -10,10 +10,9 @@ const ProtectedRoute = ({ children, redirectTo }) => {
   const [errors, setErrors] = useState(null);
   const user = auth.currentUser; // Check if the user is logged in
   const token = new URLSearchParams(window.location.search).get("token");
-  console.log("user",user);
+
   const fetchUserData = async (uid) => {
     try {
-
       const userRef = doc(firestore, "users", uid);
       const userSnap = await getDoc(userRef);
       if (!userSnap.exists()) {

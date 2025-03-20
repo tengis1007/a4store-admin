@@ -152,7 +152,7 @@ const PointTransferStepper = () => {
     setErrors(newErrors);
     return Object.keys(newErrors).length === 0;
   };
-  console.log(formData);
+
   const handleVerifyOtp = async () => {
     try {
       // Retrieve the Authorization token (replace with your actual method of retrieving the token)
