@@ -83,7 +83,19 @@ const DepositCardList = ({ user }) => {
         <CircularProgress />
       </Box>
     );
-  if (error) return <Typography color="error">{error}</Typography>;
+  if (error) {
+    return (
+      <Box
+        sx={{
+          display: "flex",
+          justifyContent: "center",
+          flex: 1,
+        }}
+      >
+        <Typography color="error">{error}</Typography>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ maxWidth: 800, margin: "auto", p: 2 }}>
