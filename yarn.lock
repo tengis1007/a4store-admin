@@ -1528,6 +1528,13 @@
   dependencies:
     regenerator-runtime "^0.14.0"
 
+"@babel/runtime@^7.17.9":
+  version "7.26.10"
+  resolved "https://registry.yarnpkg.com/@babel/runtime/-/runtime-7.26.10.tgz#a07b4d8fa27af131a633d7b3524db803eb4764c2"
+  integrity sha512-2WJMeRQPHKSPemqk/awGrAiuFfzBmOIPXKizAsVhWH9YJqLZ0H+HS4c8loHGgW6utJ3E/ejXQUsiGaQy2NZ9Fw==
+  dependencies:
+    regenerator-runtime "^0.14.0"
+
 "@babel/template@^7.25.9", "@babel/template@^7.26.9", "@babel/template@^7.3.3":
   version "7.26.9"
   resolved "https://registry.yarnpkg.com/@babel/template/-/template-7.26.9.tgz#4577ad3ddf43d194528cff4e1fa6b232fa609bb2"
@@ -5650,6 +5657,11 @@
     "@types/http-errors" "*"
     "@types/node" "*"
     "@types/send" "*"
+
+"@types/signature_pad@^2.3.0":
+  version "2.3.6"
+  resolved "https://registry.yarnpkg.com/@types/signature_pad/-/signature_pad-2.3.6.tgz#8bbd6c8b763d7e2d2f10b95bc3ddab62557a4869"
+  integrity sha512-v3j92gCQJoxomHhd+yaG4Vsf8tRS/XbzWKqDv85UsqjMGy4zhokuwKe4b6vhbgncKkh+thF+gpz6+fypTtnFqQ==
 
 "@types/sockjs@^0.3.33":
   version "0.3.36"
@@ -11287,6 +11299,11 @@ makeerror@1.0.12:
   dependencies:
     tmpl "1.0.5"
 
+markdown-to-jsx@^7.7.4:
+  version "7.7.4"
+  resolved "https://registry.yarnpkg.com/markdown-to-jsx/-/markdown-to-jsx-7.7.4.tgz#507d17c15af72ddf970fca84a95f0243244fcfa9"
+  integrity sha512-1bSfXyBKi+EYS3YY+e0Csuxf8oZ3decdfhOav/Z7Wrk89tjudyL5FOmwZQUoy0/qVXGUl+6Q3s2SWtpDEWITfQ==
+
 marked@4.0.12:
   version "4.0.12"
   resolved "https://registry.yarnpkg.com/marked/-/marked-4.0.12.tgz#2262a4e6fd1afd2f13557726238b69a48b982f7d"
@@ -13023,6 +13040,16 @@ react-scripts@^5.0.1:
   optionalDependencies:
     fsevents "^2.3.2"
 
+react-signature-canvas@^1.1.0-alpha.1:
+  version "1.1.0-alpha.1"
+  resolved "https://registry.yarnpkg.com/react-signature-canvas/-/react-signature-canvas-1.1.0-alpha.1.tgz#676d2a4f57d7d5aa77355bcd4bbd85a292719102"
+  integrity sha512-EtUuy/e7kjYhgBx9EKjKodeaVlU82p4STKYStUfDgn4eJQ3sxnykIDdqhI1Xp8DNLdL3qMiIRdNCvC7mTcQe1w==
+  dependencies:
+    "@babel/runtime" "^7.17.9"
+    "@types/signature_pad" "^2.3.0"
+    signature_pad "^2.3.2"
+    trim-canvas "^0.1.0"
+
 react-transition-group@^4.4.1, react-transition-group@^4.4.5:
   version "4.4.5"
   resolved "https://registry.yarnpkg.com/react-transition-group/-/react-transition-group-4.4.5.tgz#e53d4e3f3344da8521489fbef8f2581d42becdd1"
@@ -13649,6 +13676,11 @@ signal-exit@^4.0.1, signal-exit@^4.1.0:
   version "4.1.0"
   resolved "https://registry.yarnpkg.com/signal-exit/-/signal-exit-4.1.0.tgz#952188c1cbd546070e2dd20d0f41c0ae0530cb04"
   integrity sha512-bzyZ1e88w9O1iNJbKnOlvYTrWPDl46O1bG0D3XInv+9tkPrxrN8jUUTiFlDkkmKWgn1M6CfIA13SuGqOa9Korw==
+
+signature_pad@^2.3.2:
+  version "2.3.2"
+  resolved "https://registry.yarnpkg.com/signature_pad/-/signature_pad-2.3.2.tgz#ca7230021c89cedeead27b33d8d16ff254e5f04a"
+  integrity sha512-peYXLxOsIY6MES2TrRLDiNg2T++8gGbpP2yaC+6Ohtxr+a2dzoaqWosWDY9sWqTAAk6E/TyQO+LJw9zQwyu5kA==
 
 sisteransi@^1.0.5:
   version "1.0.5"
@@ -14409,6 +14441,11 @@ tr46@~0.0.3:
   version "0.0.3"
   resolved "https://registry.yarnpkg.com/tr46/-/tr46-0.0.3.tgz#8184fd347dac9cdc185992f3a6622e14b9d9ab6a"
   integrity sha512-N3WMsuqV66lT30CrXNbEjx4GEwlow3v6rr4mCcv6prnfwhS01rkgyFdjPNBYd9br7LpXV1+Emh01fHnq2Gdgrw==
+
+trim-canvas@^0.1.0:
+  version "0.1.2"
+  resolved "https://registry.yarnpkg.com/trim-canvas/-/trim-canvas-0.1.2.tgz#620457f5fecf564b521d35c5fcd4da58304d6e45"
+  integrity sha512-nd4Ga3iLFV94mdhW9JFMLpQbHUyCQuhFOD71PEAt1NjtMD5wbZctzhX8c3agHNybMR5zXD1XTGoIEWk995E6pQ==
 
 troika-three-text@^0.52.0:
   version "0.52.3"
