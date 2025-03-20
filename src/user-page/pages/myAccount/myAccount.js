@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import {
   Box,
   Container,
@@ -9,25 +9,27 @@ import {
   Typography,
   Button,
   TextField,
-  IconButton,
   Accordion,
   AccordionSummary,
   AccordionDetails,
-  Chip,
   Modal,
   List,
   ListItem,
   ListItemText,
-  ListItemSecondaryAction
+  ListItemSecondaryAction,
+  Tooltip,
+  Pagination,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { FaGithub, FaLinkedin, FaTwitter, FaCamera } from "react-icons/fa";
-import { MdExpandMore, MdEdit, MdWork, MdSchool } from "react-icons/md";
-
+import { FaSitemap } from "react-icons/fa";
+import { MdExpandMore, MdWork } from "react-icons/md";
+import { TbCurrencyTugrik } from "react-icons/tb";
+import { useNavigate } from "react-router-dom";
+import a4axios from "a4axios";
 const StyledModal = styled(Modal)(({ theme }) => ({
   display: "flex",
   alignItems: "center",
-  justifyContent: "center"
+  justifyContent: "center",
 }));
 
 const ModalContent = styled(Box)(({ theme }) => ({
@@ -37,67 +39,70 @@ const ModalContent = styled(Box)(({ theme }) => ({
   maxWidth: 500,
   width: "90%",
   maxHeight: "90vh",
-  overflow: "auto"
+  overflow: "auto",
 }));
-
+const RankBadge = styled(Box)(({ level }) => ({
+  padding: "4px 12px",
+  borderRadius: "15px",
+  display: "inline-block",
+  backgroundColor:
+    level === "Senior" ? "#4caf50" : level === "Mid" ? "#2196f3" : "#ff9800",
+  color: "#fff",
+  fontWeight: "bold",
+  marginBottom: "10px",
+}));
 const UserProfile = () => {
   const [isEditModalOpen, setIsEditModalOpen] = useState(false);
-  const [profileData, setProfileData] = useState({
-    firstName: "Michael",
-    lastName: "Johnson",
-    userId: "MJ789012",
-    email: "michael.johnson@example.com",
-    phone: "+1 (555) 123-4567",
-    occupation: "Senior Software Engineer",
-    bankName: "Chase Bank",
-    accountId: "****5678",
-    avatar: "https://images.unsplash.com/photo-1599566150163-29194dcaad36",
-    address: "123 Tech Street, Silicon Valley, CA 94025",
-    department: "Engineering",
-    employeeId: "EMP-2023-001",
-    joiningDate: "2020-01-15",
-    designation: "Tech Lead",
-    purchaseHistory: [
-      {
-        id: 1,
-        item: "Premium Subscription",
-        date: "2023-12-01",
-        amount: "$49.99"
-      },
-      {
-        id: 2,
-        item: "Course Bundle",
-        date: "2023-11-15",
-        amount: "$199.99"
+  const [loading, setLoading] = useState(false);
+  const [profileData, setProfileData] = useState(null);
+  const [page, setPage] = useState(1);
+  const itemsPerPage = 5;
+
+  // Calculate the total number of pages
+  const totalPages = Math.ceil(profileData?.userInfo?.length / itemsPerPage);
+
+  // Get the data for the current page
+  const paginatedData = profileData?.userInfo?.slice(
+    (page - 1) * itemsPerPage,
+    page * itemsPerPage
+  );
+
+  const handlePageChange = (event, value) => {
+    setPage(value);
+  };
+  useEffect(() => {
+    const fetchUserInfo = async () => {
+      setLoading(true);
+      const userPhone = localStorage.getItem("user");
+      let phoneNumber = null;
+      // Check if the data exists
+      if (userPhone) {
+        // Parse the JSON string into an object
+        const user = JSON.parse(userPhone);
+        // Access the phone property and convert it to a number
+        phoneNumber = Number(user.phone);
+        console.log("Phone number:", phoneNumber);
+      } else {
+        console.log("No user data found in localStorage.");
       }
-    ],
-    experience: [
-      {
-        company: "Tech Corp",
-        position: "Senior Developer",
-        duration: "2020 - Present"
-      },
-      {
-        company: "Innovation Labs",
-        position: "Full Stack Developer",
-        duration: "2018 - 2020"
+      try {
+        const response = await a4axios.post(
+          "/userInfo",
+          { phoneNumber } // Sending phoneNumber in request body
+        );
+        console.log("response", response.data);
+        setProfileData(response.data);
+        setLoading(false);
+      } catch (err) {
+        console.log(err.message);
+      } finally {
+        setLoading(false);
       }
-    ],
-    education: [
-      {
-        institution: "University of Technology",
-        degree: "Master's in Computer Science",
-        year: "2018"
-      }
-    ],
-    skills: ["React", "Node.js", "Python", "AWS", "Docker"],
-    certifications: ["AWS Certified Developer", "Google Cloud Professional"],
-    social: {
-      github: "github.com/michaeljohnson",
-      linkedin: "linkedin.com/in/michaeljohnson",
-      twitter: "twitter.com/michaeljohnson"
-    }
-  });
+    };
+
+    fetchUserInfo();
+  }, []);
+  const navigate = useNavigate(); // Initialize useNavigate
 
   const handleEditProfile = () => {
     setIsEditModalOpen(true);
@@ -117,36 +122,134 @@ const UserProfile = () => {
       reader.readAsDataURL(file);
     }
   };
-
+  const handleViewOrgChart = () => {
+    // Navigate to the "OrgChart" route
+    // navigate("/orgchart");
+  };
+  console.log(profileData);
   const PaymentHistory = () => (
     <Grid item xs={12}>
       <Accordion>
         <AccordionSummary expandIcon={<MdExpandMore />}>
-          <Typography variant="h6" sx={{ display: "flex", alignItems: "center" }}>
-            Payment History
+          <Typography
+            variant="h6"
+            sx={{ display: "flex", alignItems: "center" }}
+          >
+            <TbCurrencyTugrik sx={{ mr: 2 }} /> Гүйлгээний түүх
           </Typography>
         </AccordionSummary>
         <AccordionDetails>
           <List>
-            {profileData.purchaseHistory.map((purchase) => (
-              <ListItem key={purchase.id} divider>
-                <ListItemText
-                  primary={purchase.item}
-                  secondary={purchase.date}
-                />
-                <ListItemSecondaryAction>
-                  <Typography variant="subtitle1" color="primary">
-                    {purchase.amount}
-                  </Typography>
-                </ListItemSecondaryAction>
-              </ListItem>
-            ))}
+            {profileData &&
+            profileData.statements &&
+            profileData.statements.length > 0 ? (
+              profileData.statements.map((statement) => (
+                <ListItem key={statement.id} divider>
+                  <ListItemText
+                    primary={statement.tranDesc}
+                    secondary={statement.tranDate}
+                  />
+                  <ListItemSecondaryAction>
+                    <Typography variant="subtitle1" color="primary">
+                      {statement.tranAmount}
+                    </Typography>
+                  </ListItemSecondaryAction>
+                </ListItem>
+              ))
+            ) : (
+              <Typography color="textSecondary">Мэдээлэл олдсонгүй</Typography>
+            )}
           </List>
         </AccordionDetails>
       </Accordion>
     </Grid>
   );
+  if (loading) {
+    return (
+      <div className="flex items-center justify-center min-h-screen bg-gradient-to-br from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 transition-colors duration-300">
+        <div className="relative flex flex-col items-center justify-center">
+          <div className="relative w-24 h-24">
+            <div className="absolute inset-0 border-4 border-t-transparent border-[#1976d2] dark:border-[#1976d2] rounded-full animate-spin" />
+            <div className="absolute inset-2 border-4 border-t-transparent border-[#1976d2]/80 dark:border-[#1976d2]/80 rounded-full animate-spin-slow" />
+            <div className="absolute inset-4 border-4 border-t-transparent border-[#1976d2]/60 dark:border-[#1976d2]/60 rounded-full animate-spin-slower" />
+          </div>
+        </div>
+        <style jsx>{`
+          @keyframes spin-slow {
+            to {
+              transform: rotate(360deg);
+            }
+          }
+          @keyframes spin-slower {
+            to {
+              transform: rotate(-360deg);
+            }
+          }
+          @keyframes morph {
+            0% {
+              border-radius: 60% 40% 30% 70%/60% 30% 70% 40%;
+            }
+            50% {
+              border-radius: 30% 60% 70% 40%/50% 60% 30% 60%;
+            }
+            100% {
+              border-radius: 60% 40% 30% 70%/60% 30% 70% 40%;
+            }
+          }
+          .animate-spin-slow {
+            animation: spin-slow 3s linear infinite;
+          }
+          .animate-spin-slower {
+            animation: spin-slower 4s linear infinite;
+          }
+          .animate-morph {
+            animation: morph 8s ease-in-out infinite;
+          }
+          .delay-100 {
+            animation-delay: 100ms;
+          }
+          .delay-200 {
+            animation-delay: 200ms;
+          }
+        `}</style>
+      </div>
+    );
+  }
+  if (profileData === null) {
+    return (
+      <div className="max-h-4xl bg-gradient-to-b from-blue-50 to-purple-50 flex items-center justify-center p-4">
+        <div className="max-w-4xl w-full text-center">
+          <div className="relative">
+            <h1 className="text-8xl md:text-9xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-purple-600 animate-pulse mb-8">
+              404
+            </h1>
+          </div>
 
+          <h2 className="text-2xl md:text-3xl font-semibold text-gray-800 mb-4">
+            Уучлаарай, таны мэдээлэл олдсонгүй
+          </h2>
+          <p className="text-gray-600 mb-8">
+            Та дахин оролдоно уу эсвэл админтай холбогдоно уу
+          </p>
+        </div>
+
+        <style jsx>{`
+          @keyframes float {
+            0%,
+            100% {
+              transform: translateY(0);
+            }
+            50% {
+              transform: translateY(-20px);
+            }
+          }
+          .animate-float {
+            animation: float 6s ease-in-out infinite;
+          }
+        `}</style>
+      </div>
+    );
+  }
   return (
     <Container maxWidth="lg" sx={{ py: 4, backgroundColor: "#f5f5f5" }}>
       <Grid container spacing={3}>
@@ -166,32 +269,25 @@ const UserProfile = () => {
                   hidden
                   onChange={handleAvatarChange}
                 />
-                <IconButton
-                  component="label"
-                  htmlFor="avatar-upload"
-                  sx={{
-                    position: "absolute",
-                    bottom: 0,
-                    right: 0,
-                    backgroundColor: "#fff"
-                  }}
-                >
-                  <FaCamera />
-                </IconButton>
+                <Tooltip title={`${profileData.Rank} Level Professional`}>
+                  <RankBadge level={profileData.Rank}>
+                    {profileData.Rank}
+                  </RankBadge>
+                </Tooltip>
               </Box>
               <Typography variant="h5" gutterBottom>
-                {profileData.firstName} {profileData.lastName}
+                {profileData.Name}
               </Typography>
               <Typography variant="body2" color="textSecondary" gutterBottom>
-                User ID: {profileData.userId}
+                Утас: {profileData.Phone}
               </Typography>
               <Button
                 variant="contained"
-                startIcon={<MdEdit />}
-                onClick={handleEditProfile}
+                startIcon={<FaSitemap />}
+                onClick={handleViewOrgChart}
                 sx={{ mt: 2 }}
               >
-                Edit Profile
+                Багийн бүтэц
               </Button>
             </CardContent>
           </Card>
@@ -200,93 +296,64 @@ const UserProfile = () => {
         <Grid item xs={12} md={8}>
           <Grid container spacing={3}>
             <Grid item xs={12}>
-              <Accordion defaultExpanded>
-                <AccordionSummary expandIcon={<MdExpandMore />}>
-                  <Typography variant="h6" sx={{ display: "flex", alignItems: "center" }}>
-                    <MdWork sx={{ mr: 1 }} /> Work Experience
-                  </Typography>
-                </AccordionSummary>
-                <AccordionDetails>
-                  {profileData.experience.map((exp, index) => (
-                    <Box key={index} mb={2}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {exp.position}
-                      </Typography>
-                      <Typography color="textSecondary">
-                        {exp.company} | {exp.duration}
-                      </Typography>
-                    </Box>
-                  ))}
-                </AccordionDetails>
-              </Accordion>
-            </Grid>
-
-            <Grid item xs={12}>
               <Accordion>
                 <AccordionSummary expandIcon={<MdExpandMore />}>
-                  <Typography variant="h6" sx={{ display: "flex", alignItems: "center" }}>
-                    <MdSchool sx={{ mr: 1 }} /> Education
+                  <Typography
+                    variant="h6"
+                    sx={{ display: "flex", alignItems: "center" }}
+                  >
+                    <MdWork sx={{ mr: 2 }} /> Худалдан авалтын түүх
                   </Typography>
                 </AccordionSummary>
                 <AccordionDetails>
-                  {profileData.education.map((edu, index) => (
-                    <Box key={index} mb={2}>
-                      <Typography variant="subtitle1" fontWeight="bold">
-                        {edu.degree}
-                      </Typography>
-                      <Typography color="textSecondary">
-                        {edu.institution} | {edu.year}
-                      </Typography>
+                  {paginatedData?.length > 0 ? (
+                    paginatedData.map((userInfo, id) => (
+                      <Box key={id} mb={2}>
+                        <Typography variant="subtitle1" fontWeight="bold">
+                          {userInfo.ProductName}
+                        </Typography>
+                        <Typography color="textSecondary">
+                          {userInfo.QuantityName} | {userInfo.RankName} |{" "}
+                          {userInfo.timeStamp}
+                        </Typography>
+                        <Typography color="textSecondary">
+                          Огноо:{userInfo.timeStamp}
+                        </Typography>
+                      </Box>
+                    ))
+                  ) : (
+                    <Typography color="textSecondary">
+                      Мэдээлэл олдсонгүй
+                    </Typography>
+                  )}
+                  {/* Pagination Component */}
+                  {totalPages > 1 && (
+                    <Box
+                      sx={{ display: "flex", justifyContent: "center", mt: 3 }}
+                    >
+                      <Pagination
+                        count={totalPages}
+                        page={page}
+                        onChange={handlePageChange}
+                        color="primary"
+                      />
                     </Box>
-                  ))}
+                  )}
                 </AccordionDetails>
               </Accordion>
             </Grid>
 
             <PaymentHistory />
-
-            <Grid item xs={12}>
-              <Card elevation={3}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Skills
-                  </Typography>
-                  <Box sx={{ display: "flex", flexWrap: "wrap", gap: 1 }}>
-                    {profileData.skills.map((skill, index) => (
-                      <Chip key={index} label={skill} />
-                    ))}
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
-
-            <Grid item xs={12}>
-              <Card elevation={3}>
-                <CardContent>
-                  <Typography variant="h6" gutterBottom>
-                    Social Links
-                  </Typography>
-                  <Box sx={{ display: "flex", gap: 2 }}>
-                    <IconButton href={profileData.social.github} target="_blank">
-                      <FaGithub />
-                    </IconButton>
-                    <IconButton href={profileData.social.linkedin} target="_blank">
-                      <FaLinkedin />
-                    </IconButton>
-                    <IconButton href={profileData.social.twitter} target="_blank">
-                      <FaTwitter />
-                    </IconButton>
-                  </Box>
-                </CardContent>
-              </Card>
-            </Grid>
+            <Box sx={{ paddingTop: 15 }}></Box>
           </Grid>
         </Grid>
       </Grid>
 
       <StyledModal open={isEditModalOpen} onClose={handleModalClose}>
         <ModalContent>
-          <Typography variant="h6" gutterBottom>Edit Profile</Typography>
+          <Typography variant="h6" gutterBottom>
+            Edit Profile
+          </Typography>
           <Grid container spacing={2}>
             <Grid item xs={12} sm={6}>
               <TextField
@@ -372,7 +439,9 @@ const UserProfile = () => {
                 fullWidth
                 label="Department"
                 value={profileData.department}
-                onChange={(e) => setProfileData({ ...profileData, department: e.target.value })}
+                onChange={(e) =>
+                  setProfileData({ ...profileData, department: e.target.value })
+                }
               />
             </Grid>
             <Grid item xs={12}>
@@ -388,7 +457,12 @@ const UserProfile = () => {
                 fullWidth
                 label="Designation"
                 value={profileData.designation}
-                onChange={(e) => setProfileData({ ...profileData, designation: e.target.value })}
+                onChange={(e) =>
+                  setProfileData({
+                    ...profileData,
+                    designation: e.target.value,
+                  })
+                }
               />
             </Grid>
             <Grid item xs={12}>
@@ -398,11 +472,15 @@ const UserProfile = () => {
                 multiline
                 rows={2}
                 value={profileData.address}
-                onChange={(e) => setProfileData({ ...profileData, address: e.target.value })}
+                onChange={(e) =>
+                  setProfileData({ ...profileData, address: e.target.value })
+                }
               />
             </Grid>
           </Grid>
-          <Box sx={{ mt: 3, display: "flex", justifyContent: "flex-end", gap: 2 }}>
+          <Box
+            sx={{ mt: 3, display: "flex", justifyContent: "flex-end", gap: 2 }}
+          >
             <Button variant="outlined" onClick={handleModalClose}>
               Cancel
             </Button>

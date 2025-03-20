@@ -12,7 +12,6 @@ import {
 import { styled } from "@mui/system";
 import { FaCoins } from "react-icons/fa";
 import { MdHistory } from "react-icons/md";
-import Rank from "../rank/rank";
 import { useNavigate } from "react-router-dom";
 import { doc, onSnapshot } from "firebase/firestore"; // Ensure you're importing firestore methods
 import { auth, firestore } from "refrence/storeConfig";
@@ -119,7 +118,6 @@ const RewardsCard = () => {
   }, [user.uid]);
   return (
     <>
-      {/* <Rank /> */}
 
       <Box sx={{ margin: "10px", marginBottom: "70px" }}>
         <StyledCard>
@@ -160,7 +158,7 @@ const RewardsCard = () => {
             >
               1 point = $1
             </Typography>
-            {/* 
+            
             <AmountWrapper>
               <Typography variant="body1" sx={{ opacity: 0.8 }}>
                 Багт орох эрх:
@@ -168,7 +166,7 @@ const RewardsCard = () => {
               <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
                 1
               </Typography>
-            </AmountWrapper> */}
+            </AmountWrapper>
           </ContentWrapper>
         </StyledCard>
         <Box sx={{ maxWidth: 400, margin: "auto", mt: 3 }}>
