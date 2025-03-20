@@ -102,7 +102,7 @@ const DepositPoints = () => {
     else {
     setBalance((prev) => prev - amount);
     setOpen(true);
-    // }
+    }
   };
 
   const handleCloseDialog = () => {
@@ -278,6 +278,5 @@ const DepositPoints = () => {
       </Dialog>
     </Box>
   );
-};
-
+  };
 export default DepositPoints;
