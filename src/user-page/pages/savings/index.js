@@ -246,9 +246,9 @@ const DepositPoints = () => {
                 },
               }}
             >
-              <FormControlLabel value="3" control={<Radio />} label="3 сар" />
-              <FormControlLabel value="6" control={<Radio />} label="6 сар" />
-              <FormControlLabel value="12" control={<Radio />} label="12 сар" />
+              <FormControlLabel value="3" control={<Radio />} label="3 сар (3%)" />
+              <FormControlLabel value="6" control={<Radio />} label="6 сар (12%)" />
+              <FormControlLabel value="12" control={<Radio />} label="12 сар (36%)" />
             </RadioGroup>
 
             <Button
