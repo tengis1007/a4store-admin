@@ -76,7 +76,6 @@ const DepositPoints = () => {
   const user = auth.currentUser;
   const userInfoString = localStorage.getItem("user"); // Get the string from localStorage
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null; // Parse JSON
-  
 
   const navigation = useNavigate();
 
@@ -197,6 +196,10 @@ const DepositPoints = () => {
             <Typography variant="h5" sx={{ mt: 1, fontWeight: 600 }}>
               Бонус пойнт үйлчилгээ
             </Typography>
+            <Typography variant="caption" sx={{ mt: 1, fontWeight: 200 }}>
+              Та өөрт байгаа оноогоо 3, 6, 12 сараар хадгалуулж, оруулсан
+              дүнгийн 3%-36% хүртэлх бонус оноо авах боломжтой!
+            </Typography>
             <PointsWrapper>
               <FaCoins size={24} />
               <Typography variant="h4" sx={{ fontWeight: 700 }}>
@@ -246,9 +249,21 @@ const DepositPoints = () => {
                 },
               }}
             >
-              <FormControlLabel value="3" control={<Radio />} label="3 сар (3%)" />
-              <FormControlLabel value="6" control={<Radio />} label="6 сар (12%)" />
-              <FormControlLabel value="12" control={<Radio />} label="12 сар (36%)" />
+              <FormControlLabel
+                value="3"
+                control={<Radio />}
+                label="3 сар (3%)"
+              />
+              <FormControlLabel
+                value="6"
+                control={<Radio />}
+                label="6 сар (12%)"
+              />
+              <FormControlLabel
+                value="12"
+                control={<Radio />}
+                label="12 сар (36%)"
+              />
             </RadioGroup>
 
             <Button

@@ -199,7 +199,7 @@ const RewardsCard = () => {
             variant="contained"
             startIcon={<MdOutlineSavings />}
           >
-            Хадгаламж
+            Бонус оноо авах
           </SavingsButton>
           <a href="https://a4store.mn/">
             <HistoryButton
