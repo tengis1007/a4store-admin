@@ -295,6 +295,5 @@ const DepositPoints = () => {
       </Dialog>
     </Box>
   );
-};
-
+  };
 export default DepositPoints;
