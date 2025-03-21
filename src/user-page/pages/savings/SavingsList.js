@@ -11,6 +11,11 @@ import {
   Button,
   Chip,
 } from "@mui/material";
+import Dialog from "@mui/material/Dialog";
+import DialogActions from "@mui/material/DialogActions";
+import DialogContent from "@mui/material/DialogContent";
+import DialogContentText from "@mui/material/DialogContentText";
+import DialogTitle from "@mui/material/DialogTitle";
 import dayjs from "dayjs"; // For date formatting
 
 const statusMap = {
@@ -22,15 +27,26 @@ const statusMap = {
 };
 
 const DepositCardList = ({ user }) => {
+  const [open, setOpen] = useState(false);
   const [deposits, setDeposits] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [depositId, setDepositId] = useState(null);
   const userInfoString = localStorage.getItem("user"); // Get the string from localStorage
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null; // Parse JSON
 
   useEffect(() => {
     getDeposits();
   }, []);
+
+  const handleOpen = (value) => {
+    setOpen(true);
+    setDepositId(value);
+  };
+
+  const handleClose = () => {
+    setOpen(false);
+  };
 
   const getDeposits = async () => {
     try {
@@ -50,7 +66,7 @@ const DepositCardList = ({ user }) => {
     }
   };
 
-  const cancelDeposit = async (depositId) => {
+  const cancelDeposit = async () => {
     console.log("depositId", depositId);
     try {
       setLoading(true);
@@ -60,12 +76,14 @@ const DepositCardList = ({ user }) => {
         { headers: { Authorization: `Bearer ${user?.accessToken}` } }
       );
       console.log("result", result.data);
+      handleClose();
       alert("Таны хадгаламж амжилттай цуцлагдлаа.");
       getDeposits();
     } catch (error) {
       console.error("Error cancelling deposit:", error);
       alert("Failed to cancel deposit.");
     } finally {
+
       setLoading(false);
     }
   };
@@ -115,7 +133,7 @@ const DepositCardList = ({ user }) => {
                     Хадгалах хугацаа: {deposit.duration.replace("m", "")} сар
                   </Typography>
                   <Typography variant="body2">
-                    Бонус хэмжээ: {deposit.interestRate}%
+                    Бонус хэмжээ: {deposit.interestRate * 100}%
                   </Typography>
                   <Typography variant="body2">
                     Эхлэх огноо: {dayjs(deposit.startDate).format("YYYY-MM-DD")}
@@ -139,7 +157,7 @@ const DepositCardList = ({ user }) => {
                   {deposit.status === "active" && (
                     <Button
                       size="small"
-                      onClick={() => cancelDeposit(deposit.id)}
+                      onClick={() => handleOpen(deposit.id)}
                       autoFocus
                       disabled={loading} // Disable when loading
                     >
@@ -160,6 +178,29 @@ const DepositCardList = ({ user }) => {
           <Typography>Жагсаалт олдсонгүй.</Typography>
         )}
       </Grid2>
+
+      <Dialog
+        open={open}
+        onClose={handleClose}
+        aria-labelledby="alert-dialog-title"
+        aria-describedby="alert-dialog-description"
+      >
+        <DialogTitle id="alert-dialog-title">
+          Бонусыг цуцлахдаа итгэлтэй байна уу?
+        </DialogTitle>
+        <DialogContent>
+          <DialogContentText id="alert-dialog-description">
+            Энэхүү үйлчилгээг цуцалснаар тухайн хугацаанд олгогдох байсан бонус
+            пойнт хүчингүй болно. Та цуцлахдаа итгэлтэй байна уу?
+          </DialogContentText>
+        </DialogContent>
+        <DialogActions>
+          <Button onClick={handleClose}>Үгүй</Button>
+          <Button onClick={cancelDeposit} autoFocus>
+            Тийм
+          </Button>
+        </DialogActions>
+      </Dialog>
     </Box>
   );
 };

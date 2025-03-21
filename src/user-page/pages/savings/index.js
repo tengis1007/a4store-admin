@@ -76,6 +76,8 @@ const DepositPoints = () => {
   const user = auth.currentUser;
   const userInfoString = localStorage.getItem("user"); // Get the string from localStorage
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null; // Parse JSON
+  
+
   const navigation = useNavigate();
 
   useEffect(() => {
@@ -112,7 +114,9 @@ const DepositPoints = () => {
   };
 
   const handleDeposit = async () => {
-    if (!signature) {
+    if (!selectedTerm) {
+      alert("Хадгалах хугацааг сонгоно уу.");
+    } else if (!signature) {
       alert("Гэрээнд гарын үсэг зураад хадгалах товчийг дарна уу.");
     } else {
       try {
@@ -163,7 +167,7 @@ const DepositPoints = () => {
   return (
     <Box>
       <Box sx={{ margin: "10px", marginBottom: "70px" }}>
-        <Box sx={{ maxWidth: "1170px", margin: "auto", marginBottom: "10px"  }}>
+        <Box sx={{ maxWidth: "1170px", margin: "auto", marginBottom: "10px" }}>
           <IconButton
             edge="start"
             color="inherit"
@@ -188,10 +192,10 @@ const DepositPoints = () => {
           </LogoWrapper>
           <ContentWrapper>
             <Typography variant="subtitle2" sx={{ opacity: 0.8 }}>
-              Гантөмөр Жавхлантөгс
+              {userInfo.lastName} {userInfo.firstName}
             </Typography>
             <Typography variant="h5" sx={{ mt: 1, fontWeight: 600 }}>
-              Хадгалах үйлчилгээ
+              Бонус пойнт үйлчилгээ
             </Typography>
             <PointsWrapper>
               <FaCoins size={24} />
@@ -204,7 +208,7 @@ const DepositPoints = () => {
             </PointsWrapper>
 
             <TextField
-              label="Хадгаламжийн дүн"
+              label="Хадгалах хэмжээ"
               variant="outlined"
               fullWidth
               type="number"
@@ -295,5 +299,5 @@ const DepositPoints = () => {
       </Dialog>
     </Box>
   );
-  };
+};
 export default DepositPoints;

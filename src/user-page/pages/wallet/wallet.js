@@ -120,6 +120,7 @@ const RewardsCard = () => {
       unsubscribe();
     };
   }, [user.uid]);
+
   return (
     <>
       <Box sx={{ margin: "10px", marginBottom: "70px" }}>
@@ -167,7 +168,7 @@ const RewardsCard = () => {
                 Багт орох эрх:
               </Typography>
               <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
-                1
+                {userData.package}
               </Typography>
             </AmountWrapper>
           </ContentWrapper>
