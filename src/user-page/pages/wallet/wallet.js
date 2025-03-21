@@ -100,6 +100,7 @@ const SavingsButton = styled(Button)(({ theme }) => ({
 const RewardsCard = () => {
   const [balance, setBalance] = useState(null);
   const navigation = useNavigate();
+  const [loading , setLoading] = useState(false);
   const user = auth.currentUser;
 
   const userData = getUserData();

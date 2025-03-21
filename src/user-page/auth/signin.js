@@ -47,7 +47,7 @@ const Background = styled(Box)({
 });
 
 const LoginPage = () => {
-  const navigation = useNavigate();
+  const navigation = useNavigate();  
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [useEmail, setUseEmail] = useState(false);
@@ -66,10 +66,11 @@ const LoginPage = () => {
 //   const token = queryParams.get("token"); // Extract the token 
   // Listen to authentication state changes
   const token = new URLSearchParams(window.location.search).get("token");
- const user = auth.currentUser;
+  const user = auth.currentUser;
+
   const handleSignIns = async () => {
     console.log("Token from query params:", token);
-
+    setLoading(true);
     try {
       const response = await axios.post(
         "/createCustomToken",
@@ -79,9 +80,7 @@ const LoginPage = () => {
             Authorization: `Bearer ${token}`,
           },
         }
-      );
-
-            
+      );            
   
       if (response.data.customToken) {
         const userCredential = await signInWithCustomToken(
@@ -93,6 +92,8 @@ const LoginPage = () => {
       }
     } catch (error) {
       console.error("Error creating custom token:", error);
+    } finally {
+      setLoading(false);
     }
   };
 
