@@ -74,14 +74,14 @@ const UserHeader = () => {
 
   return (
     <StyledAppBar position="static">
-      <Container maxWidth="xl">
+      <Container maxWidth="lg">
         <Toolbar disableGutters>
           <LogoContainer>
             <img
               src={"assets/MyLogo-White.png"}
               alt="Credit Card Icon"
               style={{
-                width: "130px",
+                width: "60px",
                 height: "60px",
                 maxWidth: "100%",
                 objectFit: "contain",

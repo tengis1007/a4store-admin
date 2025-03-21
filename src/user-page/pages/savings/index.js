@@ -14,6 +14,7 @@ import {
   DialogActions,
   DialogContent,
   CircularProgress,
+  IconButton,
 } from "@mui/material";
 import { doc, onSnapshot } from "firebase/firestore";
 import { auth, firestore } from "refrence/storeConfig";
@@ -27,6 +28,8 @@ import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
 import axios from "../../../axios";
 import SavingsList from "./SavingsList";
+import { useNavigate } from "react-router-dom";
+import ArrowBackIcon from "@mui/icons-material/ArrowBack";
 
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
@@ -34,7 +37,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   position: "relative",
   overflow: "hidden",
   transition: "transform 0.3s ease-in-out",
-  maxWidth: 400,
+  maxWidth: "1170px",
   margin: "auto",
   "&:hover": {
     transform: "translateY(-4px)",
@@ -73,6 +76,7 @@ const DepositPoints = () => {
   const user = auth.currentUser;
   const userInfoString = localStorage.getItem("user"); // Get the string from localStorage
   const userInfo = userInfoString ? JSON.parse(userInfoString) : null; // Parse JSON
+  const navigation = useNavigate();
 
   useEffect(() => {
     const balanceRef = doc(firestore, "users", user.uid, "point", "balance");
@@ -95,13 +99,11 @@ const DepositPoints = () => {
     const amount = parseInt(depositAmount, 10);
     if (amount < 100000) {
       alert("Хамгийн багадаа 100000 пойнт хадгалах боломжтой.");
-    }
-    else if (amount > balance) {
+    } else if (amount > balance) {
       alert("Таны пойнт баланс хадгаламж үүсгэх дүнгээс их байна.");
-    }
-    else {
-    setBalance((prev) => prev - amount);
-    setOpen(true);
+    } else {
+      setBalance((prev) => prev - amount);
+      setOpen(true);
     }
   };
 
@@ -153,9 +155,24 @@ const DepositPoints = () => {
     }
   };
 
+  const handleBackWallet = () => {
+    // Navigate to the wallet route
+    navigation("/wallet");
+  };
+
   return (
     <Box>
       <Box sx={{ margin: "10px", marginBottom: "70px" }}>
+        <Box sx={{ maxWidth: "1170px", margin: "auto", marginBottom: "10px"  }}>
+          <IconButton
+            edge="start"
+            color="inherit"
+            onClick={handleBackWallet}
+            aria-label="back"
+          >
+            <ArrowBackIcon />
+          </IconButton>
+        </Box>
         <StyledCard>
           <LogoWrapper>
             <img

@@ -22,6 +22,7 @@ import dayjs from "dayjs";
 import { useNavigate } from "react-router-dom";
 import a4axios from "a4axios";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+
 const getDateFilter = (days) =>
   dayjs().subtract(days, "day").format("YYYY-MM-DD");
 
@@ -163,7 +164,7 @@ const PaymentHistory = () => {
   }
   return (
     <Container
-      maxWidth="sm"
+      maxWidth="lg"
       sx={{
         mt: 3,
         p: 2,

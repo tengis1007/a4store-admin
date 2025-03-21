@@ -25,7 +25,7 @@ const StyledCard = styled(Card)(({ theme }) => ({
   position: "relative",
   overflow: "hidden",
   transition: "transform 0.3s ease-in-out",
-  maxWidth: 400,
+  maxWidth: "1170px",
   margin: "auto",
   "&:hover": {
     transform: "translateY(-4px)",
@@ -122,7 +122,6 @@ const RewardsCard = () => {
   }, [user.uid]);
   return (
     <>
-
       <Box sx={{ margin: "10px", marginBottom: "70px" }}>
         <StyledCard>
           <LogoWrapper>
@@ -173,7 +172,7 @@ const RewardsCard = () => {
             </AmountWrapper>
           </ContentWrapper>
         </StyledCard>
-        <Box sx={{ maxWidth: 400, margin: "auto", mt: 3 }}>
+        <Box sx={{ maxWidth: "1170px", margin: "auto", mt: 3 }}>
           <Stack direction="row" spacing={2} sx={{ mt: 3 }}>
             <ActionButton fullWidth variant="contained">
               Цэнэглэх

@@ -31,13 +31,14 @@ import { auth, firestore } from "refrence/storeConfig";
 import { MdOutlineDescription } from "react-icons/md";
 import a4axios from "a4axios";
 import { useNavigate } from "react-router-dom";
+
 const StyledCard = styled(Card)(({ theme }) => ({
   borderRadius: 12,
   background: "linear-gradient(135deg, #0f509e 30%, #1399cd 100%)",
   position: "relative",
   overflow: "hidden",
   transition: "transform 0.3s ease-in-out",
-  maxWidth: 600,
+  maxWidth: "1170px",
   margin: "auto",
   marginBottom: "20px",
   "&:hover": {
@@ -57,7 +58,7 @@ const ContentWrapper = styled(CardContent)({
 });
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: "2rem",
-  maxWidth: "600px",
+  maxWidth: "1170px",
   margin: "2rem auto",
   borderRadius: "12px",
   marginBottom:"100px"
@@ -67,6 +68,7 @@ const StyledButton = styled(Button)(({ theme }) => ({
   minWidth: "120px",
 }));
 const steps = ["Хүлээн авагч", "Шилжүүлэг", "Баталгаажуулалт"];
+
 const PointTransferStepper = () => {
   const [activeStep, setActiveStep] = useState(0);
   const [userData, setUserData] = useState(null);
@@ -86,6 +88,7 @@ const PointTransferStepper = () => {
   const [success, setSuccess] = useState(false);
   const user = auth.currentUser;
   const navigation = useNavigate();
+
   useEffect(() => {
     const storedUserData = localStorage.getItem("user");
 
