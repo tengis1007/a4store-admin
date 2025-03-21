@@ -319,7 +319,11 @@ const Example = () => {
           },
           {
             accessorKey: "isMember",
-            filterVariant: "autocomplete",
+            filterVariant: "select",
+            filterSelectOptions: [
+              { value: true, label: "Гишүүн" },
+              { value: false, label: "Хэрэглэгч" },
+            ],
             header: "Төрөл",
             size: "auto",
             Cell: ({ cell }) => {
@@ -330,7 +334,8 @@ const Example = () => {
                 <span style={{ color: "orange" }}>Хэрэглэгч</span>
               );
             },
-          },
+          }
+          
         ],
       },
     ],

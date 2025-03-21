@@ -262,7 +262,6 @@ const Example = () => {
 
               return (
                 <Grid2 size={{ xs: 1, sm: 1, md: 1 }} key={product.id}>
-                  {" "}
                   {/* Each product in a grid item */}
                   <Card
                     sx={{
@@ -277,17 +276,35 @@ const Example = () => {
                       },
                     }}
                   >
-                    <CardMedia
-                      component="img"
-                      height="40%"
-                      image={thumbnails[0]} // Show first thumbnail
-                      alt={product.title}
+                    <Box
                       sx={{
-                        objectFit: "cover",
+                        height: "40%",
+                        minHeight: "120px",
+                        display: "flex",
+                        alignItems: "center",
+                        justifyContent: "center",
+                        backgroundColor: "grey.200",
                         borderTopLeftRadius: 2,
                         borderTopRightRadius: 2,
                       }}
-                    />
+                    >
+                      {thumbnails[0] ? (
+                        <CardMedia
+                          component="img"
+                          image={thumbnails[0]}
+                          alt={product.title}
+                          sx={{
+                            maxWidth: "100%",
+                            maxHeight: "100%",
+                            objectFit: "contain",
+                          }}
+                        />
+                      ) : (
+                        <Typography variant="body2" color="text.secondary">
+                          No Image Available
+                        </Typography>
+                      )}
+                    </Box>
                     <CardContent sx={{ paddingBottom: 2 }}>
                       <Typography
                         variant="body3"
@@ -309,8 +326,8 @@ const Example = () => {
                         color="text.secondary"
                         sx={{ marginBottom: 1 }}
                       >
-                        <strong>Хямдарсан үнэ:</strong>{" "}
-                        {product.discountedPrice.toLocaleString()} MNT
+                        <strong>Оноо:</strong>{" "}
+                        {product.discountedPrice.toLocaleString()} P
                       </Typography>
                       <Typography variant="body2" color="text.secondary">
                         <strong>Тоо ширхэг:</strong> {product.quantity}
@@ -478,7 +495,6 @@ const Example = () => {
               onSave={handleSave} // Pass the function reference directly, without parentheses
             />
           )}
-          
         </>
       );
     },

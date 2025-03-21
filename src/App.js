@@ -25,10 +25,8 @@ import Organizations from "./user-page/pages/organizations/organizations";
 import Settings from "./user-page/pages/settings/settings";
 import A4Header from "./a4-admin-page/header";
 import OrgChart from "./user-page/pages/OrgChart/OrgChart";
-import TransactionHistory from "./user-page/pages/wallet/transactionHisory"
+import TransactionHistory from "./user-page/pages/wallet/transactionHisory";
 import "./index.css";
-import axios from "./axios";
-
 const AppContent = () => {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -36,7 +34,7 @@ const AppContent = () => {
   const location = useLocation();
   const token = new URLSearchParams(window.location.search).get("token");
   // Listen to authentication state changes
-  
+
   useEffect(() => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
@@ -145,7 +143,7 @@ const AppContent = () => {
                 </ProtectedRoute>
               }
             />
-                 <Route
+            <Route
               path="/transaction-history"
               element={
                 <ProtectedRoute redirectTo="/signin">

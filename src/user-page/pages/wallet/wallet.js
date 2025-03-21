@@ -106,8 +106,6 @@ const RewardsCard = () => {
 
   useEffect(() => {
     const balanceRef = doc(firestore, "users", user.uid, "point", "balance");
-
-    // Subscribe to real-time updates with onSnapshot
     const unsubscribe = onSnapshot(balanceRef, (docSnap) => {
       if (docSnap.exists()) {
         setBalance(docSnap.data().balance); // Update state with new balance
@@ -163,14 +161,14 @@ const RewardsCard = () => {
               1 point = 1₮
             </Typography>
             
-            <AmountWrapper>
+            {/* <AmountWrapper>
               <Typography variant="body1" sx={{ opacity: 0.8 }}>
                 Багт орох эрх:
               </Typography>
               <Typography variant="h6" sx={{ ml: 1, fontWeight: 600 }}>
                 1
               </Typography>
-            </AmountWrapper>
+            </AmountWrapper> */}
           </ContentWrapper>
         </StyledCard>
         <Box sx={{ maxWidth: 400, margin: "auto", mt: 3 }}>
