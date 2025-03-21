@@ -98,7 +98,7 @@ const DepositCardList = ({ user }) => {
   }
 
   return (
-    <Box sx={{ maxWidth: 800, margin: "auto", p: 2 }}>
+    <Box sx={{ maxWidth: "1170px", margin: "auto", p: 2 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
         Хадгалалтын түүх
       </Typography>
