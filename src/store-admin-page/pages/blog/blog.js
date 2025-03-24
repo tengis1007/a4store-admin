@@ -150,7 +150,7 @@ const Blog = () => {
         variant="contained"
         startIcon={<AddIcon />}
       >
-        Add Blog
+        Мэдээ оруулах
       </Button>
       <Container maxWidth="lg" sx={{ py: 6 }}>
         <Grid container spacing={4}>
@@ -217,31 +217,6 @@ const Blog = () => {
           blog={editBlogData}
         />
       )}
-
-      <Modal open={modalOpen} onClose={() => setModalOpen(false)}>
-        <ModalContent>
-          {selectedBlog && (
-            <>
-              <Typography variant="h4" gutterBottom>
-                {selectedBlog.title}
-              </Typography>
-              <CardMedia
-                component="img"
-                height="300"
-                image={selectedBlog.imageURL}
-                alt={selectedBlog.title}
-                sx={{ objectFit: "cover", mb: 2 }}
-              />
-              {/* <Typography variant="body1" gutterBottom>
-                {selectedBlog.content}
-              </Typography>
-              <Typography variant="caption" color="text.secondary">
-                {selectedBlog.timestamp}
-              </Typography> */}
-            </>
-          )}
-        </ModalContent>
-      </Modal>
     </>
   );
 };

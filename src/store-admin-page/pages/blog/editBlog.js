@@ -7,11 +7,14 @@ import {
   TextField,
   Button,
   IconButton,
+  CircularProgress,
+  Snackbar,
+  Alert,
 } from "@mui/material";
 import { doc, updateDoc } from "firebase/firestore";
 import { firestore } from "../../../refrence/storeConfig";
 import { ref, deleteObject, getDownloadURL, uploadBytesResumable } from "firebase/storage";
-import { storage } from "../../../refrence/storeConfig"; // import storage for Firebase Storage
+import { storage } from "../../../refrence/storeConfig";
 import TextEditor from "./TextEditor";
 import { EditorState, convertToRaw } from "draft-js";
 import draftToHtml from "draftjs-to-html";
@@ -24,6 +27,9 @@ const EditBlog = ({ open, onClose, onSave, blog }) => {
     title: "",
     imageUrl: "",
   });
+  const [loading, setLoading] = useState(false); // Loading state for image upload
+  const [uploadProgress, setUploadProgress] = useState(0); // Track upload progress
+  const [error, setError] = useState(null); // Error state
 
   useEffect(() => {
     if (blog) {
@@ -76,6 +82,7 @@ const EditBlog = ({ open, onClose, onSave, blog }) => {
       onClose();
     } catch (error) {
       console.error("Error updating blog:", error);
+      setError("Failed to save blog. Please try again.");
     }
   };
 
@@ -95,30 +102,62 @@ const EditBlog = ({ open, onClose, onSave, blog }) => {
       console.log("Image deleted successfully");
     } catch (error) {
       console.error("Error deleting image:", error);
+      setError("Failed to delete image. Please try again.");
     }
   };
 
   const handleImageUpload = async (e) => {
     const file = e.target.files[0];
-    if (!file) return;
+    if (!file) {
+      console.error("No file selected");
+      return;
+    }
 
-    const storageRef = ref(storage, `images/${file.name}`);
+    // Validate file type
+    if (!file.type.startsWith("image/")) {
+      setError("File is not an image. Please upload a valid image file.");
+      return;
+    }
+
+    // Validate file size (e.g., 5MB limit)
+    const maxSize = 5 * 1024 * 1024; // 5MB
+    if (file.size > maxSize) {
+      setError("File is too large. Maximum size is 5MB.");
+      return;
+    }
+
+    // Proceed with upload
+    setLoading(true);
+    setUploadProgress(0);
+    const storageRef = ref(storage, `blog/${file.name}${Date.now()}`);
     const uploadTask = uploadBytesResumable(storageRef, file);
 
     uploadTask.on(
       "state_changed",
       (snapshot) => {
-        // You can track progress here if you want
+        const progress = (snapshot.bytesTransferred / snapshot.totalBytes) * 100;
+        setUploadProgress(progress);
       },
       (error) => {
         console.error("Error uploading image:", error);
+        setError("Failed to upload image. Please try again.");
+        setLoading(false);
       },
       async () => {
-        const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
-        setFormData({
-          ...formData,
-          imageUrl: downloadURL,
-        });
+        try {
+          const downloadURL = await getDownloadURL(uploadTask.snapshot.ref);
+          console.log("Image uploaded successfully. Download URL:", downloadURL);
+          setFormData({
+            ...formData,
+            imageUrl: downloadURL,
+          });
+        } catch (error) {
+          console.error("Error getting download URL:", error);
+          setError("Failed to get image URL. Please try again.");
+        } finally {
+          setLoading(false);
+          setUploadProgress(0);
+        }
       }
     );
   };
@@ -136,6 +175,7 @@ const EditBlog = ({ open, onClose, onSave, blog }) => {
           onChange={handleChange}
         />
         <TextEditor editorState={editorState} setEditorState={setEditorState} />
+
         {/* Display the current image if it exists */}
         {formData.imageUrl && (
           <div style={{ position: "relative", width: "100%", maxWidth: "200px", margin: "10px 0" }}>
@@ -144,7 +184,7 @@ const EditBlog = ({ open, onClose, onSave, blog }) => {
               alt="Blog"
               style={{
                 width: "100%",
-                objectFit: "cover", // Use cover to ensure the image fills the box without distorting
+                objectFit: "cover",
                 borderRadius: "8px",
               }}
             />
@@ -165,14 +205,22 @@ const EditBlog = ({ open, onClose, onSave, blog }) => {
           </div>
         )}
 
-        {/* Image Upload Button */}
-        <Button variant="outlined" component="label" fullWidth margin="dense">
-          Зураг оруулах
+        {/* Image Upload Button with Loading State */}
+        <Button
+          variant="outlined"
+          component="label"
+          fullWidth
+          margin="dense"
+          disabled={loading}
+          startIcon={loading && <CircularProgress size={20} />}
+        >
+          {loading ? `Uploading... ${Math.round(uploadProgress)}%` : "Зураг оруулах"}
           <input
             type="file"
             hidden
             accept="image/*"
             onChange={handleImageUpload}
+            disabled={loading}
           />
         </Button>
       </DialogContent>
@@ -180,10 +228,21 @@ const EditBlog = ({ open, onClose, onSave, blog }) => {
         <Button onClick={onClose} color="secondary">
           Болих
         </Button>
-        <Button onClick={handleSave} variant="contained" color="primary">
+        <Button onClick={handleSave} disabled={loading} variant="contained" color="primary">
           Хадгалах
         </Button>
       </DialogActions>
+
+      {/* Error Snackbar */}
+      <Snackbar
+        open={!!error}
+        autoHideDuration={6000}
+        onClose={() => setError(null)}
+      >
+        <Alert severity="error" onClose={() => setError(null)}>
+          {error}
+        </Alert>
+      </Snackbar>
     </Dialog>
   );
 };
