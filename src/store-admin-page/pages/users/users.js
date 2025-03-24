@@ -576,6 +576,7 @@ const Example = () => {
       id: user.id,
       Овог: user.lastName,
       Нэр: user.firstName,
+      pointId:user.pointId,
       "И-мэйл": user.email,
       Утас: user.phone,
       Хэтэвч: user.wallets?.[0]?.balance || 0, // Handle undefined wallets
@@ -586,6 +587,7 @@ const Example = () => {
           ) // Keep as Date object
         : "",
       Төрөл: user.isMember ? "Гишүүн" : "Хэрэглэгч",
+      Package: user.package,
     }));
     // Convert the data to a worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);
