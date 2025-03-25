@@ -3,6 +3,8 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import Request from "../mainPage/RequestPage";
+import Members from "../mainPage/MembersPage";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -49,17 +51,13 @@ export default function BasicTabs() {
         >
           <Tab label="Хүсэлтийн бүртгэл" {...a11yProps(0)} />
           <Tab label="Аппликэйшн бүртгэл" {...a11yProps(1)} />
-          <Tab label="Ажилтан бүртгэл" {...a11yProps(1)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-        <div>huselt</div>
+        <Request />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-      <div>app</div>
-      </CustomTabPanel>
-      <CustomTabPanel value={value} index={2}>
-      <div>ajiltan</div>
+        <Members/>
       </CustomTabPanel>
     </Box>
   );

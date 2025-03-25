@@ -570,6 +570,7 @@ const Example = () => {
       </Typography>
     ),
   });
+  
   const handleExport = () => {
     // Convert tableData to an array of objects
     const data = tableData.map((user) => ({
@@ -582,12 +583,11 @@ const Example = () => {
       Хэтэвч: user.wallets?.[0]?.balance || 0, // Handle undefined wallets
       Оноо: user.points?.[0]?.balance || 0, // Handle undefined points
       "Бүртгүүлсэн огноо": user.createdAt
-        ? new Date(
-            user.createdAt.seconds * 1000 + user.createdAt.nanoseconds / 1000000
-          ) // Keep as Date object
+        ? dayjs(user.createdAt.toDate()).format("YYYY-MM-DD HH:mm:ss") // Keep as Date object
         : "",
       Төрөл: user.isMember ? "Гишүүн" : "Хэрэглэгч",
-      Package: user.package,
+      inviteNumber:user.inviteNumber,
+      package: user.package,
     }));
     // Convert the data to a worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);

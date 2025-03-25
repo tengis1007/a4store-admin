@@ -60,6 +60,7 @@ import {
 import News from "./page/mainPage/news";
 import Organizations from "./page/mainPage/Organizations";
 import Product from "./page/mainPage/Product";
+
 const NAVIGATION = [
   {
     kind: "header",
