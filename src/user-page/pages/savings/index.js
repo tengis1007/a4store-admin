@@ -26,7 +26,7 @@ import savings12month from "../../../savings-12month.md";
 import { FaCoins } from "react-icons/fa";
 import useMediaQuery from "@mui/material/useMediaQuery";
 import { useTheme } from "@mui/material/styles";
-import axios from "../../../axios";
+import axios from "../../../storeaxios";
 import SavingsList from "./SavingsList";
 import { useNavigate } from "react-router-dom";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";

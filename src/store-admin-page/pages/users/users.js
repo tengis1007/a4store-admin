@@ -95,7 +95,7 @@ const Example = () => {
           };
         })
       );
-
+      console.log("combinedData", combinedData);
       return combinedData;
     } catch (error) {
       console.error("Error fetching data from Firestore:", error);

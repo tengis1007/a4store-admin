@@ -165,7 +165,6 @@ const ReactAdvancedMaterialTable = () => {
   //DELETE action
   const openDeleteConfirmModal = (row) => {
     if (window.confirm("Та энэ мэдээллийг устгахдаа итгэлтэй байна уу?")) {
-      console.log("inside openDeleteConfirmModal", row);
       deleteUser(row.original.id);
     }
   };
@@ -220,7 +219,6 @@ const ReactAdvancedMaterialTable = () => {
     ],
     onEditingRowSave: handleSaveRequest,
     renderDetailPanel: ({ row }) => {
-      console.log(row.original.Extra[0]);
       return (
         <>
           <Box

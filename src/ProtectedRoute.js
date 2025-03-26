@@ -40,6 +40,7 @@ const ProtectedRoute = ({ children, redirectTo }) => {
       return null;
     }
   };
+  
   useEffect(() => {
     const storedUserData = localStorage.getItem("user");
 

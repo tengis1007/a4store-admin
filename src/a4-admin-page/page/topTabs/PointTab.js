@@ -3,6 +3,9 @@ import PropTypes from "prop-types";
 import Tabs from "@mui/material/Tabs";
 import Tab from "@mui/material/Tab";
 import Box from "@mui/material/Box";
+import Balance from "../mainPage/PointPage/Balance";
+import Deposits from "../mainPage/PointPage/Deposits";
+import Transactions from "../mainPage/PointPage/Transactions";
 
 function CustomTabPanel(props) {
   const { children, value, index, ...other } = props;
@@ -53,13 +56,13 @@ export default function BasicTabs() {
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>
-        <div>Нийт оноо</div>
+        <Balance />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={1}>
-      <div>Оноогоор авсан бүтээгдэхүүн</div>
+        <Transactions />
       </CustomTabPanel>
       <CustomTabPanel value={value} index={2}>
-      <div>Шилжүүлэг</div>
+        <Deposits />
       </CustomTabPanel>
     </Box>
   );

@@ -27,7 +27,7 @@ import { auth, firestore } from "../../refrence/storeConfig";
 import { doc, getDoc } from "firebase/firestore";
 import { signInWithEmailAndPassword,signInWithCustomToken } from "firebase/auth";
 import AlertComponent from "components/alert";
-import axios from "../../axios";
+import axios from "../../storeaxios";
 import { logout } from "./Logout";
 const StyledCard = styled(Card)(({ theme }) => ({
   background: "rgba(255, 255, 255, 0.9)",
