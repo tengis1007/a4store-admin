@@ -50,9 +50,9 @@ export default function BasicTabs() {
           onChange={handleChange}
           aria-label="basic tabs example"
         >
-          <Tab label="Нийт оноо" {...a11yProps(0)} />
-          <Tab label="Оноогоор авсан бүтээгдэхүүн" {...a11yProps(1)} />
+          <Tab label="Баланс" {...a11yProps(0)} />
           <Tab label="Шилжүүлэг" {...a11yProps(1)} />
+          <Tab label="Хадгаламж" {...a11yProps(1)} />
         </Tabs>
       </Box>
       <CustomTabPanel value={value} index={0}>

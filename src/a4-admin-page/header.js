@@ -198,7 +198,7 @@ const demoTheme = createTheme({
 function DemoPageContent({ pathname }) {
   return (
     <div>
-      {pathname === "/dashboard" && "adsa"}
+      {pathname === "/dashboard" && "Dashboard"}
       {pathname === "/member/request" && <RequestTab />}
       {pathname === "/member/Order" && <OrderTab />}
       {pathname === "/member/bonus" && <BonusTab />}
