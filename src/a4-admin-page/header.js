@@ -60,6 +60,7 @@ import {
 import News from "./page/mainPage/news";
 import Organizations from "./page/mainPage/Organizations";
 import Product from "./page/mainPage/Product";
+
 const NAVIGATION = [
   {
     kind: "header",
@@ -197,7 +198,7 @@ const demoTheme = createTheme({
 function DemoPageContent({ pathname }) {
   return (
     <div>
-      {pathname === "/dashboard" && "adsa"}
+      {pathname === "/dashboard" && "Dashboard"}
       {pathname === "/member/request" && <RequestTab />}
       {pathname === "/member/Order" && <OrderTab />}
       {pathname === "/member/bonus" && <BonusTab />}

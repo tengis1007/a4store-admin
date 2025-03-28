@@ -3,6 +3,7 @@ import { getAuth, signInWithEmailAndPassword } from 'firebase/auth';
 import { getFirestore } from 'firebase/firestore';
 import { getDatabase } from 'firebase/database';
 import { getStorage, ref, uploadBytes, getDownloadURL } from "firebase/storage";
+
 const firebaseConfig = {
   apiKey: "AIzaSyAn8nE09zLwpymWCAUAofE7R31ZOIN0GjA",
   authDomain: "a4youandme-store.firebaseapp.com",

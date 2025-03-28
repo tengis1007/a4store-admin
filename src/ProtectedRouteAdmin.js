@@ -20,7 +20,7 @@ const getUserData = () => {
 
 const userData = getUserData();
 console.log("userData",userData.role);
-  if (!userAuth || userData.role!=="admin") {
+  if (!userAuth || !["admin", "system", "finance", "cs", "director", "manager"].includes(userData.role)) {
     return <Navigate to={redirectTo} />;
   }
   return children; // If authenticated, render the protected component (Buy)

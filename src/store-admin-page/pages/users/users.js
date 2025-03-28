@@ -20,7 +20,7 @@ import {
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid } from "@mui/x-data-grid";
-import * as XLSX from 'xlsx';
+import * as XLSX from "xlsx";
 import { AccountCircle, Send } from "@mui/icons-material";
 // Firestore Imports
 import { collection, getDocs, query, where, doc } from "firebase/firestore";
@@ -95,7 +95,7 @@ const Example = () => {
           };
         })
       );
-
+      console.log("combinedData", combinedData);
       return combinedData;
     } catch (error) {
       console.error("Error fetching data from Firestore:", error);
@@ -167,8 +167,8 @@ const Example = () => {
           },
           columnHeaders: {
             // Vibrant blue for headers
-             textAlign: "center", // Center-align text
-  justifyContent: "center", // Center content horizontally
+            textAlign: "center", // Center-align text
+            justifyContent: "center", // Center content horizontally
             fontSize: "14px", // Slightly smaller font for balance
             fontWeight: "bold", // Bold text for emphasis
             borderBottom: "2px solid #1976d2", // Stronger border under headers
@@ -208,6 +208,18 @@ const Example = () => {
         id: "employee",
         header: "Хэрэглэгч",
         columns: [
+          {
+            accessorKey: "id",
+            enableClickToCopy: true,
+            header: "id",
+            size: "auto",
+          },
+          {
+            accessorKey: "pointId",
+            enableClickToCopy: true,
+            header: "pointId",
+            size: "auto",
+          },
           {
             accessorFn: (row) =>
               `${row.lastName ?? ""} ${row.firstName ?? ""}`.trim(),
@@ -334,8 +346,7 @@ const Example = () => {
                 <span style={{ color: "orange" }}>Хэрэглэгч</span>
               );
             },
-          }
-          
+          },
         ],
       },
     ],
@@ -438,6 +449,10 @@ const Example = () => {
     initialState: {
       showColumnFilters: false,
       showGlobalFilter: false,
+      columnInvisibility: {
+        id: true,
+        pointId:true
+      },
       columnPinning: {
         right: ["mrt-row-expand", "mrt-row-select"],
         left: ["mrt-row-actions"],
@@ -556,7 +571,7 @@ const Example = () => {
             color="primary"
             disabled={tableData.length < 1}
             startIcon={<RiFileExcel2Fill />}
-             onClick={handleExport}
+            onClick={handleExport}
             variant="outlined"
           >
             Татаж авах
@@ -570,34 +585,34 @@ const Example = () => {
       </Typography>
     ),
   });
+
   const handleExport = () => {
     // Convert tableData to an array of objects
     const data = tableData.map((user) => ({
       id: user.id,
       Овог: user.lastName,
       Нэр: user.firstName,
-      pointId:user.pointId,
+      pointId: user.pointId,
       "И-мэйл": user.email,
       Утас: user.phone,
       Хэтэвч: user.wallets?.[0]?.balance || 0, // Handle undefined wallets
       Оноо: user.points?.[0]?.balance || 0, // Handle undefined points
       "Бүртгүүлсэн огноо": user.createdAt
-        ? new Date(
-            user.createdAt.seconds * 1000 + user.createdAt.nanoseconds / 1000000
-          ) // Keep as Date object
+        ? dayjs(user.createdAt.toDate()).format("YYYY-MM-DD HH:mm:ss") // Keep as Date object
         : "",
       Төрөл: user.isMember ? "Гишүүн" : "Хэрэглэгч",
-      Package: user.package,
+      inviteNumber: user.inviteNumber,
+      package: user.package,
     }));
     // Convert the data to a worksheet
     const worksheet = XLSX.utils.json_to_sheet(data);
 
     // Create a new workbook and append the worksheet
     const workbook = XLSX.utils.book_new();
-    XLSX.utils.book_append_sheet(workbook, worksheet, 'Sheet1');
+    XLSX.utils.book_append_sheet(workbook, worksheet, "Sheet1");
 
     // Export the workbook as an Excel file
-    XLSX.writeFile(workbook, 'data.xlsx');
+    XLSX.writeFile(workbook, "data.xlsx");
   };
   return <MaterialReactTable table={table} />;
 };

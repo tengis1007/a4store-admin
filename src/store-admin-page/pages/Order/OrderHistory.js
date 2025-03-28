@@ -4,6 +4,9 @@ import {
   useMaterialReactTable,
   MRT_GlobalFilterTextField,
   MRT_ToggleFiltersButton,
+  MRT_ShowHideColumnsButton,
+  MRT_ToggleDensePaddingButton,
+  MRT_ToggleFullScreenButton,
 } from "material-react-table";
 
 // Material UI Imports
@@ -478,10 +481,14 @@ const Example = () => {
               justifyContent: "space-between",
             })}
           >
-            <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <MRT_GlobalFilterTextField table={table} />
-              <MRT_ToggleFiltersButton table={table} />
-            </Box>
+           <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+                 {/* import MRT sub-components */}
+                 <MRT_GlobalFilterTextField table={table} />
+                 <MRT_ToggleFiltersButton table={table} />
+                 <MRT_ShowHideColumnsButton table={table} />
+                 <MRT_ToggleDensePaddingButton table={table} />
+                 <MRT_ToggleFullScreenButton table={table} />
+               </Box>
             <Box sx={{ display: "flex", gap: "0.5rem" }}>
               <Button
                 color="error"
