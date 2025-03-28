@@ -21,6 +21,7 @@ import {
   Paper,
 } from "@mui/material";
 import { AccountCircle, Send } from "@mui/icons-material";
+import InboxIcon from '@mui/icons-material/Inbox';
 import { DataGrid } from "@mui/x-data-grid";
 // Firebase Imports
 import { firestore } from "../../../refrence/storeConfig";
@@ -31,12 +32,14 @@ import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import DeleteOrderHistory from "./DeleteOrderHistory";
+import ReceivedOrder from "./receivedOrder";
 const Example = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
   const [isFetching, setIsFetching] = useState(true);
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [deleteOrder, setDeleteOrder] = useState(null);
+  const [receivedDialog, setReceivedDialog] = useState(false);
 
   useEffect(() => {
     fetchOrdersWithUserDetails();
@@ -94,6 +97,14 @@ const Example = () => {
     setDeleteDialog(true);
     console.log("Dialog Opened: ", order, deleteDialog);
   };
+
+  const receivedDialogHandler = (order) => {
+    setDeleteOrder(order);
+    setReceivedDialog(true);
+  };
+
+
+
   const columns = useMemo(
     () => [
       {
@@ -180,11 +191,18 @@ const Example = () => {
             size: 50,
           },
           {
-            accessorKey: "status",
-            enableClickToCopy: true,
-            filterVariant: "autocomplete",
-            header: "Хүргэлтийн төлөв",
-            size: 100,
+            accessorKey: "received",
+            filterVariant: "select",
+            header: "Хүлээн авсан",
+            size: 30,
+            Cell: ({ cell }) => {
+              const value = cell.getValue();
+              return value ? (
+                <span style={{ color: "green" }}>Тийм</span>
+              ) : (
+                <span style={{ color: "orange" }}>Үгүй</span>
+              );
+            },
           },
         ],
       },
@@ -205,16 +223,19 @@ const Example = () => {
     initialState: {
       showColumnFilters: false,
       showGlobalFilter: false,
-
       columnPinning: {
         right: ["mrt-row-expand", "mrt-row-select"],
         left: ["mrt-row-actions"],
+      },
+      columnVisibility: {
+        // paymentMethod: false
       },
     },
     state: {
       isLoading,
       showProgressBars: isFetching,
     },
+    
     paginationDisplayMode: "pages",
     positionToolbarAlertBanner: "bottom",
     muiSearchTextFieldProps: {
@@ -410,11 +431,11 @@ const Example = () => {
       );
     },
     renderRowActionMenuItems: ({ row }) => [
-      <MenuItem key={0}>
+      <MenuItem key={0} onClick={() => receivedDialogHandler(row.original)}>
         <ListItemIcon>
-          <AccountCircle />
+          <InboxIcon sx={{ color: "green" }}/>
         </ListItemIcon>
-        Засах
+        Хүлээн авсан
       </MenuItem>,
       <MenuItem key={1} onClick={() => deleteOpenDialogHandler(row.original)}>
         <ListItemIcon>
@@ -492,6 +513,13 @@ const Example = () => {
             <DeleteOrderHistory
               order={deleteOrder}
               onClose={() => setDeleteDialog(false)}
+              onSave={handleSave} // Pass the function reference directly, without parentheses
+            />
+          )}
+          {receivedDialog && (
+            <ReceivedOrder
+              order={deleteOrder}
+              onClose={() => setReceivedDialog(false)}
               onSave={handleSave} // Pass the function reference directly, without parentheses
             />
           )}
