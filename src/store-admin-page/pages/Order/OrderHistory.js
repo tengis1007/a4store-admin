@@ -23,9 +23,7 @@ import {
   CardMedia,
   Paper,
 } from "@mui/material";
-import { AccountCircle, Send } from "@mui/icons-material";
-import InboxIcon from '@mui/icons-material/Inbox';
-import { DataGrid } from "@mui/x-data-grid";
+import InboxIcon from "@mui/icons-material/Inbox";
 // Firebase Imports
 import { firestore } from "../../../refrence/storeConfig";
 import { collection, getDocs, doc, getDoc } from "firebase/firestore";
@@ -36,6 +34,7 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import dayjs from "dayjs";
 import DeleteOrderHistory from "./DeleteOrderHistory";
 import ReceivedOrder from "./receivedOrder";
+import TugrikFormatter from "components/TugrikFormatter";
 const Example = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -106,8 +105,6 @@ const Example = () => {
     setReceivedDialog(true);
   };
 
-
-
   const columns = useMemo(
     () => [
       {
@@ -138,32 +135,50 @@ const Example = () => {
           {
             accessorKey: "totalAmount",
             header: "Нийт дүн",
-            size: 200,
+            size: 50,
             Cell: ({ cell }) => (
               <Box
                 component="span"
                 sx={(theme) => ({
                   backgroundColor:
-                    cell.getValue() < 100
-                      ? theme.palette.error.dark
+                    cell.getValue() < 500000
+                      ? theme.palette.success.dark
                       : cell.getValue() >= 500000 && cell.getValue() < 1500000
                         ? theme.palette.warning.dark
-                        : theme.palette.success.dark,
+                        : theme.palette.error.dark,
                   borderRadius: "0.25rem",
                   color: "#fff",
                   maxWidth: "9ch",
                   p: "0.25rem",
                 })}
               >
-                {cell.getValue()?.toLocaleString("MN-mn", {
-                  style: "currency",
-                  currency: "MNT",
-                  minimumFractionDigits: 0,
-                  maximumFractionDigits: 0,
-                })}
+                <Box component="span">{TugrikFormatter(cell.getValue())}</Box>
               </Box>
             ),
           },
+          {
+            accessorKey: "paidPoint",
+            header: "Оноо",
+            size: 50,
+            Cell: ({ cell }) => (
+              <Box component="span">{TugrikFormatter(cell.getValue())}P</Box>
+            ),
+            meta: {
+              type: "number", // Хэрвээ танд type declaration хэрэгтэй бол
+            },
+          },
+          {
+            accessorKey: "paidMNT",
+            header: "Мөнгөн дүн",
+            size: 50,
+            Cell: ({ cell }) => (
+              <Box component="span">{TugrikFormatter(cell.getValue())}₮</Box>
+            ),
+            meta: {
+              type: "number", // Хэрвээ танд type declaration хэрэгтэй бол
+            },
+          },
+
           {
             accessorFn: (row) => {
               if (!row.orderDate) return null; // Check if orderDate is null or undefined
@@ -177,7 +192,7 @@ const Example = () => {
             header: "Захиалга хийсэн огноо",
             filterVariant: "date",
             filterFn: "lessThan",
-            size: 300,
+            size: 250,
             sortingFn: "datetime",
             Cell: ({ cell }) => {
               const value = cell.getValue();
@@ -187,23 +202,66 @@ const Example = () => {
             },
           },
           {
-            accessorKey: "paymentMethod",
-            enableClickToCopy: true,
+            header: "Төлбөр",
+
+            accessorFn: (row) => {
+              if (row.paidPoint) return row.paidPoint;
+              if (row.paidPoint) return row.paidPoint;
+              return "-";
+            },
             filterVariant: "autocomplete",
-            header: "Төлбөрийн хэрэгсэл",
             size: 50,
+            Cell: ({ row }) => {
+              const method = row.original.paymentMethod;
+              let label = "";
+              if (method === "wallet") {
+                if (
+                  row.original.paidPoint === "" ||
+                  row.original.paidPoint === 0
+                ) {
+                  label = "Мөнгө";
+                } else if (
+                  row.original.paidMNT === "" ||
+                  row.original.paidMNT === 0
+                ) {
+                  label = "Оноо";
+                } else {
+                  label = "Хосолсон";
+                }
+              } else if (method === "point") {
+                label = "Оноо";
+              } else {
+                label = "Алдаатай";
+              }
+
+              return <Box component="span">{label}</Box>;
+            },
           },
           {
             accessorKey: "received",
             filterVariant: "select",
             header: "Хүлээн авсан",
-            size: 30,
+            width: 10, // or any value that fits your layout
             Cell: ({ cell }) => {
               const value = cell.getValue();
               return value ? (
                 <span style={{ color: "green" }}>Тийм</span>
               ) : (
                 <span style={{ color: "orange" }}>Үгүй</span>
+              );
+            },
+          },
+          {
+            accessorKey: "delivery",
+            filterVariant: "select",
+            header: "Хүргэлт",
+            size: 10,
+            Cell: ({ cell }) => {
+              const value = cell.getValue();
+              return value ? (
+                <span style={{ color: "red" }}>Хүргэлттэй</span>
+              ) : (
+                <span style={{ color: "green" }}>Ирж авна</span>
               );
             },
           },
@@ -230,15 +288,17 @@ const Example = () => {
         right: ["mrt-row-expand", "mrt-row-select"],
         left: ["mrt-row-actions"],
       },
+      density: "compact",
       columnVisibility: {
-        // paymentMethod: false
+        paidMNT: false,
+        paidPoint: false,
       },
     },
     state: {
       isLoading,
       showProgressBars: isFetching,
     },
-    
+
     paginationDisplayMode: "pages",
     positionToolbarAlertBanner: "bottom",
     muiSearchTextFieldProps: {
@@ -247,7 +307,7 @@ const Example = () => {
     },
     muiPaginationProps: {
       color: "secondary",
-      rowsPerPageOptions: [10, 20, 30],
+      rowsPerPageOptions: [10, 50, 100, 200],
       shape: "rounded",
       variant: "outlined",
     },
@@ -436,7 +496,7 @@ const Example = () => {
     renderRowActionMenuItems: ({ row }) => [
       <MenuItem key={0} onClick={() => receivedDialogHandler(row.original)}>
         <ListItemIcon>
-          <InboxIcon sx={{ color: "green" }}/>
+          <InboxIcon sx={{ color: "green" }} />
         </ListItemIcon>
         Хүлээн авсан
       </MenuItem>,
@@ -481,14 +541,13 @@ const Example = () => {
               justifyContent: "space-between",
             })}
           >
-           <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-                 {/* import MRT sub-components */}
-                 <MRT_GlobalFilterTextField table={table} />
-                 <MRT_ToggleFiltersButton table={table} />
-                 <MRT_ShowHideColumnsButton table={table} />
-                 <MRT_ToggleDensePaddingButton table={table} />
-                 <MRT_ToggleFullScreenButton table={table} />
-               </Box>
+            <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
+              <MRT_GlobalFilterTextField table={table} />
+              <MRT_ToggleFiltersButton table={table} />
+              <MRT_ShowHideColumnsButton table={table} />
+              <MRT_ToggleDensePaddingButton table={table} />
+              <MRT_ToggleFullScreenButton table={table} />
+            </Box>
             <Box sx={{ display: "flex", gap: "0.5rem" }}>
               <Button
                 color="error"

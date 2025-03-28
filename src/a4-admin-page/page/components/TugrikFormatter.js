@@ -4,7 +4,7 @@ const TugrikFormatter = ({ amount }) => {
       minimumFractionDigits: 0, // No decimals
     }).format(amount);
   
-    return `${formattedAmount}P`;
+    return {formattedAmount};
   };
   
   export default TugrikFormatter;
