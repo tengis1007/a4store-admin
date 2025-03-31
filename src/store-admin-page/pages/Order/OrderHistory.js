@@ -2,11 +2,11 @@ import React, { useMemo, useEffect, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
-  MRT_GlobalFilterTextField,
-  MRT_ToggleFiltersButton,
-  MRT_ShowHideColumnsButton,
-  MRT_ToggleDensePaddingButton,
-  MRT_ToggleFullScreenButton,
+  MRT_GlobalFilterTextField as GlobalFilterTextField,
+  MRT_ToggleFiltersButton as ToggleFiltersButton,
+  MRT_ShowHideColumnsButton as ShowHideColumnsButton,
+  MRT_ToggleDensePaddingButton as ToggleDensePaddingButton,
+  MRT_ToggleFullScreenButton as ToggleFullScreenButton,
 } from "material-react-table";
 
 // Material UI Imports
@@ -22,6 +22,7 @@ import {
   Grid2,
   CardMedia,
   Paper,
+  Stack,
 } from "@mui/material";
 import InboxIcon from "@mui/icons-material/Inbox";
 // Firebase Imports
@@ -35,6 +36,8 @@ import dayjs from "dayjs";
 import DeleteOrderHistory from "./DeleteOrderHistory";
 import ReceivedOrder from "./receivedOrder";
 import TugrikFormatter from "components/TugrikFormatter";
+import FileDownloadIcon from "@mui/icons-material/FileDownload";
+import { mkConfig, generateCsv } from "export-to-csv";
 const Example = () => {
   const [data, setData] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -42,9 +45,10 @@ const Example = () => {
   const [deleteDialog, setDeleteDialog] = useState(false);
   const [deleteOrder, setDeleteOrder] = useState(null);
   const [receivedDialog, setReceivedDialog] = useState(false);
-
+const [dataLength , setDataLenght] = useState(0);
   useEffect(() => {
     fetchOrdersWithUserDetails();
+    
   }, [isFetching]);
   const fetchOrdersWithUserDetails = async () => {
     try {
@@ -83,6 +87,7 @@ const Example = () => {
       });
 
       setData(sortedData.reverse());
+   
     } catch (error) {
       console.error("Error fetching orders or user details:", error);
     } finally {
@@ -90,27 +95,92 @@ const Example = () => {
       setIsLoading(false); // Update isLoading to false after loading is complete
     }
   };
+  
   const handleSave = () => {
     setIsFetching(true);
   };
-
+  const csvConfig = mkConfig({
+    fieldSeparator: ",",
+    decimalSeparator: ".",
+    useKeysAsHeaders: true,
+  });
   const deleteOpenDialogHandler = (order) => {
     setDeleteOrder(order);
     setDeleteDialog(true);
-    console.log("Dialog Opened: ", order, deleteDialog);
   };
 
   const receivedDialogHandler = (order) => {
     setDeleteOrder(order);
     setReceivedDialog(true);
   };
-
+  const TotalOrderPrice = useMemo(
+    () =>
+      data.reduce(
+        (totalAmount, currentAmount) => totalAmount + currentAmount.totalAmount,
+        0
+      ),
+    [data]
+  );
+  setDataLenght(data.length+1);
+  const TotalPoint = useMemo(() => {
+    const filteredRows = data.filter(
+      (row) =>
+        row.paidPoint !== "" && row.paidPoint !== 0 && row.paidMNT !== "" && row.paidMNT !== 0
+    );
+    const filterPoint = filteredRows.reduce(
+      (paidPoint, currentAmount) => paidPoint + Number(currentAmount.paidPoint),
+      0
+    );
+    console.log("filterPoint",filterPoint);
+    console.log("filteredRows",filteredRows);
+    const filteredData = data.filter((item) => item.paymentMethod === "point");
+    return (
+      filteredData.reduce(
+        (totalAmount, currentAmount) =>
+          totalAmount + Number(currentAmount.totalAmount),
+        0
+      ) + filterPoint
+    );
+  }, [data]);
+  const TotalMNT = useMemo(() => {
+    const filteredData = data.filter((item) => item.paymentMethod !== "point");
+    return filteredData.reduce(
+      (paidMNT, currentAmount) => paidMNT + Number(currentAmount.paidMNT),
+      0
+    );
+  }, [data]);
+  const TotaldeliveryCount = useMemo(
+    () => {
+      const filterData = data.filter((item) => item.received === false);
+      const realData = filterData.filter((item) => item.delivery === true).length;
+      return realData;
+    },
+    [data]
+  );
+  const TotalreceivedCount = useMemo(
+    () => data.filter((item) => item.received === true).length,
+    [data]
+  );
   const columns = useMemo(
     () => [
       {
         id: "employee",
         header: "Захиалгын түүх",
         columns: [
+          {
+            accessorKey: "id",
+            enableClickToCopy: true,
+            filterVariant: "autocomplete",
+            header: "ID",
+            size: 150,
+          },
+          {
+            accessorKey: "userId",
+            enableClickToCopy: true,
+            filterVariant: "autocomplete",
+            header: "userId",
+            size: 150,
+          },
           {
             accessorFn: (row) =>
               `${row.userDetails?.lastName ?? ""} ${
@@ -119,10 +189,19 @@ const Example = () => {
             id: "name",
             header: "Овог нэр",
             size: 250,
+            filterVariant: "autocomplete",
             Cell: ({ renderedCellValue }) => (
               <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 <span>{renderedCellValue}</span>
               </Box>
+            ),
+            Footer: () => (
+              <Stack>
+                Нийт Захиалга:
+                <Box color="warning.main">
+                  {TugrikFormatter(dataLength)}
+                </Box>
+              </Stack>
             ),
           },
           {
@@ -136,6 +215,21 @@ const Example = () => {
             accessorKey: "totalAmount",
             header: "Нийт дүн",
             size: 50,
+            filterVariant: "range-slider",
+            filterFn: "betweenInclusive",
+            meta: {
+              type: "number", // Хэрвээ танд type declaration хэрэгтэй бол
+            },
+            muiFilterSliderProps: {
+              marks: true,
+              max: 3000000, // Custom max value
+              min: 20000, // Custom min value
+              step: 20_000, // Step size
+              valueLabelFormat: (value) => {
+                const format = TugrikFormatter(value);
+                return format;
+              },
+            },
             Cell: ({ cell }) => (
               <Box
                 component="span"
@@ -155,10 +249,30 @@ const Example = () => {
                 <Box component="span">{TugrikFormatter(cell.getValue())}</Box>
               </Box>
             ),
+            Footer: () => (
+              <Stack>
+                Нийт дүн:
+                <Box color="warning.main">
+                  {TugrikFormatter(Math.round(TotalOrderPrice))}
+                </Box>
+              </Stack>
+            ),
           },
           {
             accessorKey: "paidPoint",
             header: "Оноо",
+            filterVariant: "range-slider",
+            filterFn: "betweenInclusive",
+            muiFilterSliderProps: {
+              marks: true,
+              max: 3000000, // Custom max value
+              min: 20000, // Custom min value
+              step: 20_000, // Step size
+              valueLabelFormat: (value) => {
+                const format = `${TugrikFormatter(value)}P`;
+                return format;
+              },
+            },
             size: 50,
             Cell: ({ cell }) => (
               <Box component="span">{TugrikFormatter(cell.getValue())}P</Box>
@@ -166,10 +280,32 @@ const Example = () => {
             meta: {
               type: "number", // Хэрвээ танд type declaration хэрэгтэй бол
             },
+            Footer: () => (
+              <Stack>
+                Нийт оноо:
+                <Box color="warning.main">
+                  {TugrikFormatter(Math.round(TotalPoint))}
+                </Box>
+              </Stack>
+            ),
           },
           {
             accessorKey: "paidMNT",
             header: "Мөнгөн дүн",
+            filterVariant: "range-slider",
+            filterFn: "betweenInclusive",
+            muiFilterSliderProps: {
+              marks: true,
+              max: 3000000, // Custom max value
+              min: 20000, // Custom min value
+              step: 20_000, // Step size
+              valueLabelFormat: (value) =>
+                value.toLocaleString("mn-MN", {
+                  // Use Mongolian locale
+                  style: "currency",
+                  currency: "MNT", // Mongolian Tugrik
+                }),
+            },
             size: 50,
             Cell: ({ cell }) => (
               <Box component="span">{TugrikFormatter(cell.getValue())}₮</Box>
@@ -177,6 +313,14 @@ const Example = () => {
             meta: {
               type: "number", // Хэрвээ танд type declaration хэрэгтэй бол
             },
+            Footer: () => (
+              <Stack>
+                Нийт мөнгөн дүн:
+                <Box color="warning.main">
+                  {TugrikFormatter(Math.round(TotalMNT))}
+                </Box>
+              </Stack>
+            ),
           },
 
           {
@@ -184,20 +328,19 @@ const Example = () => {
               if (!row.orderDate) return null; // Check if orderDate is null or undefined
 
               const { seconds, nanoseconds } = row.orderDate;
-              return dayjs
-                .unix(seconds)
-                .add(nanoseconds / 1000000, "millisecond");
+              // Convert to a standard JavaScript Date object
+              return new Date(seconds * 1000 + nanoseconds / 1000000);
             },
             id: "orderDate",
             header: "Захиалга хийсэн огноо",
-            filterVariant: "date",
-            filterFn: "lessThan",
+            filterVariant: "date-range",
             size: 250,
             sortingFn: "datetime",
             Cell: ({ cell }) => {
               const value = cell.getValue();
+              // Format the Date object using dayjs for display
               return value
-                ? value.format("YYYY-MM-DD HH:mm:ss")
+                ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
                 : "Огноо байхгүй"; // If value is null, display this text
             },
           },
@@ -206,14 +349,42 @@ const Example = () => {
 
             accessorFn: (row) => {
               if (row.paidPoint) return row.paidPoint;
-              if (row.paidPoint) return row.paidPoint;
               return "-";
             },
-            filterVariant: "autocomplete",
+            filterVariant: "select",
             size: 50,
             Cell: ({ row }) => {
               const method = row.original.paymentMethod;
               let label = "";
+              if (method === "wallet") {
+                if (
+                  row.original.paidPoint === "" ||
+                  row.original.paidPoint === 0
+                  
+                ) {
+                  label = "Мөнгө";
+                } else if (
+                  row.original.paidMNT === "" ||
+                  row.original.paidMNT === 0
+                ) {
+                  label = "Оноо";
+                } else {
+                  label = "Хосолсон";
+                }
+              } else if (method === "point") {
+                label = "Оноо";
+              } else {
+                label = "Алдаатай";
+              }
+
+              return <Box component="span">{label}</Box>;
+            },
+            // Add filter options and logic
+            filterSelectOptions: ["Мөнгө", "Оноо", "Хосолсон", "Алдаатай"],
+            filterFn: (row, columnId, filterValue) => {
+              const method = row.original.paymentMethod;
+              let label = "";
+
               if (method === "wallet") {
                 if (
                   row.original.paidPoint === "" ||
@@ -234,14 +405,19 @@ const Example = () => {
                 label = "Алдаатай";
               }
 
-              return <Box component="span">{label}</Box>;
+              // Compare the computed label with the selected filter value
+              return filterValue === undefined || label === filterValue;
             },
           },
           {
             accessorKey: "received",
             filterVariant: "select",
             header: "Хүлээн авсан",
-            width: 10, // or any value that fits your layout
+            width: 10,
+            filterSelectOptions: [
+              { label: "Тийм", value: "true" },
+              { label: "Үгүй", value: "false" },
+            ],
             Cell: ({ cell }) => {
               const value = cell.getValue();
               return value ? (
@@ -250,12 +426,24 @@ const Example = () => {
                 <span style={{ color: "orange" }}>Үгүй</span>
               );
             },
+            Footer: () => (
+              <Stack>
+                Бараа аваагүй нийт:
+                <Box color="warning.main">
+                  {TugrikFormatter(Math.round(TotalreceivedCount))}
+                </Box>
+              </Stack>
+            ),
           },
           {
             accessorKey: "delivery",
             filterVariant: "select",
+            filterSelectOptions: [
+              { label: "Ирж авна", value: "false" },
+              { label: "Хүргэлттэй", value: "true" },
+            ],
             header: "Хүргэлт",
-            size: 10,
+            size: 150,
             Cell: ({ cell }) => {
               const value = cell.getValue();
               return value ? (
@@ -264,11 +452,35 @@ const Example = () => {
                 <span style={{ color: "green" }}>Ирж авна</span>
               );
             },
+            Footer: () => (
+              <Stack>
+                Хүргэлт хийгдээгүй:
+                <Box color="warning.main">
+                  {TugrikFormatter(Math.round(TotaldeliveryCount))}
+                </Box>
+              </Stack>
+            ),
+          },
+          {
+            accessorKey: "deliveryCost",
+            header: "Хүргэлтийн төлбөр",
+            filterVariant: "range-slider",
+            filterFn: "betweenInclusive",
+            muiFilterSliderProps: {
+              marks: true,
+              max: 3000000, // Custom max value
+              min: 20000, // Custom min value
+              step: 20_000, // Step size
+              valueLabelFormat: (value) => {
+                const format = `${TugrikFormatter(value)}P`;
+                return format;
+              },
+            },
           },
         ],
       },
     ],
-    [isFetching]
+    [TotalMNT,TotalOrderPrice,TotalPoint,TotaldeliveryCount,TotalreceivedCount,dataLength]
   );
 
   const table = useMaterialReactTable({
@@ -278,7 +490,7 @@ const Example = () => {
     enableColumnOrdering: false,
     enableGrouping: false,
     enableColumnPinning: false,
-    enableFacetedValues: false,
+    enableFacetedValues: true,
     enableRowActions: true,
     enableRowSelection: false,
     initialState: {
@@ -290,10 +502,12 @@ const Example = () => {
       },
       density: "compact",
       columnVisibility: {
-        paidMNT: false,
-        paidPoint: false,
+        id: false,
+        userId: false,
+        deliveryCost: false,
       },
     },
+
     state: {
       isLoading,
       showProgressBars: isFetching,
@@ -306,7 +520,7 @@ const Example = () => {
       variant: "outlined",
     },
     muiPaginationProps: {
-      color: "secondary",
+      color: "primary",
       rowsPerPageOptions: [10, 50, 100, 200],
       shape: "rounded",
       variant: "outlined",
@@ -508,26 +722,63 @@ const Example = () => {
       </MenuItem>,
     ],
     renderTopToolbar: ({ table }) => {
-      const handleDeactivate = () => {
-        table
-          .getSelectedRowModel()
-          .flatRows.forEach((row) =>
-            alert("Deactivating " + row.getValue("name"))
-          );
-      };
+      const formattedData = data.map((item) => ({
+        "Овог нэр":
+          `${item.userDetails?.lastName ?? ""} ${item.userDetails?.firstName ?? ""}`.trim(),
+        Утас: item.userDetails?.phone ?? "",
+        "Нийт дүн": item.totalAmount ?? 0,
+        Оноо: item.paidPoint ?? 0,
+        "Мөнгөн дүн": item.paidMNT ?? 0,
+        "Захиалга хийсэн огноо": (() => {
+          if (!item?.orderDate?.seconds) return "Огноо байхгүй";
+          const milliseconds =
+            item.orderDate.seconds * 1000 +
+            Math.floor(item.orderDate.nanoseconds / 1e6);
 
-      const handleActivate = () => {
-        table
-          .getSelectedRowModel()
-          .flatRows.forEach((row) =>
-            alert("Activating " + row.getValue("name"))
-          );
-      };
+          const date = dayjs(milliseconds);
+          const values = date.isValid()
+            ? date.format("YYYY-MM-DD HH:mm:ss")
+            : "Invalid date";
 
-      const handleContact = () => {
-        table
-          .getSelectedRowModel()
-          .flatRows.forEach((row) => alert("Contact " + row.getValue("name")));
+          return values;
+        })(),
+        Хүргэлт: item.delivery ? "Хүргэлттэй" : "Ирж авна",
+        "Хүлээн авсан": item.received ? "Тийм" : "Үгүй",
+        paymentMethod: (() => {
+          if (item.paymentMethod === "wallet") {
+            if (!item.paidPoint || item.paidPoint === 0) return "Мөнгө";
+            if (!item.paidMNT || item.paidMNT === 0) return "Оноо";
+            return "Хосолсон";
+          }
+          return item.paymentMethod === "point" ? "Оноо" : "Алдаатай";
+        })(),
+      }));
+      // Use formattedData for CSV export
+      const handleExportData = () => {
+        try {
+          // Generate the CSV data
+          const csv = generateCsv(csvConfig)(formattedData);
+
+          // Get the current date in YYYY-MM-DD format
+          const currentDate = new Date().toISOString().split("T")[0];
+
+          // Create the filename with the current date
+          const filename = `Захиалгын-түүх-${currentDate}.csv`;
+
+          // Log the CSV and filename for debugging
+
+          // Create a link element to trigger the download
+          const link = document.createElement("a");
+          link.href = "data:text/csv;charset=utf-8," + encodeURIComponent(csv);
+          link.target = "_blank";
+          link.download = filename; // Dynamically set the filename
+
+          // Trigger the download by simulating a click
+          link.click();
+        } catch (error) {
+          // Log the error if something fails
+          console.error("Error exporting data:", error);
+        }
       };
 
       return (
@@ -542,36 +793,28 @@ const Example = () => {
             })}
           >
             <Box sx={{ display: "flex", gap: "0.5rem", alignItems: "center" }}>
-              <MRT_GlobalFilterTextField table={table} />
-              <MRT_ToggleFiltersButton table={table} />
-              <MRT_ShowHideColumnsButton table={table} />
-              <MRT_ToggleDensePaddingButton table={table} />
-              <MRT_ToggleFullScreenButton table={table} />
+              <GlobalFilterTextField table={table} />
+              <ToggleFiltersButton table={table} />
+              <ShowHideColumnsButton table={table} />
+              <ToggleDensePaddingButton table={table} />
+              <ToggleFullScreenButton table={table} />
             </Box>
-            <Box sx={{ display: "flex", gap: "0.5rem" }}>
+            <Box
+              sx={{
+                display: "flex",
+                gap: "16px",
+                padding: "8px",
+                flexWrap: "wrap",
+              }}
+            >
               <Button
-                color="error"
-                disabled={!table.getIsSomeRowsSelected()}
-                onClick={handleDeactivate}
                 variant="contained"
+                //export all data that is currently in the table (ignore pagination, sorting, filtering, etc.)
+                onClick={handleExportData}
+                startIcon={<FileDownloadIcon />}
+                disabled={!formattedData || formattedData.length === 0}
               >
-                Deactivate
-              </Button>
-              <Button
-                color="success"
-                disabled={!table.getIsSomeRowsSelected()}
-                onClick={handleActivate}
-                variant="contained"
-              >
-                Activate
-              </Button>
-              <Button
-                color="info"
-                disabled={!table.getIsSomeRowsSelected()}
-                onClick={handleContact}
-                variant="contained"
-              >
-                Contact
+                Татаж авах
               </Button>
             </Box>
           </Box>
@@ -593,7 +836,6 @@ const Example = () => {
       );
     },
   });
-  console.log("deleteDialog", deleteDialog);
   return <MaterialReactTable table={table} />;
 };
 
