@@ -41,7 +41,7 @@ import {
   equalTo,
   query,
 } from "firebase/database";
-import { db } from "refrence/realConfig";
+import { db, auth } from "refrence/realConfig";
 import axios from "storeaxios";
 
 const csvConfig = mkConfig({
@@ -160,14 +160,32 @@ const Example = () => {
       queryKey: ["balance", searchTerm, fetchAll],
       queryFn: async () => {
         try {
+          const user = auth.currentUser;
+          const token = await user.getIdToken(true);
           if (fetchAll) {
-            const result = await axios.post("/getUsersBalance");
+            const result = await axios.post(
+              "/getUsersBalance",
+              { data: null },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
+            );
             console.log("result", result.data);
             return result.data;
-          } else if (searchTerm.length === 8) {
+          } else if (searchTerm.length) {
             console.log(searchTerm);
             const result = await axios.post(
-              `/getUserBalanceById?phone=${searchTerm}`
+              `/getUserBalanceById?pointId=${searchTerm}`,
+              { data: null },
+              {
+                headers: {
+                  "Content-Type": "application/json",
+                  Authorization: `Bearer ${token}`,
+                },
+              }
             );
             console.log("result", result.data);
             return result.data;
@@ -413,7 +431,7 @@ const Example = () => {
     <Box>
       <Box sx={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
         <TextField
-          label="Утасны дугаар оруулах"
+          label="PointId оруулах"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
