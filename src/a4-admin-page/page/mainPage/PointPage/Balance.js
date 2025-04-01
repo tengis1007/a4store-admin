@@ -127,6 +127,7 @@ const Example = () => {
       {
         accessorKey: "pointId",
         header: "id",
+        enableClickToCopy: true,
       },
       {
         accessorKey: "balance",
@@ -176,7 +177,7 @@ const Example = () => {
             console.log("result", result.data);
             return result.data;
           } else if (searchTerm.length) {
-            console.log(searchTerm);
+            // console.log(searchTerm);
             const result = await axios.post(
               `/getUserBalanceById?pointId=${searchTerm}`,
               { data: null },

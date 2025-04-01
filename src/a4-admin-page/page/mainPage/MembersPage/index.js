@@ -146,7 +146,7 @@ const Example = () => {
 
   const columns = useMemo(
     () => [
-      { accessorKey: "id", header: "id", size: 80 },
+      { accessorKey: "id", header: "id", size: 80, enableClickToCopy: true },
       { accessorKey: "lastName", header: "Овог" },
       { accessorKey: "firstName", header: "Нэр" },
       {
@@ -158,7 +158,11 @@ const Example = () => {
       },
       { accessorKey: "bankName", header: "Банкны нэр" },
       { accessorKey: "accountNumber", header: "Дансны дугаар", type: "number" },
-      { accessorKey: "registrationNumber", header: "Регистрийн дугаар" },
+      {
+        accessorKey: "registrationNumber",
+        header: "Регистрийн дугаар",
+        enableClickToCopy: true,
+      },
       { accessorKey: "province", header: "Оршин сугаа хаяг" },
       { accessorKey: "centerName", header: "Төвийн нэр" },
     ],
