@@ -18,6 +18,7 @@ import {
   ThemeProvider,
   createTheme,
   Typography,
+  Stack
 } from "@mui/material";
 import {
   QueryClient,
@@ -33,82 +34,80 @@ import { RiFileExcel2Fill } from "react-icons/ri";
 import dayjs from "dayjs";
 import { doc, deleteDoc } from "firebase/firestore";
 import { firestore } from "../../../refrence/storeConfig";
-import { getDocs, collection, query, where } from "firebase/firestore";
-import relativeTime from "dayjs/plugin/relativeTime";
+import { getDocs, collection } from "firebase/firestore";
+import TugrikFormatter from "components/TugrikFormatter";
+import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
+import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 const csvConfig = mkConfig({
-  filename: `Гишүүд-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
+  filename: `Төлбөрийн-түүх-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
   fieldSeparator: ",",
   decimalSeparator: ".",
   columnHeaders: [
     {
-      key: "lastName",
-      displayLabel: "Овог",
+      key: "phone",
+      displayLabel: "Утас",
     },
     {
-      key: "firstName",
-      displayLabel: "Нэр",
+      key: "tranAmount",
+      displayLabel: "Мөнгөн дүн",
     },
     {
-      key: "phoneNumber",
-      displayLabel: "ID",
+      key: "tranPostedDate",
+      displayLabel: "Огноо",
     },
     {
-      key: "bankName",
-      displayLabel: "Банкны нэр",
+      key: "tranDesc",
+      displayLabel: "Гүйлгээний утга",
     },
     {
-      key: "accountNumber",
-      displayLabel: "Дансны дугаар",
+      key: "tranDescEdit",
+      displayLabel: "Зассан гүйлгээний утга",
     },
     {
-      key: "registrationNumber",
-      displayLabel: "Регистрийн дугаар",
+      key: "type",
+      displayLabel: "Төрөл",
     },
     {
-      key: "province",
-      displayLabel: "Оршин сугаа хаяг",
-    },
-    {
-      key: "centerName",
-      displayLabel: "Төвийн нэр",
+      key: "userId",
+      displayLabel: "userId",
     },
   ],
 });
 
-// Validation functions
-const validateRequired = (value) =>
-  typeof value === "string" && value.trim().length > 0;
+// // Validation functions
+// const validateRequired = (value) =>
+//   typeof value === "string" && value.trim().length > 0;
 
-const validatePhone = (phone) => {
-  const re = /^(\d{4})[- ]?(\d{4})$/;
-  return re.test(phone);
-};
-function validateUser(user) {
-  return {
-    lastName: !validateRequired(user.lastName)
-      ? "Овог нэр хоосон байж болохгүй"
-      : "",
-    firstName: !validateRequired(user.firstName)
-      ? "Нэр хоосон байж болохгүй"
-      : "",
-    phoneNumber: !validatePhone(user.phoneNumber)
-      ? "Утасны дугаар зөв форматтай байх ёстой"
-      : "",
-    bankName: !validateRequired(user.bankName)
-      ? "Банк нэр хоосон байж болохгүй"
-      : "",
-    // accountNumber: !validateRequired(user.accountNumber) ? "Дансны дугаар хоосон байж болохгүй" : "",
-    registrationNumber: !validateRequired(user.registrationNumber)
-      ? "Регистрийн дугаар хоосон байж болохгүй"
-      : "",
-    province: !validateRequired(user.province)
-      ? "Оршин сугаа хаяг хоосон байж болохгүй"
-      : "",
-    centerName: !validateRequired(user.centerName)
-      ? "Center Name хоосон байж болохгүй"
-      : "",
-  };
-}
+// const validatePhone = (phone) => {
+//   const re = /^(\d{4})[- ]?(\d{4})$/;
+//   return re.test(phone);
+// };
+// function validateUser(user) {
+//   return {
+//     lastName: !validateRequired(user.lastName)
+//       ? "Овог нэр хоосон байж болохгүй"
+//       : "",
+//     firstName: !validateRequired(user.firstName)
+//       ? "Нэр хоосон байж болохгүй"
+//       : "",
+//     phoneNumber: !validatePhone(user.phoneNumber)
+//       ? "Утасны дугаар зөв форматтай байх ёстой"
+//       : "",
+//     bankName: !validateRequired(user.bankName)
+//       ? "Банк нэр хоосон байж болохгүй"
+//       : "",
+//     // accountNumber: !validateRequired(user.accountNumber) ? "Дансны дугаар хоосон байж болохгүй" : "",
+//     registrationNumber: !validateRequired(user.registrationNumber)
+//       ? "Регистрийн дугаар хоосон байж болохгүй"
+//       : "",
+//     province: !validateRequired(user.province)
+//       ? "Оршин сугаа хаяг хоосон байж болохгүй"
+//       : "",
+//     centerName: !validateRequired(user.centerName)
+//       ? "Center Name хоосон байж болохгүй"
+//       : "",
+//   };
+// }
 // Export CSV data
 const exportToExcel = (data) => {
   const columnsToRemove = ["id"];
@@ -131,18 +130,71 @@ const Example = () => {
   const [searchTerm, setSearchTerm] = useState(""); // User input for search
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers(fetchAll);
+    const totalCredit = useMemo(() => {
+
+      const realData = fetchedUsers.filter((item) => item.type === "Credit");
+      return realData.reduce(
+        (tranAmount, currentAmount) => tranAmount + Number(currentAmount.tranAmount),
+        0
+      );
+    }, [fetchedUsers]);
+    const totalDebit = useMemo(() => {
+
+      const realData = fetchedUsers.filter((item) => item.type === "Debit");
+      return realData.reduce(
+        (tranAmount, currentAmount) => tranAmount + Number(currentAmount.tranAmount),
+        0
+      );
+    }, [fetchedUsers]);
   const columns = useMemo(
     () => [
       { accessorKey: "id", header: "id", size: 80 },
       {
         accessorKey: "phone",
+        filterVariant: "autocomplete",
         header: "Утас",
         size: 80,
         enableClickToCopy: true,
+        Footer: () => (
+          <Stack>
+            Нийт Орлого:
+            <Box color="warning.main">
+              {TugrikFormatter(totalCredit)}₮
+            </Box>
+          </Stack>
+        ),
       },
+
       {
         accessorKey: "tranAmount",
         header: "Мөнгөн дүн",
+        size: 50,
+        filterVariant: "range-slider",
+        filterFn: "betweenInclusive",
+        meta: {
+          type: "number", // Хэрвээ танд type declaration хэрэгтэй бол
+        },
+        muiFilterSliderProps: {
+          marks: true,
+          max: 3000000, // Custom max value
+          min: 20000, // Custom min value
+          step: 20_000, // Step size
+          valueLabelFormat: (value) => {
+            const format = TugrikFormatter(value);
+            return format;
+          },
+        },
+        Cell: ({ cell }) => (
+          <Box component="span">{TugrikFormatter(cell.getValue())}₮</Box>
+        ),
+        Footer: () => (
+          <Stack>
+            Нийт Зарлага:
+            <Box color="warning.main">
+              {TugrikFormatter(totalDebit)}₮
+            </Box>
+          </Stack>
+        ),
       },
       {
         accessorKey: "statementId",
@@ -155,9 +207,15 @@ const Example = () => {
       {
         accessorKey: "tranDescEdit",
         header: "Зассан гүйлгээний утга",
+        size: 200,
       },
       {
         accessorKey: "type",
+        filterVariant: "select",
+        filterSelectOptions: [
+          { label: "Орлого", value: "Credit" },
+          { label: "Зарлага", value: "Debit" },
+        ],
         header: "Төрөл", // Use `header` instead of `displayLabel`.
         size: 80,
         Cell: ({ cell }) => {
@@ -173,28 +231,31 @@ const Example = () => {
         },
       },
       {
-        id: "tranPostedDate",
         accessorKey: "tranPostedDate",
-        header: "Огноо",
+        id: "tranPostedDate",
+        header: "Захиалга хийсэн огноо",
         filterVariant: "date",
-        filterFn: "lessThan",
-        size: 300,
+        size: 250,
         sortingFn: "datetime",
         Cell: ({ cell }) => {
           const value = cell.getValue();
-          const date = new Date(value);
-          const formattedDate =
-            date.toISOString().split("T")[0] +
-            " " +
-            date.toTimeString().slice(0, 5);
-          return formattedDate;
+          return value
+            ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
+            : "Огноо байхгүй";
+        },
+        filterFn: (row, columnId, filterValue) => {
+          const rowValue = dayjs(row.getValue(columnId)).format("YYYY-MM-DD");
+          const filterDate = dayjs(filterValue, "MM/DD/YYYY").format(
+            "YYYY-MM-DD"
+          );
+          return rowValue === filterDate;
         },
       },
     ],
-    []
+    [totalCredit,totalDebit]
   );
-  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-  useDeleteUser();
+  const { mutateAsync: deleteUser, //isPending: isDeletingUser// } =
+  }=useDeleteUser();
   //READ hook (get users from api)
   function useGetUsers(fetchAll = true) {
     return useQuery({
@@ -239,7 +300,7 @@ const Example = () => {
   }
   function useDeleteUser() {
     const queryClient = useQueryClient();
-  
+
     return useMutation({
       mutationFn: async (id) => {
         const userRef = doc(firestore, "statements", id); // Firestore document reference
@@ -253,19 +314,17 @@ const Example = () => {
       onSettled: () => queryClient.invalidateQueries(["statements"]), // Fix query key
     });
   }
-  
+
   const openDeleteConfirmModal = async (row) => {
     if (window.confirm("Are you sure you want to delete this user?")) {
       try {
         await deleteUser(row.original.id); // Await the delete operation
-        console.log("User deleted successfully");
       } catch (error) {
         console.error("Failed to delete user:", error);
       }
     }
   };
-  
-  
+
   const renderValidationErrors = (errors) => {
     return Object.entries(errors).map(([key, message]) =>
       message ? (
@@ -282,6 +341,19 @@ const Example = () => {
     createDisplayMode: "modal",
     editDisplayMode: "modal",
     enableEditing: true,
+    paginationDisplayMode: "pages",
+    positionToolbarAlertBanner: "bottom",
+
+    muiSearchTextFieldProps: {
+      size: "small",
+      variant: "outlined",
+    },
+    muiPaginationProps: {
+      color: "primary",
+      rowsPerPageOptions: [10, 50, 100, 200],
+      shape: "rounded",
+      variant: "outlined",
+    },
     getRowId: (row) => row.id,
     muiToolbarAlertBannerProps: isError
       ? { color: "error", children: "Error loading data" }
@@ -334,12 +406,12 @@ const Example = () => {
     renderRowActions: ({ row, table }) => (
       <Box sx={{ display: "flex", gap: "1rem" }}>
         <Tooltip title="Edit">
-        <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
+          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <EditIcon />
           </IconButton>
         </Tooltip>
         <Tooltip title="Delete">
-        <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
+          <IconButton color="error" onClick={() => openDeleteConfirmModal(row)}>
             <DeleteIcon />
           </IconButton>
         </Tooltip>
@@ -352,17 +424,20 @@ const Example = () => {
           startIcon={<RiFileExcel2Fill />}
           onClick={() => exportToExcel(fetchedUsers)}
           sx={{ fontSize: "0.8rem" }} // Correct way to set text size
+          disabled={!fetchedUsers || fetchedUsers.length === 0}
         >
           Татаж авах
         </Button>
       </Box>
     ),
     initialState: {
+      density: "compact",
       columnVisibility: {
         id: false, // Hide the unixTime column by default
         statementId: false,
       },
     },
+
     state: {
       isLoading: isLoading,
       showAlertBanner: isError,
@@ -444,16 +519,18 @@ const MemberRegistration = () => {
     [globalTheme]
   );
   return (
-    <QueryClientProvider client={queryClient}>
-      <Typography color="inherit" variant="h4" align="center">
-        Төлбөрийн түүх
-      </Typography>
-      <Box marginLeft={"2rem"}>
-        <ThemeProvider theme={tableTheme}>
-          <Example />
-        </ThemeProvider>
-      </Box>
-    </QueryClientProvider>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <QueryClientProvider client={queryClient}>
+        <Typography color="inherit" variant="h4" align="center">
+          Төлбөрийн түүх
+        </Typography>
+        <Box marginLeft={"2rem"}>
+          <ThemeProvider theme={tableTheme}>
+            <Example />
+          </ThemeProvider>
+        </Box>
+      </QueryClientProvider>
+    </LocalizationProvider>
   );
 };
 

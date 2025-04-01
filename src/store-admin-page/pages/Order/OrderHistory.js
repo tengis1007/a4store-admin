@@ -48,8 +48,11 @@ const Example = () => {
 const [dataLength , setDataLenght] = useState(0);
   useEffect(() => {
     fetchOrdersWithUserDetails();
-    
   }, [isFetching]);
+  useEffect(() => {
+    setDataLenght(data.length);
+  }, [data]);
+  
   const fetchOrdersWithUserDetails = async () => {
     try {
       const ordersCollection = collection(firestore, "orders");
@@ -121,7 +124,7 @@ const [dataLength , setDataLenght] = useState(0);
       ),
     [data]
   );
-  setDataLenght(data.length+1);
+
   const TotalPoint = useMemo(() => {
     const filteredRows = data.filter(
       (row) =>
@@ -131,8 +134,6 @@ const [dataLength , setDataLenght] = useState(0);
       (paidPoint, currentAmount) => paidPoint + Number(currentAmount.paidPoint),
       0
     );
-    console.log("filterPoint",filterPoint);
-    console.log("filteredRows",filteredRows);
     const filteredData = data.filter((item) => item.paymentMethod === "point");
     return (
       filteredData.reduce(
