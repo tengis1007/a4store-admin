@@ -1,10 +1,6 @@
 import { Store, registerInDevtools } from "pullstate";
-import {
-  createUserWithEmailAndPassword,
-  signInWithEmailAndPassword,
-} from "firebase/auth";
 import { ref, set, child, get, push } from "firebase/database";
-import { db, auth, dbRef } from "refrence/realConfig";
+import { db,  dbRef } from "refrence/realConfig";
 
 export const AuthStore = new Store({
   isLoggedIn: false,

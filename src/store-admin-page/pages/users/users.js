@@ -3,8 +3,6 @@ import { useMemo, useState } from "react";
 import {
   MaterialReactTable,
   useMaterialReactTable,
-  MRT_GlobalFilterTextField,
-  MRT_ToggleFiltersButton,
 } from "material-react-table";
 // Material UI Imports
 import {
@@ -14,14 +12,13 @@ import {
   ListItemIcon,
   MenuItem,
   Typography,
-  lighten,
+  Stack,
   TextField,
   InputAdornment,
 } from "@mui/material";
 import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
-import { AccountCircle, Send } from "@mui/icons-material";
 // Firestore Imports
 import { collection, getDocs, query, where, doc } from "firebase/firestore";
 import { firestore } from "../../../refrence/storeConfig"; // Adjust the path to your Firestore config
@@ -31,24 +28,23 @@ import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import EditIcon from "@mui/icons-material/Edit";
 import dayjs from "dayjs";
 import DeleteIcon from "@mui/icons-material/Delete";
-import DownloadForOfflineIcon from "@mui/icons-material/DownloadForOffline";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { RiFileExcel2Fill } from "react-icons/ri";
+import TugrikFormatter from "components/TugrikFormatter";
 const Example = () => {
   // State to hold the table data
   const [tableData, setTableData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
-
-  // Function to fetch all data
+  const [tableDataLength, setTableDataLength] = useState(0);
+  // Function to fetch all data`
   const handleFetchAllData = async () => {
     try {
       setIsLoading(true); // Start loading
       setError(null); // Reset error state
       const newData = await fetchDataFromAPI();
       setTableData(newData);
-      console.log("Data fetched successfully:", newData);
     } catch (err) {
       setError("Failed to fetch data. Please try again.");
       console.error("Error fetching data:", err);
@@ -87,7 +83,6 @@ const Example = () => {
             id: doc.id,
             ...doc.data(),
           }));
-
           return {
             ...user,
             wallets: walletsData ?? 0,
@@ -95,8 +90,23 @@ const Example = () => {
           };
         })
       );
-      console.log("combinedData", combinedData);
-      return combinedData;
+
+      let realData = [];
+      combinedData.forEach((element) => {
+        const timestamp = element.createdAt?.toDate() || null;
+        // Format as a readable string
+        realData.push({
+          ...element,
+          createdAt: timestamp ? timestamp.toISOString() : null,
+        });
+      });
+      realData.sort((a, b) => {
+        const dateA = a.createdAt ? new Date(a.createdAt) : null;
+        const dateB = b.createdAt ? new Date(b.createdAt) : null;
+        return (dateB?.getTime() || 0) - (dateA?.getTime() || 0); // Descending order
+      });
+      setTableDataLength(realData.length);
+      return realData;
     } catch (error) {
       console.error("Error fetching data from Firestore:", error);
       throw error; // Re-throw the error to handle it in the calling function
@@ -201,7 +211,23 @@ const Example = () => {
       },
     },
   });
-
+  const TotalMemberCount = useMemo(() => {
+    const realData = tableData.filter((item) => item.isMember === true).length;
+    console.log("realDatarealData", realData);
+    return realData;
+  }, [tableData]);
+  const totalWalletBalance = useMemo(() => {
+    return tableData.reduce((total, user) => {
+      return total + (user.wallets?.[0] ? Number(user.wallets[0].balance) : 0);
+    }, 0);
+  }, [tableData]);
+  
+  const totalPointBalance = useMemo(() => {
+    return tableData.reduce((total, user) => {
+      return total + (user.points?.[0] ? Number(user.points[0].balance) : 0);
+    }, 0);
+  }, [tableData]);
+  
   const columns = useMemo(
     () => [
       {
@@ -225,11 +251,20 @@ const Example = () => {
               `${row.lastName ?? ""} ${row.firstName ?? ""}`.trim(),
             id: "name",
             header: "Овог нэр",
+            filterVariant: "autocomplete",
             size: "auto",
             Cell: ({ renderedCellValue }) => (
               <Box sx={{ display: "flex", alignItems: "center", gap: "1rem" }}>
                 <span>{renderedCellValue}</span>
               </Box>
+            ),
+            Footer: () => (
+              <Stack>
+                Нийт бүртгүүлсэн хүн:
+                <Box color="warning.main">
+                  {TugrikFormatter(tableDataLength)}
+                </Box>
+              </Stack>
             ),
           },
           {
@@ -238,6 +273,19 @@ const Example = () => {
             filterVariant: "autocomplete",
             header: "Утас",
             size: "auto",
+            Footer: () => (
+              <Stack>
+                Нийт гишүүн:
+                <Box color="warning.main">
+                  {TugrikFormatter(TotalMemberCount)}
+                </Box>
+              </Stack>
+            ),
+          },
+          {
+            accessorKey: "package",
+            header: "Багын бүтцэд орох эрх",
+            size: "50",
           },
           {
             accessorKey: "email",
@@ -275,6 +323,12 @@ const Example = () => {
                 </Box>
               );
             },
+            Footer: () => (
+              <Stack>
+                Нийт оноо:
+                <Box color="warning.main">{TugrikFormatter(totalPointBalance)}P</Box>
+              </Stack>
+            ),
           },
           {
             accessorFn: (row) => row.wallets?.[0]?.balance ?? 0,
@@ -307,34 +361,43 @@ const Example = () => {
                 </Box>
               );
             },
+            Footer: () => (
+              <Stack>
+                Нийт мөнгө:
+                <Box color="warning.main">{TugrikFormatter(totalWalletBalance)}₮</Box>
+              </Stack>
+            ),
           },
+
           {
-            accessorFn: (row) => {
-              if (!row.createdAt) return null;
-              const { seconds, nanoseconds } = row.createdAt;
-              return dayjs
-                .unix(seconds)
-                .add(nanoseconds / 1000000, "millisecond");
-            },
+            accessorKey: "createdAt",
             id: "createdAt",
             header: "Бүргүүлсэн огноо",
             filterVariant: "date",
-            filterFn: "lessThan",
-            size: "auto",
+            size: 250,
             sortingFn: "datetime",
             Cell: ({ cell }) => {
               const value = cell.getValue();
               return value
-                ? value.format("YYYY-MM-DD HH:mm:ss")
+                ? dayjs(value).format("YYYY-MM-DD HH:mm:ss")
                 : "Огноо байхгүй";
+            },
+            filterFn: (row, columnId, filterValue) => {
+              const rowValue = dayjs(row.getValue(columnId)).format(
+                "YYYY-MM-DD"
+              );
+              const filterDate = dayjs(filterValue, "MM/DD/YYYY").format(
+                "YYYY-MM-DD"
+              );
+              return rowValue === filterDate;
             },
           },
           {
             accessorKey: "isMember",
             filterVariant: "select",
             filterSelectOptions: [
-              { value: true, label: "Гишүүн" },
-              { value: false, label: "Хэрэглэгч" },
+              { value: "true", label: "Гишүүн" },
+              { value: "false", label: "Хэрэглэгч" },
             ],
             header: "Төрөл",
             size: "auto",
@@ -350,7 +413,7 @@ const Example = () => {
         ],
       },
     ],
-    []
+    [tableDataLength, TotalMemberCount,totalWalletBalance,totalPointBalance]
   );
   const columnsTransaction = [
     {
@@ -358,7 +421,6 @@ const Example = () => {
       headerName: "Мөнгөн дүн",
       width: 150,
       valueFormatter: (params) => {
-        console.log("params", params);
         if (params == null) {
           return ""; // Display empty string for null or undefined values
         }
@@ -411,7 +473,6 @@ const Example = () => {
             return "N/A";
           }
 
-          console.log("Debugging params.row.date:", dateField); // Log the date field
 
           // Case 1: Firestore Timestamp
           if (
@@ -439,19 +500,21 @@ const Example = () => {
   const table = useMaterialReactTable({
     columns,
     data: tableData, // Use state-managed data
-    enableColumnFilterModes: true,
-    enableColumnOrdering: true,
-    enableGrouping: true,
-    enableColumnPinning: true,
+    enableColumnFilterModes: false,
+    enableColumnOrdering: false,
+    enableGrouping: false,
+    enableColumnPinning: false,
     enableFacetedValues: true,
     enableRowActions: true,
     enableRowSelection: false,
     initialState: {
       showColumnFilters: false,
       showGlobalFilter: false,
-      columnInvisibility: {
-        id: true,
-        pointId:true
+      columnVisibility: {
+        id: false,
+        pointId: false,
+        email: false,
+        package: false,
       },
       columnPinning: {
         right: ["mrt-row-expand", "mrt-row-select"],
@@ -597,9 +660,7 @@ const Example = () => {
       Утас: user.phone,
       Хэтэвч: user.wallets?.[0]?.balance || 0, // Handle undefined wallets
       Оноо: user.points?.[0]?.balance || 0, // Handle undefined points
-      "Бүртгүүлсэн огноо": user.createdAt
-        ? dayjs(user.createdAt.toDate()).format("YYYY-MM-DD HH:mm:ss") // Keep as Date object
-        : "",
+      "Бүртгүүлсэн огноо": user.createdAt,
       Төрөл: user.isMember ? "Гишүүн" : "Хэрэглэгч",
       inviteNumber: user.inviteNumber,
       package: user.package,
