@@ -182,11 +182,12 @@ const Example = () => {
   function useGetUsers() {
     return useQuery({
       queryKey: ["transactions", searchTerm, fetchAll],
-      queryFn: async () => {
-        const user = auth.currentUser;
-        const token = await user.getIdToken(); // Get ID token
-        try {
+      queryFn: async () => {   
+         try {
+          const user = auth.currentUser;
+          const token = await user.getIdToken();
           if (fetchAll) {
+            console.log("fetchAll enabled");
             const result = await axios.post(
               `/getTransactions`,
               {
@@ -201,10 +202,10 @@ const Example = () => {
             );
             console.log("result", result.data);
             return result.data.transactions;
-          } else if (searchTerm.length === 8) {
+          } else if (searchTerm.length===8) {
             console.log(searchTerm);
             const result = await axios.post(
-              `/getTransactionById`,
+              `/getTransactionById?phone=${searchTerm}`,
               {
                 senderId: null,
               },
@@ -221,12 +222,6 @@ const Example = () => {
             // If fetchAll is false and searchTerm is not defined, return an empty array
             return [];
           }
-          //   const snapshot = await get(promoQuery);
-
-          //   if (!snapshot.exists()) return [];
-          //   return Object.entries(snapshot.val())
-          //     .map(([id, user]) => ({ id, ...user }))
-          //     .reverse();
         } catch (error) {
           console.error("Error fetching users:", error);
           throw new Error("Failed to fetch users");
