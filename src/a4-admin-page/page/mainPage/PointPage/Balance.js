@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
+import { useMemo, useState, useEffect } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -127,10 +127,28 @@ const Example = () => {
       {
         accessorKey: "pointId",
         header: "id",
+        enableClickToCopy: true,
       },
       {
         accessorKey: "balance",
         header: "Баланс",
+        enableClickToCopy: true,
+      },
+      {
+        accessorKey: "phone",
+        header: "Утас",
+      },
+      {
+        accessorKey: "email",
+        header: "И-Мэйл",
+      },
+      {
+        accessorKey: "lastName",
+        header: "Овог",
+      },
+      {
+        accessorKey: "firstName",
+        header: "Нэр",
       },
     ],
     []
@@ -140,18 +158,18 @@ const Example = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        const newUserRef = ref(db, "userInfo");
-        await set(newUserRef.push(), user);
+        // const newUserRef = ref(db, "userInfo");
+        // await set(newUserRef.push(), user);
         return Promise.resolve();
       },
       onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) => [
-          ...(prevUsers || []),
-          {
-            ...newUserInfo,
-            id: (Math.random() + 1).toString(36).substring(7),
-          },
-        ]);
+        // queryClient.setQueryData(["userInfo"], (prevUsers) => [
+        //   ...(prevUsers || []),
+        //   {
+        //     ...newUserInfo,
+        //     id: (Math.random() + 1).toString(36).substring(7),
+        //   },
+        // ]);
       },
     });
   };
@@ -161,8 +179,9 @@ const Example = () => {
       queryFn: async () => {
         try {
           const user = auth.currentUser;
-          const token = await user.getIdToken(true);
+          const token = await user.getIdToken();
           if (fetchAll) {
+            console.log("fetch All worked");
             const result = await axios.post(
               "/getUsersBalance",
               { data: null },
@@ -173,10 +192,11 @@ const Example = () => {
                 },
               }
             );
-            console.log("result", result.data);
+            console.log(result.data);
             return result.data;
           } else if (searchTerm.length) {
             console.log(searchTerm);
+            console.log("token", token);
             const result = await axios.post(
               `/getUserBalanceById?pointId=${searchTerm}`,
               { data: null },
@@ -187,18 +207,11 @@ const Example = () => {
                 },
               }
             );
-            console.log("result", result.data);
-            return result.data;
+            return [result.data];
           } else {
             // If fetchAll is false and searchTerm is not defined, return an empty array
             return [];
           }
-          //   const snapshot = await get(promoQuery);
-
-          //   if (!snapshot.exists()) return [];
-          //   return Object.entries(snapshot.val())
-          //     .map(([id, user]) => ({ id, ...user }))
-          //     .reverse();
         } catch (error) {
           console.error("Error fetching users:", error);
           throw new Error("Failed to fetch users");
@@ -213,26 +226,26 @@ const Example = () => {
     const queryClient = useQueryClient();
     return useMutation({
       mutationFn: async (user) => {
-        const updatedData = {
-          ...user, // Spread the original row data
-          MemberId: Number(user.MemberId),
-        };
-        // remove undefined values
-        const sendData = Object.fromEntries(
-          Object.entries(updatedData).filter(
-            ([_, value]) => value !== undefined
-          )
-        );
-        const userRef = ref(db, `userInfo/${sendData.id}`);
-        await update(userRef, sendData);
+        // const updatedData = {
+        //   ...user, // Spread the original row data
+        //   MemberId: Number(user.MemberId),
+        // };
+        // // remove undefined values
+        // const sendData = Object.fromEntries(
+        //   Object.entries(updatedData).filter(
+        //     ([_, value]) => value !== undefined
+        //   )
+        // );
+        // const userRef = ref(db, `userInfo/${sendData.id}`);
+        // await update(userRef, sendData);
         return Promise.resolve();
       },
       onMutate: (newUserInfo) => {
-        queryClient.setQueryData(["userInfo"], (prevUsers) =>
-          prevUsers?.map((prevUser) =>
-            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
-          )
-        );
+        // queryClient.setQueryData(["userInfo"], (prevUsers) =>
+        //   prevUsers?.map((prevUser) =>
+        //     prevUser.id === newUserInfo.id ? newUserInfo : prevUser
+        //   )
+        // );
       },
       onSettled: () => queryClient.invalidateQueries(["userInfo"]), // Refetch users after mutation
     });
