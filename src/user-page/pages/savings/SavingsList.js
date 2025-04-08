@@ -37,6 +37,7 @@ const DepositCardList = ({ user }) => {
 
   useEffect(() => {
     getDeposits();
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const handleOpen = (value) => {
@@ -51,13 +52,13 @@ const DepositCardList = ({ user }) => {
   const getDeposits = async () => {
     try {
       const result = await axios.post(
-        "/getDepositPoint",
+        `/getDepositById?phone=${userInfo?.phone}`,
         { pointId: userInfo?.pointId },
         { headers: { Authorization: `Bearer ${user?.accessToken}` } }
       );
-      console.log("result2", result.data.deposits);
-      result.data.deposits.sort((a, b) => b.startDate - a.startDate);
-      setDeposits(result.data.deposits || []);
+      console.log("result2", result.data);
+      result.data.sort((a, b) => b.startDate - a.startDate);
+      setDeposits(result.data || []);
     } catch (error) {
       console.error("Error fetching deposits:", error);
       setError("Failed to fetch deposit data.");
@@ -83,7 +84,6 @@ const DepositCardList = ({ user }) => {
       console.error("Error cancelling deposit:", error);
       alert("Failed to cancel deposit.");
     } finally {
-
       setLoading(false);
     }
   };
@@ -116,7 +116,7 @@ const DepositCardList = ({ user }) => {
   }
 
   return (
-    <Box sx={{ maxWidth: "1170px", margin: "auto", p: 2 }}>
+    <Box sx={{ maxWidth: "1170px", margin: "auto", p: 2, marginBottom: 30 }}>
       <Typography variant="h6" sx={{ mb: 2 }}>
         Хадгалалтын түүх
       </Typography>
