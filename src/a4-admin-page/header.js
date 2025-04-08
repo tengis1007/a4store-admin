@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useState } from "react";
 import PropTypes from "prop-types";
 
 // MUI Components
@@ -10,8 +10,10 @@ import {
   Menu,
   MenuItem,
 } from "@mui/material";
-
+import { signOut } from "firebase/auth";
+import { auth } from "refrence/storeConfig"; // Use the pre-configured Firebase auth instance
 // MUI Icons
+import Avatar from "@mui/material/Avatar";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import LightModeIcon from "@mui/icons-material/LightMode";
 import DarkModeIcon from "@mui/icons-material/DarkMode";
@@ -221,12 +223,9 @@ DemoPageContent.propTypes = {
 };
 
 function ToolbarActionsSearch() {
-  const [anchorEl, setAnchorEl] = React.useState(null);
-  const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-  const [userData, setUserData] = React.useState({
-    firstName: "Not Availasdaable",
-    lastName: "Not Avasdasailable",
-  });
+  const [anchorEl, setAnchorEl] = useState(null);
+  const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const userData = JSON.parse(localStorage.getItem("user"));
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
     setIsMenuOpen(true);
@@ -234,6 +233,18 @@ function ToolbarActionsSearch() {
 
   const handleMenuClose = () => {
     setIsMenuOpen(false);
+  };
+
+  const handleSignOut = async () => {
+    signOut(auth)
+      .then(() => {
+        window.location.href = "/signin";
+        localStorage.removeItem("user");
+        handleMenuClose();
+      })
+      .catch((error) => {
+        console.error("Sign-out error:", error);
+      });
   };
 
   const renderMenu = (
@@ -247,37 +258,57 @@ function ToolbarActionsSearch() {
         open={isMenuOpen}
         onClose={handleMenuClose}
       >
-        <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-        <MenuItem onClick={handleMenuClose}>My account</MenuItem>
+        <MenuItem onClick={handleSignOut}>Гарах</MenuItem>
       </Menu>
-      <Typography>Narangerel tengis</Typography>
+      <Typography
+        variant="subtitle1"
+        sx={{
+          color: "inherit",
+          fontWeight: 500,
+          textTransform: "capitalize",
+        }}
+      >
+        {userData?.lastName || userData?.firstName
+          ? `${userData?.lastName || ""} ${userData?.firstName || ""}`.trim()
+          : "Unknown User"}
+      </Typography>
     </>
   );
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
-      <IconButton onClick={handleMenuOpen}>
-        <AccountCircleIcon sx={{ fontSize: 40 }} />
-      </IconButton>
+      <Avatar
+        src={userData?.avatarUrl || "https://via.placeholder.com/40"}
+        alt={userData?.lastName || "User Avatar"}
+        onClick={handleMenuOpen}
+        sx={{
+          width: 40,
+          height: 40,
+          marginRight: "10px",
+          backgroundColor: "primary.main",
+        }}
+      >
+        {!userData?.avatarUrl &&
+          `${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
+      </Avatar>
       {renderMenu}
-      <ThemeSwitcher />
     </Stack>
   );
 }
 
-function ThemeSwitcher() {
-  const { mode, setMode } = useColorScheme();
+// function ThemeSwitcher() {
+//   const { mode, setMode } = useColorScheme();
 
-  const toggleMode = () => {
-    setMode(mode === "light" ? "dark" : "light");
-  };
+//   const toggleMode = () => {
+//     setMode(mode === "light" ? "dark" : "light");
+//   };
 
-  return (
-    <IconButton onClick={toggleMode} color="inherit">
-      {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
-    </IconButton>
-  );
-}
+//   return (
+//     <IconButton onClick={toggleMode} color="inherit">
+//       {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+//     </IconButton>
+//   );
+// }
 
 function SidebarFooter({ mini }) {
   return (

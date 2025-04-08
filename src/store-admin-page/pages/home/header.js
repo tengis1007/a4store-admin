@@ -1,10 +1,15 @@
 import * as React from "react";
 import PropTypes from "prop-types";
 import IconButton from "@mui/material/IconButton";
+import Avatar from "@mui/material/Avatar";
 import Stack from "@mui/material/Stack";
 import Chip from "@mui/material/Chip";
 import Typography from "@mui/material/Typography";
-import { createTheme, ThemeProvider, useColorScheme } from "@mui/material/styles";
+import {
+  createTheme,
+  ThemeProvider,
+  useColorScheme,
+} from "@mui/material/styles";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import ShoppingCartIcon from "@mui/icons-material/ShoppingCart";
 import CheckCircleIcon from "@mui/icons-material/CheckCircle";
@@ -25,13 +30,13 @@ import ViewCarouselIcon from "@mui/icons-material/ViewCarousel";
 import ListSharpIcon from "@mui/icons-material/ListSharp";
 import Banner from "../banner/Banner";
 import Dashboard from "../dashboard/Dashboard";
-import FeedIcon from '@mui/icons-material/Feed';
+import FeedIcon from "@mui/icons-material/Feed";
 import Blog from "../blog/blog";
-import Users from "../users/users"
-import PeopleAltIcon from '@mui/icons-material/PeopleAlt';
-import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import Users from "../users/users";
+import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
+import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
 import Invite from "../invite/invite";
-import { logout } from '../../../user-page/auth/Logout';
+import { logout } from "../../../user-page/auth/Logout";
 import LightModeIcon from "@mui/icons-material/LightMode"; // Sun icon for light mode
 import DarkModeIcon from "@mui/icons-material/DarkMode"; // Moon icon for dark mode
 
@@ -155,21 +160,9 @@ DemoPageContent.propTypes = {
 
 // Toolbar actions (search, profile menu, theme switcher)
 function ToolbarActionsSearch() {
-  const [userData, setUserData] = React.useState({
-    firstName: "Not Available",
-    lastName: "Not Available",
-  });
+  const userData = JSON.parse(localStorage.getItem("user"));
   const [anchorEl, setAnchorEl] = React.useState(null);
   const [isMenuOpen, setIsMenuOpen] = React.useState(false);
-
-  React.useEffect(() => {
-    const savedUserData = localStorage.getItem("userData");
-    if (savedUserData) {
-      setUserData(JSON.parse(savedUserData));
-    }
-  }, []);
-
-  const { firstName, lastName } = userData;
 
   const handleMenuOpen = (event) => {
     setAnchorEl(event.currentTarget);
@@ -184,60 +177,82 @@ function ToolbarActionsSearch() {
   };
 
   const renderMenu = (
-    <Menu
-      anchorEl={anchorEl}
-      anchorOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      id="menu-id"
-      keepMounted
-      transformOrigin={{
-        vertical: "top",
-        horizontal: "right",
-      }}
-      open={isMenuOpen}
-      onClose={handleMenuClose}
-    >
-      <MenuItem onClick={handleMenuClose}>Profile</MenuItem>
-      <MenuItem onClick={handleMenuClose}>My account</MenuItem>
-      <MenuItem onClick={handleLogout}>Гарах</MenuItem>
-    </Menu>
+    <>
+      <Menu
+        anchorEl={anchorEl}
+        anchorOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        id="menu-id"
+        keepMounted
+        transformOrigin={{
+          vertical: "top",
+          horizontal: "right",
+        }}
+        open={isMenuOpen}
+        onClose={handleMenuClose}
+      >
+        <MenuItem onClick={handleLogout}>Гарах</MenuItem>
+      </Menu>
+      <Typography
+        variant="subtitle1"
+        sx={{
+          color: "inherit",
+          fontWeight: 500,
+          textTransform: "capitalize",
+        }}
+      >
+        {userData?.lastName || userData?.firstName
+          ? `${userData?.lastName || ""} ${userData?.firstName || ""}`.trim()
+          : "Unknown User"}
+      </Typography>
+    </>
   );
 
   return (
     <Stack direction="row" alignItems="center" spacing={2}>
       {/* User's Name */}
       {/* Avatar or Account Icon to trigger the menu */}
-      <IconButton onClick={handleMenuOpen}>
-        <AccountCircleIcon sx={{ fontSize: 40 }} />
-      </IconButton>
+      <Avatar
+        src={userData?.avatarUrl || "https://via.placeholder.com/40"}
+        alt={userData?.lastName || "User Avatar"}
+        onClick={handleMenuOpen}
+        sx={{
+          width: 40,
+          height: 40,
+          marginRight: "10px",
+          backgroundColor: "primary.main",
+        }}
+      >
+        {!userData?.avatarUrl &&
+          `${userData?.lastName?.charAt(0) || ""}${userData?.firstName?.charAt(0) || ""}`.toUpperCase()}
+      </Avatar>
       {renderMenu}
       {/* ThemeSwitcher Component */}
-      <ThemeSwitcher />
     </Stack>
   );
 }
 
 // Theme switcher component
-function ThemeSwitcher() {
-  const { mode, setMode } = useColorScheme();
+// function ThemeSwitcher() {
+//   const { mode, setMode } = useColorScheme();
 
-  const toggleMode = () => {
-    setMode(mode === "light" ? "dark" : "light");
-  };
+//   const toggleMode = () => {
+//     setMode(mode === "light" ? "dark" : "light");
+//   };
 
-  React.useEffect(() => {
-    const root = document.documentElement;
-    root.setAttribute("data-toolpad-color-scheme", mode);
-  }, [mode]);
+//   React.useEffect(() => {
+//     const root = document.documentElement;
+//     root.setAttribute("data-toolpad-color-scheme", mode);
+//   }, [mode]);
 
-  return (
-    <IconButton onClick={toggleMode} color="inherit">
-      {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
-    </IconButton>
-  );
-}
+//   return (
+//     <IconButton onClick={toggleMode} color="inherit">
+//       {mode === "light" ? <DarkModeIcon /> : <LightModeIcon />}
+//     </IconButton>
+//   );
+// }
 
 // Sidebar footer component
 function SidebarFooter({ mini }) {
