@@ -72,6 +72,9 @@
       "react-app/jest"
     ]
   },
+  "resolutions": {
+    "eslint-plugin-react": "^7.33.0"
+  },
   "browserslist": {
     "production": [
       ">0.2%",
