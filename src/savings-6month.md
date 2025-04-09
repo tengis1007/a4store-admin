@@ -26,7 +26,7 @@
  
 Бизнес хөгжүүлэлтийн албаны дарга: Г.Жавхлантөгс<br>          
 Хаяг: Улаанбаатар хот, Хан-Уул дүүрэг 24-р хороо, наадамчдын зам, Бизачи центр 305 тоот<br>
-Гарын үсэг: <img src="https://firebasestorage.googleapis.com/v0/b/a4mongolia.appspot.com/o/signature%2Fsign.png?alt=media&token=6a6df874-5310-4ba8-92b2-765b36fa2652" alt="Alt text" width="100">
+Гарын үсэг: <img src="https://firebasestorage.googleapis.com/v0/b/a4mongolia.appspot.com/o/signature%2FjavkhaaSign.png?alt=media&token=cf0cf429-d92f-4ed4-97a5-19ccedd44d1a" alt="Alt text" width="100">
 
 “Б" талыг төлөөлж:<br>
 Овог, нэр: **{{lastName}} {{firstName}}**<br>
