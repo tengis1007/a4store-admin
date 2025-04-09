@@ -12,7 +12,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, updateDoc,setDoc, arrayUnion } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { firestore, storage } from "../../../refrence/storeConfig"; // Ensure this is correctly set up
 import AddIcon from "@mui/icons-material/Add";
@@ -114,7 +114,7 @@ const HeroBannerAdd = ({ open, onClose }) => {
       }
 
       // Validate required fields
-      if (!url || (!desktopImageUrl && !mobileImageUrl)) {
+      if ((!desktopImageUrl && !mobileImageUrl)) {
         alert("Please provide a URL and at least one image.");
         return;
       }
@@ -123,9 +123,9 @@ const HeroBannerAdd = ({ open, onClose }) => {
       const heroBannerRef = doc(firestore, "banners/heroBanner");
 
       // Update the document by appending to the sideBanners array
-      await updateDoc(heroBannerRef, {
+      await setDoc(heroBannerRef, {
         mainBanners: arrayUnion({
-          url,
+          url:url||"",
           desktopImageUrl: desktopImageUrl || "", // Use empty string if not provided
           mobileImageUrl: mobileImageUrl || "", // Use empty string if not provided
           id: uuidv4(),
