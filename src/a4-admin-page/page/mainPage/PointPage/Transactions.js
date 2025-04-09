@@ -17,7 +17,7 @@ import {
   Typography,
   useTheme,
   ThemeProvider,
-  createTheme,
+  createTheme,Chip
 } from "@mui/material";
 import {
   QueryClient,
@@ -131,6 +131,25 @@ const Example = () => {
       {
         accessorKey: "type",
         header: "Төрөл",
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+
+          const getStatusProps = (type) => {
+            switch (type) {
+              case "promotion":
+                return { label: "Урамшуулал", color: "success" };
+              case "payment":
+                return { label: "Худалдан авалт", color: "error" };
+              case "transaction":
+                return { label: "Шилжүүлэг", color: "primary" };
+              default:
+                return { label: type, color: "default" };
+            }
+          };
+
+          const { label, color } = getStatusProps(value);
+          return <Chip label={label} color={color} size="small" />;
+        },
       },
       {
         accessorKey: "amount",
@@ -151,6 +170,10 @@ const Example = () => {
       {
         accessorKey: "timestamp",
         header: "Огноо",
+        Cell: ({ cell }) => {
+          const value = cell.getValue();
+          return dayjs(value).format("YYYY-MM-DD HH:mm:ss");
+        },
       },
       {
         accessorKey: "totalDeduction",
@@ -182,8 +205,8 @@ const Example = () => {
   function useGetUsers() {
     return useQuery({
       queryKey: ["transactions", searchTerm, fetchAll],
-      queryFn: async () => {   
-         try {
+      queryFn: async () => {
+        try {
           const user = auth.currentUser;
           const token = await user.getIdToken();
           if (fetchAll) {
@@ -202,7 +225,7 @@ const Example = () => {
             );
             console.log("result", result.data);
             return result.data.transactions;
-          } else if (searchTerm.length===8) {
+          } else if (searchTerm.length === 8) {
             console.log(searchTerm);
             const result = await axios.post(
               `/getTransactionById?phone=${searchTerm}`,
@@ -430,17 +453,6 @@ const Example = () => {
     initialState: {
       columnVisibility: {
         id: false,
-        ApplicantContactInformation: false,
-        RankName: false,
-        ResidentRegistrationNumber: false,
-        CenterName: false,
-        Address: false,
-        InviterId: false,
-        InviterName: false,
-        SponsorId: false,
-        SponsorName: false,
-        BankName: false,
-        AccountNumber: false,
       },
     },
     state: {
@@ -528,7 +540,7 @@ const Transactions = () => {
   return (
     <QueryClientProvider client={queryClient}>
       <Typography color="inherit" variant="h4">
-        Пойнт баланс
+        Шилжүүлэгийн мэдээлэл
       </Typography>
       <ThemeProvider theme={tableTheme}>
         <Example />

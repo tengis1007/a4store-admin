@@ -50,48 +50,28 @@ const csvConfig = mkConfig({
   decimalSeparator: ".",
   columnHeaders: [
     {
-      key: "MemberId",
+      key: "pointId",
+      displayLabel: "id",
+    },
+    {
+      key: "balance",
+      displayLabel: "Баланс",
+    },
+    {
+      key: "phone",
       displayLabel: "Утас",
     },
     {
-      key: "QuantityName",
+      key: "email",
+      displayLabel: "И-Мэйл",
+    },
+    {
+      key: "lastName",
+      displayLabel: "Овог",
+    },
+    {
+      key: "firstName",
       displayLabel: "Нэр",
-    },
-    {
-      key: "timeStamp",
-      displayLabel: "Огноо",
-    },
-    {
-      key: "Level",
-      displayLabel: "Шат",
-    },
-    {
-      key: "RankName",
-      displayLabel: "Цол",
-    },
-    {
-      key: "InviterPercent",
-      displayLabel: "Уригчид олгох хувь",
-    },
-    {
-      key: "SponsorId",
-      displayLabel: "Спонсор Id",
-    },
-    {
-      key: "SponsorName",
-      displayLabel: "Спонсорын нэр",
-    },
-    {
-      key: "InviterId",
-      displayLabel: "Уригчийн Id",
-    },
-    {
-      key: "InviterName",
-      displayLabel: "Уригчийн нэр",
-    },
-    {
-      key: "isBlackMember",
-      displayLabel: "BlackVIP",
     },
   ],
 });
@@ -132,6 +112,28 @@ const Example = () => {
       {
         accessorKey: "balance",
         header: "Баланс",
+        Cell: ({ cell }) => {
+          const value = cell.getValue() ?? 0;
+          return (
+            <Box
+              component="span"
+              sx={(theme) => ({
+                backgroundColor:
+                  value < 1
+                    ? theme.palette.success.dark // No background when value < 1
+                    : value >= 200000
+                      ? theme.palette.warning.dark // Orange for values >= 200,000
+                      : theme.palette.success.dark, // Green for values > 1 and < 200,000
+                borderRadius: "0.25rem",
+                color: "#fff",
+                maxWidth: "12ch",
+                p: "0.25rem",
+              })}
+            >
+              {value.toLocaleString("MN-mn")+"₮"}
+            </Box>
+          );
+        },
         enableClickToCopy: true,
       },
       {
@@ -194,11 +196,11 @@ const Example = () => {
             );
             console.log(result.data);
             return result.data;
-          } else if (searchTerm.length) {
+          } else if (searchTerm.length === 8) {
             console.log(searchTerm);
             console.log("token", token);
             const result = await axios.post(
-              `/getUserBalanceById?pointId=${searchTerm}`,
+              `/getUserBalanceById?phone=${searchTerm}`,
               { data: null },
               {
                 headers: {
@@ -419,18 +421,8 @@ const Example = () => {
     ),
     initialState: {
       columnVisibility: {
-        id: false,
-        ApplicantContactInformation: false,
-        RankName: false,
-        ResidentRegistrationNumber: false,
-        CenterName: false,
-        Address: false,
-        InviterId: false,
-        InviterName: false,
-        SponsorId: false,
-        SponsorName: false,
-        BankName: false,
-        AccountNumber: false,
+        pointId: false,
+        email: false,
       },
     },
     state: {
@@ -444,7 +436,7 @@ const Example = () => {
     <Box>
       <Box sx={{ display: "flex", gap: "1rem", marginBottom: "1rem" }}>
         <TextField
-          label="PointId оруулах"
+          label="Утасны дугаар оруулах"
           value={searchTerm}
           onChange={(e) => {
             setSearchTerm(e.target.value);
