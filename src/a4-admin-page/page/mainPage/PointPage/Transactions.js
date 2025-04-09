@@ -142,6 +142,8 @@ const Example = () => {
                 return { label: "Худалдан авалт", color: "error" };
               case "transaction":
                 return { label: "Шилжүүлэг", color: "primary" };
+              case "credit":
+                return { label: "Цэнэглэлт", color: "secondary" };
               default:
                 return { label: type, color: "default" };
             }
