@@ -26,7 +26,6 @@ import {
   ref,
   equalTo,
   orderByChild,
-  remove,
   update,
 } from "firebase/database";
 import { Box, lighten, TextField, Grid } from "@mui/material";
@@ -131,9 +130,7 @@ const ReactAdvancedMaterialTable = () => {
   //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
     useUpdateRequest();
-  //call DELETE hook
-  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteRequest();
+;
 
   //CREATE action
   const handleCreateRequest = async ({ values, table }) => {
@@ -246,7 +243,7 @@ const ReactAdvancedMaterialTable = () => {
     },
     state: {
       isLoading: isLoadingUsers,
-      isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
+      isSaving: isCreatingUser || isUpdatingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
     },
@@ -327,28 +324,6 @@ const ReactAdvancedMaterialTable = () => {
   }
 
   //DELETE hook (delete user in api)
-  function useDeleteRequest() {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: async (requestId) => {
-        //send api update request here
-        try {
-          await remove(ref(db, `request/${requestId}`));
-          return Promise.resolve();
-        } catch (error) {
-          console.log(error);
-        }
-      },
-      //client side optimistic update
-      onMutate: (requestId) => {
-        queryClient.setQueryData(["request"], (prevRequests) =>
-          prevRequests?.filter((request) => request.id !== requestId)
-        );
-      },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
-    });
-  }
-
   return <MaterialReactTable table={table} />;
 };
 

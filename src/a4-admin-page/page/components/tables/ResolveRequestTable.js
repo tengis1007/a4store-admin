@@ -47,7 +47,7 @@ import {
   AccordionSummary,
   Avatar,
   Stack,
-  Grid2,
+  Grid,
   Tooltip,
   Divider,
 } from "@mui/material";
@@ -59,7 +59,7 @@ import AccountTreeIcon from "@mui/icons-material/AccountTree";
 import PersonAddIcon from "@mui/icons-material/PersonAdd";
 import DeleteIcon from "@mui/icons-material/Delete";
 import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import { AuthStore, addPost } from "store/AuthStore";
+import { addPost } from "store/AuthStore";
 import MUIStepper from "../../components/MUIStepper";
 import { db } from "refrence/realConfig";
 import dayjs from "dayjs";
@@ -828,11 +828,11 @@ const ReactAdvancedMaterialTable = () => {
           >
             <MUIStepper row={row} />
           </Box>
-          <Grid2 container flexDirection="row" spacing={{ xs: 2, md: 3 }}>
+          <Grid container flexDirection="row" spacing={{ xs: 2, md: 3 }}>
             {Object.keys(row.original.Extra[0]).map(
               (key) =>
                 row.original.Extra[0][key] && (
-                  <Grid2 size={{ xs: 12, sm: 3 }} key={key}>
+                  <Grid size={{ xs: 12, sm: 3 }} key={key}>
                     <TextField
                       value={row.original.Extra[0][key]}
                       label={key}
@@ -840,10 +840,10 @@ const ReactAdvancedMaterialTable = () => {
                         readOnly: true,
                       }}
                     />
-                  </Grid2>
+                  </Grid>
                 )
             )}
-          </Grid2>
+          </Grid>
         </>
       );
     },
@@ -943,13 +943,13 @@ const ReactAdvancedMaterialTable = () => {
           sx={{ display: "flex", flexDirection: "column", gap: "1.5rem" }}
         >
           {modalButtonTitle === "дэлгэрэнгүй" ? (
-            <Grid2
+            <Grid
               container
               spacing={1}
               columnSpacing={{ xs: 2, sm: 2, md: 3 }}
               sx={{ marginTop: 1 }}
             >
-              <Grid2 size={{ xs: 12, sm: 12 }} justifyContent="center">
+              <Grid size={{ xs: 12, sm: 12 }} justifyContent="center">
                 <Box>
                   <Accordion>
                     <AccordionSummary
@@ -1324,8 +1324,8 @@ const ReactAdvancedMaterialTable = () => {
                     </AccordionDetails>
                   </Accordion>
                 </Box>
-              </Grid2>
-            </Grid2>
+              </Grid>
+            </Grid>
           ) : (
             <>
               <Typography variant="body">

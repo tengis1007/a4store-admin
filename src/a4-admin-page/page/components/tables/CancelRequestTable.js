@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import React, { useMemo, useState, useEffect } from "react";
+import React, { useMemo } from "react";
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 
@@ -26,42 +26,16 @@ import {
   ref,
   equalTo,
   orderByChild,
-  remove,
   update,
 } from "firebase/database";
-import {
-  Box,
-  ListItemIcon,
-  MenuItem,
-  lighten,
-  Dialog,
-  DialogTitle,
-  DialogContent,
-  DialogActions,
-  Button,
-  TextField,
-  ListItemText,
-  Typography,
-  ListSubheader,
-  List,
-  Grid,
-} from "@mui/material";
-import CheckIcon from "@mui/icons-material/Check";
-import ClearIcon from "@mui/icons-material/Clear";
-import DeleteIcon from "@mui/icons-material/Delete";
-import KeyboardReturnIcon from "@mui/icons-material/KeyboardReturn";
-import { AuthStore, addPost } from "store/AuthStore";
+import { Box, lighten, TextField, Grid } from "@mui/material";
+
 import { db } from "refrence/realConfig";
-import {
-  gridColumnGroupsUnwrappedModelSelector,
-  GridColumnMenuManageItem,
-} from "@mui/x-data-grid";
-import { Description } from "@mui/icons-material";
+
 import dayjs from "dayjs";
 import MUIStepper from "../../components/MUIStepper";
 
 const ReactAdvancedMaterialTable = () => {
-  const [validationErrors, setValidationErrors] = useState({});
   const userInfo = JSON.parse(localStorage.getItem("user"));
 
   const columns = useMemo(
@@ -165,30 +139,14 @@ const ReactAdvancedMaterialTable = () => {
   //call UPDATE hook
   const { mutateAsync: updateUser, isPending: isUpdatingUser } =
     useUpdateRequest();
-  //call DELETE hook
-  const { mutateAsync: deleteUser, isPending: isDeletingUser } =
-    useDeleteRequest();
-
   //CREATE action
   const handleCreateRequest = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
-    await createUser(values);
+       await createUser(values);
     table.setCreatingRow(null); //exit creating mode
   };
 
   //UPDATE action
-  const handleSaveRequest = async ({ values, table }) => {
-    const newValidationErrors = validateUser(values);
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
+  const handleSaveRequest = async ({ values, table }) => { 
     await updateUser(values);
     table.setEditingRow(null); //exit editing mode
   };
@@ -223,9 +181,8 @@ const ReactAdvancedMaterialTable = () => {
       shape: "rounded",
       variant: "outlined",
     },
-    onCreatingRowCancel: () => setValidationErrors({}),
-    onCreatingRowSave: handleCreateRequest,
-    onEditingRowCancel: () => setValidationErrors({}),
+   
+    onCreatingRowSave: handleCreateRequest,   
     onEditingRowSave: handleSaveRequest,
     renderDetailPanel: ({ row }) => {
       return (
@@ -247,7 +204,7 @@ const ReactAdvancedMaterialTable = () => {
             {Object.keys(row.original.Extra[0]).map(
               (key) =>
                 row.original.Extra[0][key] && (
-                  <Grid item xs={12} sm={3} key={key}>
+                  <Grid size={{xs:12, sm:3}} key={key}>
                     <TextField
                       value={row.original.Extra[0][key]}
                       label={key}
@@ -287,7 +244,7 @@ const ReactAdvancedMaterialTable = () => {
 
     state: {
       isLoading: isLoadingUsers,
-      isSaving: isCreatingUser || isUpdatingUser || isDeletingUser,
+      isSaving: isCreatingUser || isUpdatingUser,
       showAlertBanner: isLoadingUsersError,
       showProgressBars: isFetchingUsers,
     },
@@ -379,30 +336,6 @@ const ReactAdvancedMaterialTable = () => {
     });
   }
 
-  //DELETE hook (delete user in api)
-  function useDeleteRequest() {
-    const queryClient = useQueryClient();
-    return useMutation({
-      mutationFn: async (requestId) => {
-        //send api update request here
-        try {
-          await remove(ref(db, `request/${requestId}`));
-          return Promise.resolve();
-        } catch (error) {
-          console.log(error);
-          setValidationErrors(error);
-        }
-      },
-      //client side optimistic update
-      onMutate: (requestId) => {
-        queryClient.setQueryData(["request"], (prevRequests) =>
-          prevRequests?.filter((request) => request.id !== requestId)
-        );
-      },
-      onSettled: () => queryClient.invalidateQueries({ queryKey: ["request"] }), //refetch users after mutation, disabled for demo
-    });
-  }
-
   return <MaterialReactTable table={table} />;
 };
 
@@ -419,20 +352,3 @@ const CancelRequestTable = ({ data }) => (
 
 export default CancelRequestTable;
 
-const validateRequired = (value) => !!value.length;
-const validateEmail = (email) =>
-  !!email.length &&
-  email
-    .toLowerCase()
-    .match(
-      /^(([^<>()[\]\\.,;:\s@"]+(\.[^<>()[\]\\.,;:\s@"]+)*)|(".+"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/
-    );
-const validateUser = (user) => {
-  return {
-    firstName: !validateRequired(user.firstName)
-      ? "First Name is Required"
-      : "",
-    lastName: !validateRequired(user.lastName) ? "Last Name is Required" : "",
-    email: !validateEmail(user.email) ? "Incorrect Email Format" : "",
-  };
-};

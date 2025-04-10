@@ -267,7 +267,7 @@ const PointTransferStepper = () => {
       sendOtp(); // Automatically send OTP when moving to step 2
     } else if (activeStep === 3) {
     }
-  }, [activeStep]);
+  }, [activeStep, sendOtp]);
   const sendOtp = async () => {
     const requestBody = {
       phoneNumber: Number(userData.phone), // Use the phone number here or get it dynamically

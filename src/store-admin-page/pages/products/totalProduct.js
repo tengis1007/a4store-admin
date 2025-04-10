@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useCallback } from "react";
 import {
-  Grid2,
+  Grid,
   CircularProgress,
   Button,
   Snackbar,
@@ -154,9 +154,9 @@ const ProductList = () => {
       >
         Бүтээгдэхүүн нэмэх
       </Button>
-      <Grid2 sx={{ margin: "2vh" }} container spacing={2}>
+      <Grid sx={{ margin: "2vh" }} container spacing={2}>
       <Box sx={{ width: "100%" }}>
-        <Grid2 sx={{ margin: "2vh" }} container spacing={2}>
+        <Grid sx={{ margin: "2vh" }} container spacing={2}>
           {/* Use nullish coalescing and optional chaining for concise logic */}
           {(searchData?.length ? searchData : data || []).map((product) => (
             <ProductCard
@@ -166,9 +166,9 @@ const ProductList = () => {
               onEdit={() => handleOpenEditDialog(product)} // Pass product to edit handler
             />
           ))}
-        </Grid2>
+        </Grid>
         </Box>
-      </Grid2>
+      </Grid>
       {/* Add Product Dialog */}
       {openNewProductDialog && (
         <AddProduct

@@ -10,7 +10,7 @@ import {
   IconButton,
   TextField,
   Typography,
-  Grid2,
+  Grid,
   Card,
   CardMedia,
   CircularProgress,
@@ -245,10 +245,10 @@ const News = () => {
       >
         Мэдээ нэмэх
       </Button>
-      <Grid2 container spacing={2}>
+      <Grid container spacing={2}>
         {news.length > 0 ? (
           news.map((org) => (
-            <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={org.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={org.id}>
               <Card sx={{ boxShadow: 3, borderRadius: 2 }}>
                 {["image", "annoucement", "post"].includes(org.type) && (
                   <CardMedia
@@ -295,12 +295,12 @@ const News = () => {
                   </Box>
                 </Box>
               </Card>
-            </Grid2>
+            </Grid>
           ))
         ) : (
           <Typography variant="body1">Мэдээлэл байхгүй байна</Typography>
         )}
-      </Grid2>
+      </Grid>
       <Dialog open={dialogOpen} onClose={resetAll} fullWidth maxWidth="sm">
         <DialogTitle>{editOrg ? "Засах" : "Мэдээ нэмэх"}</DialogTitle>
         <DialogContent>

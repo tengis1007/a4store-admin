@@ -4,7 +4,7 @@ import {
   AppBar,
   Box,
   FormControl,
-  Grid2,
+  Grid,
   IconButton,
   MenuItem,
   TextField,
@@ -951,8 +951,8 @@ const CreateApproval = ({ open, setOpen }) => {
             }}
           >
             <FormControl>
-              <Grid2 container spacing={1}>
-                <Grid2
+              <Grid container spacing={1}>
+                <Grid
                   size={{ xs: 12 }}
                   sx={{
                     display: "flex",
@@ -960,7 +960,7 @@ const CreateApproval = ({ open, setOpen }) => {
                     marginBottom: 2,
                   }}
                 >
-                  <Grid2 flexDirection="column" size={{ xs: 12 }}>
+                  <Grid flexDirection="column" size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       id="search-type"
@@ -992,7 +992,7 @@ const CreateApproval = ({ open, setOpen }) => {
                         </MenuItem>
                       ))}
                     </TextField>
-                  </Grid2>
+                  </Grid>
                   {/* <Box sx={{ position: "relative", marginLeft: 2 }}>
                     <Fab
                       aria-label="save"
@@ -1014,13 +1014,13 @@ const CreateApproval = ({ open, setOpen }) => {
                       />
                     )}
                   </Box> */}
-                </Grid2>
-              </Grid2>
-              <Grid2 container spacing={1}>
+                </Grid>
+              </Grid>
+              <Grid container spacing={1}>
                 {selectedApprovalType === "Уригч солих" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
-                      <Grid2
+                    <Grid size={{ xs: 12 }}>
+                      <Grid
                         size={{ md: 12 }}
                         sx={{
                           display: "flex",
@@ -1046,9 +1046,9 @@ const CreateApproval = ({ open, setOpen }) => {
                         >
                           Шинэ уригч
                         </Typography>
-                      </Grid2>
+                      </Grid>
                       {userList.map((singleUser, index) => (
-                        <Grid2
+                        <Grid
                           key={index}
                           size={{ xs: 12 }}
                           sx={{
@@ -1058,7 +1058,7 @@ const CreateApproval = ({ open, setOpen }) => {
                           }}
                         >
                           {/* Хуучин уригч ID */}
-                          <Grid2
+                          <Grid
                             sx={{ display: "flex", flexDirection: "column" }}
                           >
                             <TextField
@@ -1078,7 +1078,7 @@ const CreateApproval = ({ open, setOpen }) => {
                               onChange={(e) => handleUserChange(e, index)}
                               required
                             />
-                          </Grid2>
+                          </Grid>
                           {userList.length - 1 === index ? (
                             <Box sx={{ position: "relative" }}>
                               <Fab
@@ -1105,7 +1105,7 @@ const CreateApproval = ({ open, setOpen }) => {
                             </Box>
                           )}
                           {/* Хуучин уригч ID */}
-                          <Grid2
+                          <Grid
                             item
                             sx={{ display: "flex", flexDirection: "column" }}
                           >
@@ -1126,18 +1126,18 @@ const CreateApproval = ({ open, setOpen }) => {
                               onChange={(e) => handleUserChange(e, index)}
                               required
                             />
-                          </Grid2>
-                        </Grid2>
+                          </Grid>
+                        </Grid>
                       ))}
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2 container spacing={1}>
+              </Grid>
+              <Grid container spacing={1}>
                 {selectedApprovalType === "Спонсор солих" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
-                      <Grid2
+                    <Grid size={{ xs: 12 }}>
+                      <Grid
                         item
                         md={12}
                         sx={{
@@ -1164,9 +1164,9 @@ const CreateApproval = ({ open, setOpen }) => {
                         >
                           Шинэ спонсор
                         </Typography>
-                      </Grid2>
+                      </Grid>
                       {userList.map((singleUser, index) => (
-                        <Grid2
+                        <Grid
                           item
                           key={index}
                           xs={12}
@@ -1177,7 +1177,7 @@ const CreateApproval = ({ open, setOpen }) => {
                           }}
                         >
                           {/* Хуучин уригч ID */}
-                          <Grid2
+                          <Grid
                             item
                             sx={{ display: "flex", flexDirection: "column" }}
                           >
@@ -1198,7 +1198,7 @@ const CreateApproval = ({ open, setOpen }) => {
                               onChange={(e) => handleUserChange(e, index)}
                               required
                             />
-                          </Grid2>
+                          </Grid>
                           {userList.length - 1 === index ? (
                             <Box sx={{ position: "relative" }}>
                               <Fab
@@ -1225,7 +1225,7 @@ const CreateApproval = ({ open, setOpen }) => {
                             </Box>
                           )}
                           {/* Хуучин уригч ID */}
-                          <Grid2
+                          <Grid
                             item
                             sx={{ display: "flex", flexDirection: "column" }}
                           >
@@ -1246,18 +1246,18 @@ const CreateApproval = ({ open, setOpen }) => {
                               onChange={(e) => handleUserChange(e, index)}
                               required
                             />
-                          </Grid2>
-                        </Grid2>
+                          </Grid>
+                        </Grid>
                       ))}
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2 container spacing={1}>
+              </Grid>
+              <Grid container spacing={1}>
                 {selectedApprovalType === "Дансны дугаар солих" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
-                      <Grid2
+                    <Grid size={{ xs: 12 }}>
+                      <Grid
                         item
                         md={12}
                         sx={{
@@ -1284,9 +1284,9 @@ const CreateApproval = ({ open, setOpen }) => {
                         >
                           Шинэ банк
                         </Typography>
-                      </Grid2>
+                      </Grid>
                       {userList.map((singleUser, index) => (
-                        <Grid2
+                        <Grid
                           item
                           key={index}
                           xs={12}
@@ -1297,7 +1297,7 @@ const CreateApproval = ({ open, setOpen }) => {
                           }}
                         >
                           {/* Хуучин уригч ID */}
-                          <Grid2 item sx={{ flexDirection: "column" }}>
+                          <Grid item sx={{ flexDirection: "column" }}>
                             <TextField
                               fullWidth
                               name="oldBankName"
@@ -1313,7 +1313,7 @@ const CreateApproval = ({ open, setOpen }) => {
                               onChange={(e) => handleUserChange(e, index)}
                               required
                             />
-                          </Grid2>
+                          </Grid>
                           {userList.length - 1 === index ? (
                             <Box sx={{ position: "relative" }}>
                               <Fab
@@ -1340,7 +1340,7 @@ const CreateApproval = ({ open, setOpen }) => {
                             </Box>
                           )}
                           {/* Хуучин уригч ID */}
-                          <Grid2 item sx={{ flexDirection: "column" }}>
+                          <Grid item sx={{ flexDirection: "column" }}>
                             <TextField
                               fullWidth
                               name="newBankName"
@@ -1365,19 +1365,19 @@ const CreateApproval = ({ open, setOpen }) => {
                               onChange={(e) => handleUserChange(e, index)}
                               required
                             />
-                          </Grid2>
-                        </Grid2>
+                          </Grid>
+                        </Grid>
                       ))}
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2 container spacing={1} sx={{ marginTop: 1 }}>
+              </Grid>
+              <Grid container spacing={1} sx={{ marginTop: 1 }}>
                 {selectedApprovalType === "Овог солих" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12 }}>
                       {userList.map((singleUser, index) => (
-                        <Grid2
+                        <Grid
                           item
                           key={index}
                           xs={12}
@@ -1401,18 +1401,18 @@ const CreateApproval = ({ open, setOpen }) => {
                             sx={{ marginLeft: 1 }}
                             required
                           />
-                        </Grid2>
+                        </Grid>
                       ))}
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2 container spacing={1} sx={{ marginTop: 1 }}>
+              </Grid>
+              <Grid container spacing={1} sx={{ marginTop: 1 }}>
                 {selectedApprovalType === "Нэр солих" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12 }}>
                       {userList.map((singleUser, index) => (
-                        <Grid2
+                        <Grid
                           item
                           key={index}
                           xs={12}
@@ -1436,19 +1436,19 @@ const CreateApproval = ({ open, setOpen }) => {
                             sx={{ marginLeft: 1 }}
                             required
                           />
-                        </Grid2>
+                        </Grid>
                       ))}
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2 container spacing={1} sx={{ marginTop: 1 }}>
+              </Grid>
+              <Grid container spacing={1} sx={{ marginTop: 1 }}>
                 {selectedApprovalType ===
                   "Худалдан авалт хийж болохгүй байгаа" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12 }}>
                       {userList.map((singleUser, index) => (
-                        <Grid2
+                        <Grid
                           item
                           key={index}
                           xs={12}
@@ -1470,13 +1470,13 @@ const CreateApproval = ({ open, setOpen }) => {
                               ),
                             }}
                           />
-                        </Grid2>
+                        </Grid>
                       ))}
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2
+              </Grid>
+              <Grid
                 container
                 spacing={1}
                 columnSpacing={{ xs: 2, sm: 2, md: 3 }}
@@ -1484,7 +1484,7 @@ const CreateApproval = ({ open, setOpen }) => {
               >
                 {selectedApprovalType === "Буцаалт хийх" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12 }}>
                       {userList.map((singleUser, index) => (
                         <div key={index}>
                           <TextField
@@ -1526,13 +1526,13 @@ const CreateApproval = ({ open, setOpen }) => {
                           />
                         </div>
                       ))}
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12 }} sx={{ marginBottom: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 12 }} sx={{ marginBottom: 2 }}>
                       <Typography variant="body2" align="center">
                         Гишүүний мэдээлэл
                       </Typography>
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12 }} justifyContent="center">
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 12 }} justifyContent="center">
                       <Box>
                         <Accordion>
                           <AccordionSummary
@@ -1916,11 +1916,11 @@ const CreateApproval = ({ open, setOpen }) => {
                           </AccordionDetails>
                         </Accordion>
                       </Box>
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2
+              </Grid>
+              <Grid
                 container
                 spacing={1}
                 columnSpacing={{ xs: 2, sm: 2, md: 3 }}
@@ -1928,7 +1928,7 @@ const CreateApproval = ({ open, setOpen }) => {
               >
                 {selectedApprovalType === "E-баримт олголт" && (
                   <>
-                    <Grid2 size={{ xs: 12, sm: 12 }}>
+                    <Grid size={{ xs: 12, sm: 12 }}>
                       {userList.map((singleUser, index) => (
                         <TextField
                           key={index}
@@ -1948,13 +1948,13 @@ const CreateApproval = ({ open, setOpen }) => {
                           }}
                         />
                       ))}
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12 }} sx={{ marginBottom: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 12 }} sx={{ marginBottom: 2 }}>
                       <Typography variant="body2" align="center">
                         Гишүүний мэдээлэл
                       </Typography>
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12 }} justifyContent="center">
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 12 }} justifyContent="center">
                       <Box>
                         <Accordion>
                           <AccordionSummary
@@ -2260,14 +2260,14 @@ const CreateApproval = ({ open, setOpen }) => {
                           </AccordionDetails>
                         </Accordion>
                       </Box>
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2 container spacing={1} sx={{ marginTop: 1 }}>
+              </Grid>
+              <Grid container spacing={1} sx={{ marginTop: 1 }}>
                 {selectedApprovalType === "Бүтээгдэхүүн олголт" && (
                   <>
-                    <Grid2 size={{ xs: 12 }}>
+                    <Grid size={{ xs: 12 }}>
                       {userList.map((singleUser, index) => (
                         <div key={index}>
                           <TextField
@@ -2299,13 +2299,13 @@ const CreateApproval = ({ open, setOpen }) => {
                           />
                         </div>
                       ))}
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12 }} sx={{ marginBottom: 2 }}>
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 12 }} sx={{ marginBottom: 2 }}>
                       <Typography variant="body2" align="center">
                         Гишүүний мэдээлэл
                       </Typography>
-                    </Grid2>
-                    <Grid2 size={{ xs: 12, sm: 12 }} justifyContent="center">
+                    </Grid>
+                    <Grid size={{ xs: 12, sm: 12 }} justifyContent="center">
                       <Box>
                         <Accordion>
                           <AccordionSummary
@@ -2613,13 +2613,13 @@ const CreateApproval = ({ open, setOpen }) => {
                           </AccordionDetails>
                         </Accordion>
                       </Box>
-                    </Grid2>
+                    </Grid>
                   </>
                 )}
-              </Grid2>
-              <Grid2 container spacing={1} sx={{ marginTop: 5 }}>
+              </Grid>
+              <Grid container spacing={1} sx={{ marginTop: 5 }}>
                 {ID && selectedApprovalType && (
-                  <Grid2 size={{ xs: 12 }}>
+                  <Grid size={{ xs: 12 }}>
                     <TextField
                       fullWidth
                       id="multiline-comment"
@@ -2633,9 +2633,9 @@ const CreateApproval = ({ open, setOpen }) => {
                       }}
                       required
                     />
-                  </Grid2>
+                  </Grid>
                 )}
-                <Grid2 size={{ xs: 12 }}>
+                <Grid size={{ xs: 12 }}>
                   <LoadingButton
                     fullWidth
                     disabled={!isValid}
@@ -2647,8 +2647,8 @@ const CreateApproval = ({ open, setOpen }) => {
                   >
                     <span>Submit</span>
                   </LoadingButton>
-                </Grid2>
-              </Grid2>
+                </Grid>
+              </Grid>
             </FormControl>
           </Box>
         </Box>

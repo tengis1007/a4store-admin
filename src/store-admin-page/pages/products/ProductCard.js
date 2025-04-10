@@ -1,11 +1,11 @@
-import React, { useState, useCallback } from "react";
+import React from "react";
 import {
   Card,
   CardContent,
   CardMedia,
   Typography,
   IconButton,
-  Grid2,
+  Grid,
   CardActions,
 } from "@mui/material";
 import EditIcon from "@mui/icons-material/Edit";
@@ -26,7 +26,7 @@ const ProductCard = ({ product, onEdit, onDelete }) => {
 
   console.log(product);
   return (
-<Grid2 size={{ xs: 12, sm: 4, md: 5, lg: 2 }}>
+<Grid size={{ xs: 12, sm: 4, md: 5, lg: 2 }}>
       <Card
         sx={{
           boxShadow: "0px 4px 12px rgba(0, 0, 0, 0.3)",
@@ -144,7 +144,7 @@ const ProductCard = ({ product, onEdit, onDelete }) => {
           </IconButton>
         </CardActions>
       </Card>
-    </Grid2>
+    </Grid>
   );
 };
 
