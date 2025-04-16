@@ -28,7 +28,7 @@ import {
   orderByChild,
   update,
 } from "firebase/database";
-import { Box, lighten, TextField, Grid2 } from "@mui/material";
+import { Box, lighten, TextField, Grid } from "@mui/material";
 import MUIStepper from "../../components/MUIStepper";
 import dayjs from "dayjs";
 import { db } from "refrence/realConfig";
@@ -195,11 +195,11 @@ const ReactAdvancedMaterialTable = () => {
           >
             <MUIStepper row={row} />
           </Box>
-          <Grid2 container flexDirection="row" spacing={{ xs: 2, md: 3 }}>
+          <Grid container flexDirection="row" spacing={{ xs: 2, md: 3 }}>
             {Object.keys(row.original.Extra[0]).map(
               (key) =>
                 row.original.Extra[0][key] && (
-                  <Grid2 size={{ xs: 12, sm: 3 }} key={key}>
+                  <Grid size={{ xs: 12, sm: 3 }} key={key}>
                     <TextField
                       value={row.original.Extra[0][key]}
                       label={key}
@@ -207,10 +207,10 @@ const ReactAdvancedMaterialTable = () => {
                         readOnly: true,
                       }}
                     />
-                  </Grid2>
+                  </Grid>
                 )
             )}
-          </Grid2>
+          </Grid>
         </>
       );
     },

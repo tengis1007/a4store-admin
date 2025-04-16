@@ -19,7 +19,7 @@ import {
   lighten,
   Card,
   CardContent,
-  Grid2,
+  Grid,
   CardMedia,
   Paper,
   Stack,
@@ -550,7 +550,7 @@ const [dataLength , setDataLenght] = useState(0);
           >
             Бүтээгдэхүүн
           </Typography>
-          <Grid2 container spacing={35} sx={{ marginLeft: 12 }}>
+          <Grid container spacing={35} sx={{ marginLeft: 12 }}>
             {products.map((product) => {
               const thumbnails = product.imgs?.thumbnails;
 
@@ -560,7 +560,7 @@ const [dataLength , setDataLenght] = useState(0);
               }
 
               return (
-                <Grid2 size={{ xs: 1, sm: 1, md: 1 }} key={product.id}>
+                <Grid size={{ xs: 1, sm: 1, md: 1 }} key={product.id}>
                   {/* Each product in a grid item */}
                   <Card
                     sx={{
@@ -633,10 +633,10 @@ const [dataLength , setDataLenght] = useState(0);
                       </Typography>
                     </CardContent>
                   </Card>
-                </Grid2>
+                </Grid>
               );
             })}
-          </Grid2>
+          </Grid>
           <Typography
             variant="h5"
             gutterBottom
@@ -647,64 +647,64 @@ const [dataLength , setDataLenght] = useState(0);
           >
             Хүргэлтийн мэдээлэл
           </Typography>
-          <Grid2 container spacing={2} sx={{ marginLeft: 12 }}>
+          <Grid container spacing={2} sx={{ marginLeft: 12 }}>
             {rows && rows.length > 0 ? (
               rows.map((row, index) => (
-                <Grid2 item xs={12} sm={6} md={4} key={index}>
+                <Grid item xs={12} sm={6} md={4} key={index}>
                   <Card sx={{ maxWidth: 345 }}>
                     <CardContent>
-                      <Grid2 container spacing={2}>
-                        <Grid2 item xs={12} sm={6}>
+                      <Grid container spacing={2}>
+                        <Grid item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>Хот/Аймаг:</strong> {row.aimag}
                           </Typography>
-                        </Grid2>
-                        <Grid2 item xs={12} sm={6}>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>Дүүрэг/Сум:</strong> {row.sum}
                           </Typography>
-                        </Grid2>
-                        <Grid2 item xs={12} sm={6}>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>Баг/Хороо:</strong> {row.bag}
                           </Typography>
-                        </Grid2>
-                        <Grid2 item xs={12} sm={6}>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>Гэрийн хаяг:</strong> {row.address}
                           </Typography>
-                        </Grid2>
+                        </Grid>
 
-                        <Grid2 item xs={12} sm={6}>
+                        <Grid item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>Дэлгэрэнгүй хаяг:</strong> {row.fullAddress}
                           </Typography>
-                        </Grid2>
-                        <Grid2 item xs={12} sm={6}>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>Холбоо барих дугаар:</strong> {row.phone}
                           </Typography>
-                        </Grid2>
-                        <Grid2 item xs={12} sm={6}>
+                        </Grid>
+                        <Grid item xs={12} sm={6}>
                           <Typography variant="body2" color="text.secondary">
                             <strong>И-Мэйл хаяг:</strong> {row.email}
                           </Typography>
-                        </Grid2>
-                      </Grid2>
+                        </Grid>
+                      </Grid>
                     </CardContent>
                   </Card>
-                </Grid2>
+                </Grid>
               ))
             ) : (
-              <Grid2 item xs={12}>
+              <Grid item xs={12}>
                 <Paper sx={{ padding: 2, textAlign: "center" }}>
                   <Typography variant="h6" color="text.secondary">
                     No data available
                   </Typography>
                 </Paper>
-              </Grid2>
+              </Grid>
             )}
-          </Grid2>
+          </Grid>
         </>
       );
     },

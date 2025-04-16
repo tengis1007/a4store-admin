@@ -2,21 +2,12 @@ import React, { useState } from "react";
 import PropTypes from "prop-types";
 
 // MUI Components
-import {
-  IconButton,
-  Stack,
-  Chip,
-  Typography,
-  Menu,
-  MenuItem,
-} from "@mui/material";
+import { Stack, Chip, Typography, Menu, MenuItem } from "@mui/material";
 import { signOut } from "firebase/auth";
 import { auth } from "refrence/storeConfig"; // Use the pre-configured Firebase auth instance
 // MUI Icons
 import Avatar from "@mui/material/Avatar";
 import AccountCircleIcon from "@mui/icons-material/AccountCircle";
-import LightModeIcon from "@mui/icons-material/LightMode";
-import DarkModeIcon from "@mui/icons-material/DarkMode";
 import DashboardIcon from "@mui/icons-material/Dashboard";
 import MarkChatUnreadIcon from "@mui/icons-material/MarkChatUnread";
 import LocalGroceryStoreIcon from "@mui/icons-material/LocalGroceryStore";
@@ -33,14 +24,8 @@ import Groups2Icon from "@mui/icons-material/Groups2";
 import FiberNewIcon from "@mui/icons-material/FiberNew";
 import CurrencyRubleIcon from "@mui/icons-material/CurrencyRuble";
 import SettingsInputComponentIcon from "@mui/icons-material/SettingsInputComponent";
-
 // MUI Theming
-import {
-  createTheme,
-  CssVarsProvider,
-  useColorScheme,
-} from "@mui/material/styles";
-
+import { createTheme, CssVarsProvider } from "@mui/material/styles";
 // Toolpad Core
 import { AppProvider } from "@toolpad/core/AppProvider";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";

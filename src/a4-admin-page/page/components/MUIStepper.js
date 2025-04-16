@@ -1,4 +1,4 @@
-import * as React from "react";
+import React, {useMemo} from "react";
 import PropTypes from "prop-types";
 import { styled } from "@mui/material/styles";
 import Stack from "@mui/material/Stack";
@@ -10,13 +10,11 @@ import Avatar from "@mui/material/Avatar";
 import StepConnector, {
   stepConnectorClasses,
 } from "@mui/material/StepConnector";
-import { AuthStore } from "store/AuthStore";
 import { Typography, Tooltip, Box, Card, CardContent } from "@mui/material";
 import dayjs from "dayjs";
 
 export default function CustomizedSteppers({ row }) {
-  const [levelUp, setLevelUp] = React.useState(row.original.Level - 1);
-
+  const levelUp = useMemo(() => row.original.Level - 1, [row]);
   const QontoStepIconRoot = styled("div")(({ theme, ownerState }) => ({
     color: theme.palette.mode === "dark" ? theme.palette.grey[700] : "#eaeaf0",
     display: "flex",

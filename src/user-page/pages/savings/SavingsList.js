@@ -7,7 +7,7 @@ import {
   CircularProgress,
   CardActions,
   Typography,
-  Grid2,
+  Grid,
   Button,
   Chip,
 } from "@mui/material";
@@ -120,10 +120,10 @@ const DepositCardList = ({ user }) => {
       <Typography variant="h6" sx={{ mb: 2 }}>
         Хадгалалтын түүх
       </Typography>
-      <Grid2 container spacing={2}>
+      <Grid container spacing={2}>
         {deposits.length > 0 ? (
           deposits.map((deposit) => (
-            <Grid2 size={{ xs: 12, sm: 6, md: 4 }} key={deposit.id}>
+            <Grid size={{ xs: 12, sm: 6, md: 4 }} key={deposit.id}>
               <Card sx={{ minWidth: 250, boxShadow: 3 }}>
                 <CardContent>
                   <Typography variant="h6" color="primary">
@@ -172,12 +172,12 @@ const DepositCardList = ({ user }) => {
                   )}
                 </CardActions>
               </Card>
-            </Grid2>
+            </Grid>
           ))
         ) : (
           <Typography>Жагсаалт олдсонгүй.</Typography>
         )}
-      </Grid2>
+      </Grid>
 
       <Dialog
         open={open}

@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from "react";
 import {
-  Grid2,
+  Grid,
   CircularProgress,
   Button,
   Dialog,
@@ -137,7 +137,7 @@ const CategoryList = () => {
       </Dialog>
 
       <div style={{ display: "flex", width: "100%" }}>
-        <Grid2
+        <Grid
           sx={{
             margin: "2vh",
           }}
@@ -147,7 +147,7 @@ const CategoryList = () => {
           {data.map((category) => (
             <CategoryCard key={category.id} category={category} />
           ))}
-        </Grid2>
+        </Grid>
       </div>
     </>
   );

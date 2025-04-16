@@ -4,9 +4,8 @@ import {
   Routes,
   Route,
   useNavigate,
-  useLocation,
 } from "react-router-dom";
-import { auth, firebase } from "./refrence/storeConfig"; // Use the pre-configured Firebase auth instance
+import { auth } from "./refrence/storeConfig"; // Use the pre-configured Firebase auth instance
 import { onAuthStateChanged } from "firebase/auth";
 import ProtectedRoute from "./ProtectedRoute";
 import Signin from "./user-page/auth/signin";
@@ -30,10 +29,8 @@ import Loading from "./user-page/components/Loading";
 import "./index.css";
 
 const AppContent = () => {
-  const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate(); // Use navigate hook here
-  const location = useLocation();
   const token = new URLSearchParams(window.location.search).get("token");
   // Listen to authentication state changes
 
@@ -41,22 +38,20 @@ const AppContent = () => {
     const unsubscribe = onAuthStateChanged(auth, (user) => {
       if (user) {
         if (!token) {
-          setUser(user);
           console.log("User is signed in:", user);
           // If user is signed in, navigate to home page (only once)
-          if (window.location.pathname == "/signin") {
+          if (window.location.pathname === "/signin") {
             navigate("/wallet");
           }
         }
       } else {
-        setUser(null);
         console.log("No user is signed in.");
       }
       setLoading(false); // Stop showing loading state once auth state is determined
     });
 
     return () => unsubscribe(); // Cleanup listener on unmount
-  }, [navigate]);
+  }, [navigate, token]);
   const theme = createTheme({
     cssVariables: true,
     palette: {
