@@ -14,7 +14,7 @@ import {
   CircularProgress,
 } from "@mui/material";
 import { styled } from "@mui/system";
-import { doc, updateDoc, arrayUnion } from "firebase/firestore";
+import { doc, updateDoc,setDoc, arrayUnion } from "firebase/firestore";
 import { ref, uploadBytesResumable, getDownloadURL } from "firebase/storage";
 import { firestore, storage } from "../../../refrence/storeConfig"; // Ensure this is correctly set up
 import AddIcon from "@mui/icons-material/Add";

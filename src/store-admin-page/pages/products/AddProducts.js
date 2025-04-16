@@ -37,6 +37,9 @@ const AddProductDialog = ({ open, onClose }) => {
     discountedPrice: "",
     previews: [],
     thumbnails: [],
+    discount:"",
+    status:"",
+    comingSoon:false
   });
   const [openPreviewDialog, setOpenPreviewDialog] = useState(false);
   const [previewImage, setPreviewImage] = useState("");
@@ -71,8 +74,14 @@ const AddProductDialog = ({ open, onClose }) => {
 
     setProduct((prevProduct) => ({
       ...prevProduct,
-      [type]: [...(prevProduct[type] || []), ...filePreviews.map((item) => item.file)],
-      [`${type}Urls`]: [...(prevProduct[`${type}Urls`] || []), ...filePreviews.map((item) => item.url)],
+      [type]: [
+        ...(prevProduct[type] || []),
+        ...filePreviews.map((item) => item.file),
+      ],
+      [`${type}Urls`]: [
+        ...(prevProduct[`${type}Urls`] || []),
+        ...filePreviews.map((item) => item.url),
+      ],
     }));
   };
 
@@ -96,7 +105,10 @@ const AddProductDialog = ({ open, onClose }) => {
       const uploadImages = async (files, folder) => {
         const uploadedUrls = [];
         for (let file of files) {
-          const fileRef = ref(storage, `products/${product.category}/${file.name}`);
+          const fileRef = ref(
+            storage,
+            `products/${product.category}/${file.name}`
+          );
           await uploadBytesResumable(fileRef, file);
           const downloadURL = await getDownloadURL(fileRef);
           uploadedUrls.push(downloadURL);
@@ -105,7 +117,10 @@ const AddProductDialog = ({ open, onClose }) => {
       };
 
       const previewUrls = await uploadImages(product.previews, "previews");
-      const thumbnailUrls = await uploadImages(product.thumbnails, "thumbnails");
+      const thumbnailUrls = await uploadImages(
+        product.thumbnails,
+        "thumbnails"
+      );
 
       const productData = {
         title: product.title,
@@ -117,7 +132,9 @@ const AddProductDialog = ({ open, onClose }) => {
         discountedPrice: Number(product.discountedPrice),
         reviews: product.reviews,
         timestamp: new Date(),
-        status: "in Stock",
+        status: Number(product.status),
+        discount: Number(product.discount),
+        comingSoon: product.comingSoon,
         imgs: {
           previews: previewUrls,
           thumbnails: thumbnailUrls,
@@ -146,6 +163,9 @@ const AddProductDialog = ({ open, onClose }) => {
       ingredients: "",
       instructions: "",
       reviews: 1,
+      discount: 0,
+      status: 0,
+      comingSoon: false,
       discountedPrice: "",
       previews: [],
       thumbnails: [],
@@ -160,7 +180,7 @@ const AddProductDialog = ({ open, onClose }) => {
     <Dialog open={open} onClose={onClose} maxWidth="md" fullWidth>
       <DialogContent>
         <Typography variant="h5" gutterBottom>
-         Бүтээгдэхүүн нэмэх
+          Бүтээгдэхүүн нэмэхs
         </Typography>
 
         {/* Form Fields */}
@@ -183,6 +203,7 @@ const AddProductDialog = ({ open, onClose }) => {
               onChange={handleChange}
               fullWidth
               required
+              type="number"
             />
           </Grid>
           <Grid item xs={12}>
@@ -192,6 +213,43 @@ const AddProductDialog = ({ open, onClose }) => {
               value={product.discountedPrice}
               onChange={handleChange}
               fullWidth
+              type="number"
+              required
+            />
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Хямдарсан хувь"
+              name="discount"
+              value={product.discount}
+              onChange={handleChange}
+              fullWidth
+              type="number"
+            />
+          </Grid>
+
+          <Grid item xs={12}>
+    
+          <TextField
+            select
+            label="Хямдарсан хувь"
+            name="comingSoon"
+            value={product.comingSoon}
+            onChange={handleChange}
+            fullWidth
+          >
+            <MenuItem value={false}> Бэлэн байгаа</MenuItem>
+            <MenuItem value={true}> Тун удахгүй</MenuItem>
+          </TextField>
+          </Grid>
+          <Grid item xs={12}>
+            <TextField
+              label="Агуулахын үлдэгдэл"
+              name="status"
+              value={product.status}
+              onChange={handleChange}
+              fullWidth
+              type="number"
             />
           </Grid>
           <Grid item xs={12}>

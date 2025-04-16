@@ -12,6 +12,8 @@ import {
   InputLabel,
   Select,
   MenuItem,
+  TextareaAutosize,
+  FormLabel,
 } from "@mui/material";
 import { doc, updateDoc, collection, getDocs } from "firebase/firestore";
 import { firestore } from "../../../refrence/storeConfig";
@@ -23,6 +25,7 @@ import {
 } from "firebase/storage";
 import { storage } from "../../../refrence/storeConfig";
 import DeleteIcon from "@mui/icons-material/Delete";
+
 
 const EditProductDialog = ({ product, onClose, onSave }) => {
   const [productName, setProductName] = useState(product.title);
@@ -41,7 +44,8 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
   const [categories, setCategories] = useState([]);
   const [category, setCategory] = useState(product.category || ""); // Ангилалын төлөв
   const [status, setStatus] = useState(product.status);
-
+  const [discount, setDiscount] = useState(product.discount);
+  const [comingSoon, setComingSoon] = useState(product.comingSoon);
   useEffect(() => {
     const fetchCategories = async () => {
       const categoriesCollection = collection(firestore, "categories");
@@ -92,20 +96,24 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
   const handleSave = async () => {
     try {
       const updatedProductData = {};
-      if (product.title !== productName)
-        updatedProductData.title = productName;
+      if (product.title !== productName) updatedProductData.title = productName;
       if (product.ingredients !== productDescription)
         updatedProductData.ingredients = productDescription;
       if (product.price !== productPrice)
         updatedProductData.price = productPrice;
+      if (Number(product.status) !== Number(status))
+        updatedProductData.status = Number(status);
+      if (Number(product.discount) !== Number(discount))
+        updatedProductData.discount = Number(discount);
       if (product.discountedPrice !== discountedPrice)
         updatedProductData.discountedPrice = discountedPrice;
       if (product.moreDetails !== moreDetails)
         updatedProductData.moreDetails = moreDetails;
       if (product.instructions !== instructions)
         updatedProductData.instructions = instructions;
-      if (product.category !== category)
-        updatedProductData.category = category;
+      if(product.comingSoon!== comingSoon)
+        updatedProductData = comingSoon
+      if (product.category !== category) updatedProductData.category = category;
       if (
         product.imgs.thumbnails.length !== images.length ||
         !images.every((img, index) => img === product.imgs.thumbnails[index])
@@ -126,7 +134,9 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
         const imageExists = await checkImageExists(imageRef);
         if (imageExists) {
           await deleteObject(imageRef);
-          console.log(`Firebase Storage-аас зураг амжилттай устгагдлаа: ${imageUrl}`);
+          console.log(
+            `Firebase Storage-аас зураг амжилттай устгагдлаа: ${imageUrl}`
+          );
         } else {
           console.log(`Зураг олдсонгүй, устгахаас болих: ${imageUrl}`);
         }
@@ -144,7 +154,10 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
       });
       onClose();
     } catch (error) {
-      console.error("Бүтээгдэхүүний мэдээллийг шинэчлэхэд алдаа гарлаа:", error);
+      console.error(
+        "Бүтээгдэхүүний мэдээллийг шинэчлэхэд алдаа гарлаа:",
+        error
+      );
     }
   };
 
@@ -178,10 +191,29 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
           margin="normal"
         />
         <TextField
-          label="Хямдруулсан үнэ"
+          select
+          label="Хямдарсан хувь"
+          name="comingSoon"
+          value={comingSoon}
+          onChange={(e)=> setComingSoon(e.target.vaue)}
+          fullWidth
+        >
+          <MenuItem value={false}> Бэлэн байгаа</MenuItem>
+          <MenuItem value={true}> Тун удахгүй</MenuItem>
+        </TextField>
+        <TextField
+          label="агуулахын үлдэгдэл"
           type="number"
-          value={discountedPrice}
-          onChange={(e) => setDiscountedPrice(e.target.value)}
+          value={status}
+          onChange={(e) => setStatus(e.target.value)}
+          fullWidth
+          margin="normal"
+        />
+        <TextField
+          label="Хямдарсан хувь"
+          type="number"
+          value={discount}
+          onChange={(e) => setDiscount(e.target.value)}
           fullWidth
           margin="normal"
         />
@@ -200,27 +232,53 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
             ))}
           </Select>
         </FormControl>
-        <TextField
-          label="Найрлага"
-          value={productDescription}
-          onChange={(e) => setProductDescription(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Тайлбар"
-          value={moreDetails}
-          onChange={(e) => setMoreDetails(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
-        <TextField
-          label="Заавар"
-          value={instructions}
-          onChange={(e) => setInstructions(e.target.value)}
-          fullWidth
-          margin="normal"
-        />
+        <FormControl fullWidth margin="normal">
+          <FormLabel>Найрлага</FormLabel>
+          <TextareaAutosize
+            minRows={3}
+            value={productDescription}
+            onChange={(e) => setProductDescription(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              fontSize: "16px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <FormLabel>Тайлбар</FormLabel>
+          <TextareaAutosize
+            minRows={3}
+            value={moreDetails}
+            onChange={(e) => setMoreDetails(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              fontSize: "16px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </FormControl>
+
+        <FormControl fullWidth margin="normal">
+          <FormLabel>Заавар</FormLabel>
+          <TextareaAutosize
+            minRows={3}
+            value={instructions}
+            onChange={(e) => setInstructions(e.target.value)}
+            style={{
+              width: "100%",
+              padding: "8px",
+              fontSize: "16px",
+              borderRadius: "4px",
+              border: "1px solid #ccc",
+            }}
+          />
+        </FormControl>
         <Input
           type="file"
           accept="image/*"
@@ -229,29 +287,40 @@ const EditProductDialog = ({ product, onClose, onSave }) => {
           fullWidth
           margin="normal"
         />
+
         {images.length > 0 && (
-          <div>
+          <div style={{ marginTop: "16px" }}>
             <h4>Зурагнууд:</h4>
-            {images.map((img, index) => (
-              <div
-                key={index}
-                style={{ display: "flex", alignItems: "center" }}
-              >
-                <img
-                  src={img}
-                  alt={`Бүтээгдэхүүний зураг ${index}`}
-                  width="100"
-                  height="100"
-                />
-                <IconButton
-                  onClick={() => handleImageDelete(img)}
-                  color="error"
-                  aria-label="delete"
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "16px" }}>
+              {images.map((img, index) => (
+                <div
+                  key={index}
+                  style={{
+                    display: "flex",
+                    flexDirection: "column",
+                    alignItems: "center",
+                    border: "1px solid #ddd",
+                    borderRadius: "8px",
+                    padding: "8px",
+                  }}
                 >
-                  <DeleteIcon />
-                </IconButton>
-              </div>
-            ))}
+                  <img
+                    src={img}
+                    alt={`Бүтээгдэхүүний зураг ${index}`}
+                    width="100"
+                    height="100"
+                    style={{ objectFit: "cover", borderRadius: "4px" }}
+                  />
+                  <IconButton
+                    onClick={() => handleImageDelete(img)}
+                    color="error"
+                    aria-label="delete"
+                  >
+                    <DeleteIcon />
+                  </IconButton>
+                </div>
+              ))}
+            </div>
           </div>
         )}
       </DialogContent>

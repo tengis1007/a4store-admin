@@ -123,7 +123,7 @@ const HeroBannerAdd = ({ open, onClose }) => {
       const heroBannerRef = doc(firestore, "banners/heroBanner");
 
       // Update the document by appending to the sideBanners array
-      await setDoc(heroBannerRef, {
+      await updateDoc(heroBannerRef, {
         mainBanners: arrayUnion({
           url:url||"",
           desktopImageUrl: desktopImageUrl || "", // Use empty string if not provided

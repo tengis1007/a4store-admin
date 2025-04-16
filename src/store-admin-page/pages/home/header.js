@@ -17,10 +17,8 @@ import { AppProvider } from "@toolpad/core/AppProvider";
 import { DashboardLayout } from "@toolpad/core/DashboardLayout";
 import { useDemoRouter } from "@toolpad/core/internal";
 import { Menu, MenuItem } from "@mui/material";
-import AccountCircleIcon from "@mui/icons-material/AccountCircle";
 import { useNavigate } from "react-router-dom";
 import InventoryIcon from "@mui/icons-material/Inventory";
-import AddProduct from "../products/addProduct";
 import Category from "../Category/category";
 import TotalProducts from "../products/totalProduct";
 import OrderHistory from "../Order/OrderHistory";
@@ -34,12 +32,7 @@ import FeedIcon from "@mui/icons-material/Feed";
 import Blog from "../blog/blog";
 import Users from "../users/users";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
-import PersonAddAlt1Icon from "@mui/icons-material/PersonAddAlt1";
-import Invite from "../invite/invite";
 import { logout } from "../../../user-page/auth/Logout";
-import LightModeIcon from "@mui/icons-material/LightMode"; // Sun icon for light mode
-import DarkModeIcon from "@mui/icons-material/DarkMode"; // Moon icon for dark mode
-
 // Navigation structure
 const NAVIGATION = [
   {
@@ -74,26 +67,10 @@ const NAVIGATION = [
     ],
   },
   {
-    segment: "products",
+    segment: "totalProduct",
     title: "Бүтээгдэхүүн",
     icon: <InventoryIcon />,
-    children: [
-      {
-        segment: "totalProduct",
-        title: "Нийт бүтээгдэхүүн",
-        icon: <InventoryIcon />,
-      },
-      {
-        segment: "new",
-        title: "Бүтээгдэхүүн нэмэх",
-        icon: <ShoppingCartIcon />,
-      },
-    ],
-  },
-  {
-    segment: "invite",
-    title: "Ангилал",
-    icon: <PersonAddAlt1Icon />,
+
   },
   {
     segment: "category",
@@ -142,15 +119,13 @@ function DemoPageContent({ pathname }) {
   return (
     <div>
       {pathname === "/dashboard" && <Dashboard />}
-      {pathname === "/products/new" && <AddProduct />}{" "}
-      {pathname === "/products/totalProduct" && <TotalProducts />}
+      {pathname === "/totalProduct" && <TotalProducts />}
       {pathname === "/order/orderhistory" && <OrderHistory />}
       {pathname === "/order/paymenthistory" && <PaymentHistory />}
       {pathname === "/category" && <Category />}
       {pathname === "/banner" && <Banner />}
       {pathname === "/blog" && <Blog />}
       {pathname === "/users" && <Users />}
-      {pathname === "/invite" && <Invite />}
     </div>
   );
 }
