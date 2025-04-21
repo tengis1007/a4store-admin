@@ -33,13 +33,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
 import {
   ref,
-  get,
   set,
   update,
   remove,
-  orderByChild,
-  equalTo,
-  query,
 } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import axios from "storeaxios";
@@ -50,49 +46,41 @@ const csvConfig = mkConfig({
   decimalSeparator: ".",
   columnHeaders: [
     {
-      key: "MemberId",
-      displayLabel: "Утас",
+      key: "id",
+      displayLabel: "id",
     },
     {
-      key: "QuantityName",
-      displayLabel: "Нэр",
+      key: "type",
+      displayLabel: "Төрөл",
     },
     {
-      key: "timeStamp",
+      key: "amount",
+      displayLabel: "Шилжүүлсэн дүн",
+    },
+    {
+      key: "description",
+      displayLabel: "Гүйлгээний утга",
+    },
+    {
+      key: "fee",
+      displayLabel: "Шимтгэл",
+    },
+    {
+      key: "receiverId",
+      displayLabel: "Хүлээн авагч",
+    },
+    {
+      key: "senderId",
+      displayLabel: "Шилжүүлэгч",
+    },
+    {
+      key: "timestamp",
       displayLabel: "Огноо",
     },
     {
-      key: "Level",
-      displayLabel: "Шат",
-    },
-    {
-      key: "RankName",
-      displayLabel: "Цол",
-    },
-    {
-      key: "InviterPercent",
-      displayLabel: "Уригчид олгох хувь",
-    },
-    {
-      key: "SponsorId",
-      displayLabel: "Спонсор Id",
-    },
-    {
-      key: "SponsorName",
-      displayLabel: "Спонсорын нэр",
-    },
-    {
-      key: "InviterId",
-      displayLabel: "Уригчийн Id",
-    },
-    {
-      key: "InviterName",
-      displayLabel: "Уригчийн нэр",
-    },
-    {
-      key: "isBlackMember",
-      displayLabel: "BlackVIP",
-    },
+      key: "totalDeduction",
+      displayLabel: "Нийт дүн",
+    }  
   ],
 });
 
@@ -156,6 +144,10 @@ const Example = () => {
       {
         accessorKey: "amount",
         header: "Шилжүүлсэн дүн",
+      },
+      {
+        accessorKey:"description",
+        header:"Гүйлгээний утга"
       },
       {
         accessorKey: "fee",
