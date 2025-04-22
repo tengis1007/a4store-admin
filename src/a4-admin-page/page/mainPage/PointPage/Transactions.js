@@ -34,13 +34,9 @@ import DeleteIcon from "@mui/icons-material/Delete";
 import dayjs from "dayjs";
 import {
   ref,
-  get,
   set,
   update,
   remove,
-  orderByChild,
-  equalTo,
-  query,
 } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import { read, utils } from "xlsx";
@@ -50,14 +46,42 @@ const csvConfig = mkConfig({
   filename: `Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
 
   columnHeaders: [
-    { key: "id", displayLabel: "id" }, // Skip if you don't want to include `id`
-    { key: "type", displayLabel: "Төрөл" },
-    { key: "amount", displayLabel: "Шилжүүлсэн дүн" },
-    { key: "fee", displayLabel: "Шимтгэл" },
-    { key: "receiverId", displayLabel: "Хүлээн авагч" },
-    { key: "senderId", displayLabel: "Шилжүүлэгч" },
-    { key: "timestamp", displayLabel: "Огноо" },
-    { key: "totalDeduction", displayLabel: "Нийт дүн" },
+    {
+      key: "id",
+      displayLabel: "id",
+    },
+    {
+      key: "type",
+      displayLabel: "Төрөл",
+    },
+    {
+      key: "amount",
+      displayLabel: "Шилжүүлсэн дүн",
+    },
+    {
+      key: "description",
+      displayLabel: "Гүйлгээний утга",
+    },
+    {
+      key: "fee",
+      displayLabel: "Шимтгэл",
+    },
+    {
+      key: "receiverId",
+      displayLabel: "Хүлээн авагч",
+    },
+    {
+      key: "senderId",
+      displayLabel: "Шилжүүлэгч",
+    },
+    {
+      key: "timestamp",
+      displayLabel: "Огноо",
+    },
+    {
+      key: "totalDeduction",
+      displayLabel: "Нийт дүн",
+    }  
   ],
 });
 
@@ -120,6 +144,10 @@ const Example = () => {
       {
         accessorKey: "amount",
         header: "Шилжүүлсэн дүн",
+      },
+      {
+        accessorKey:"description",
+        header:"Гүйлгээний утга"
       },
       {
         accessorKey: "fee",
