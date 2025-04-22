@@ -87,6 +87,7 @@ const PointTransferStepper = () => {
   const [token, setToken] = useState(null);
   const [success, setSuccess] = useState(false);
   const user = auth.currentUser;
+  const [otpSent, setOtpSent] = useState(false);
   const navigation = useNavigate();
 
   useEffect(() => {
@@ -264,30 +265,32 @@ const PointTransferStepper = () => {
   };
 
   useEffect(() => {
-    if (activeStep === 2) {
-      sendOtp(); // Automatically send OTP when moving to step 2
-    } else if (activeStep === 3) {
+    if (activeStep === 2 && !otpSent) {
+      sendOtp();
+      setOtpSent(true);
     }
   }, [activeStep]);
   const sendOtp = async () => {
+    const phone = Number(userData.phone);
+    if (!phone || isNaN(phone)) {
+      console.warn("Invalid phone number");
+      return;
+    }
     const requestBody = {
-      phoneNumber: Number(userData.phone), // Use the phone number here or get it dynamically
-      text: `Хэрвээ өөрөө биш бол баталгаажуулах кодоо нууцлан уу. Шилжүүлэг хийх дүн ${formData.TransactionPoint}P`, // Custom message for the OTP
+      phoneNumber: phone,
+      text: `Хэрвээ өөрөө биш бол баталгаажуулах кодоо нууцлан уу. Шилжүүлэг хийх дүн ${formData.TransactionPoint}P`,
       type: "transaction",
     };
-    console.log(requestBody);
     try {
       const response = await a4axios.post("/sendotp", requestBody);
       if (response.status === 200) {
         setToken(response.data.token);
-        console.log(response.data.token);
-        console.log("OTP sent successfully");
+        console.log("OTP sent successfully:", response.data.token);
       } else {
         console.log("Error sending OTP");
-        // setOtpStatus('Error sending OTP');
       }
     } catch (error) {
-      console.error(error);
+      console.error("Failed to send OTP:", error);
     }
   };
   const renderStepContent = () => {
@@ -389,7 +392,7 @@ const PointTransferStepper = () => {
         return (
           <Box sx={{ mt: 2 }}>
             <Alert severity="info" sx={{ mb: 2 }}>
-              Харилцагц та гүйлгээний мэдээллээ дахин шалгана уу. Мэдээлэл буруу
+              Харилцагч та гүйлгээний мэдээллээ дахин шалгана уу. Мэдээлэл буруу
               оруулснаас үүдэн гарах эрсдэлийг АЙ ФООР ЮҮ ЭНД МИ ХХК хариуцахгүй
               болно.
             </Alert>
@@ -414,6 +417,10 @@ const PointTransferStepper = () => {
       case 2:
         return (
           <Box sx={{ mt: 2 }}>
+             <Alert severity="info" sx={{ mb: 2 }}>
+             {userData.phone} дугаарт баталгаажуулах код илгээгдлээ. Кодыг 60 секундийн
+              дотор оруулна уу.
+            </Alert>
             <TextField
               fullWidth
               label="Код оруулна уу"
