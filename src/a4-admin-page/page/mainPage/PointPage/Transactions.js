@@ -40,8 +40,8 @@ import {
 } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
 import { read, utils } from "xlsx";
-import axios from "storeaxios";
-import { ElevenMpOutlined } from "@mui/icons-material";
+import axiosA4 from "storeaxios";
+import axios from "axios";
 const csvConfig = mkConfig({
   filename: `Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
 
@@ -207,8 +207,8 @@ const Example = () => {
           console.log("token", token);
           if (fetchAll) {
             console.log("fetchAll enabled");
-            const result = await axios.post(
-              `/transactions/get-all`,
+            const result = await axiosA4.post(
+              `/getTransactions`,
               {
                 senderId: null,
               },
@@ -223,7 +223,7 @@ const Example = () => {
             return result.data.transactions;
           } else if (searchTerm.length === 8) {
             console.log(searchTerm);
-            const result = await axios.post(
+            const result = await axiosA4.post(
               `/getTransactionById?phone=${searchTerm}`,
               {
                 senderId: null,
@@ -309,7 +309,7 @@ const Example = () => {
     }
     try {
       const response = await axios.post(
-        `/transactions/add-multiple`,
+        'https://api-jrbocynobq-uc.a.run.app/transactions/add-multiple',
         importData
       );
 
