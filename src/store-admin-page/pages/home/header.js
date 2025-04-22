@@ -33,6 +33,7 @@ import Blog from "../blog/blog";
 import Users from "../users/users";
 import PeopleAltIcon from "@mui/icons-material/PeopleAlt";
 import { logout } from "../../../user-page/auth/Logout";
+import Invite from "../users/invite";
 // Navigation structure
 const NAVIGATION = [
   {
@@ -47,6 +48,11 @@ const NAVIGATION = [
   {
     segment: "users",
     title: "Хэрэглэгч",
+    icon: <PeopleAltIcon />,
+  },
+  {
+    segment: "invite",
+    title: "Урилт",
     icon: <PeopleAltIcon />,
   },
   {
@@ -126,6 +132,7 @@ function DemoPageContent({ pathname }) {
       {pathname === "/banner" && <Banner />}
       {pathname === "/blog" && <Blog />}
       {pathname === "/users" && <Users />}
+      {pathname === "/invite" && <Invite />}
     </div>
   );
 }

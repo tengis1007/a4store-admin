@@ -412,13 +412,35 @@ const [dataLength , setDataLenght] = useState(0);
           },
           {
             accessorKey: "received",
-            filterVariant: "select",
             header: "Хүлээн авсан",
             width: 10,
+            filterVariant: "select",
             filterSelectOptions: [
               { label: "Тийм", value: "true" },
               { label: "Үгүй", value: "false" },
             ],
+            // Force correct comparison by coercing both sides
+            filterFn: (row, columnId, filterValue) => {
+              const cellValue = row.getValue(columnId);
+            
+              if (filterValue === '') return true; // no filter = show all
+            
+              // Handle cases where the value is true or false as strings
+              if (filterValue === 'true') {
+                return cellValue === true;
+              }
+            
+              if (filterValue === 'false') {
+                return cellValue === false || cellValue === undefined;
+              }
+            
+              // Handle null case separately
+              if (filterValue === 'null') {
+                return cellValue === null;
+              }
+            
+              return false; // Default return if no matching condition
+            },            
             Cell: ({ cell }) => {
               const value = cell.getValue();
               return value ? (
@@ -435,7 +457,7 @@ const [dataLength , setDataLenght] = useState(0);
                 </Box>
               </Stack>
             ),
-          },
+          },                    
           {
             accessorKey: "delivery",
             filterVariant: "select",

@@ -61,7 +61,7 @@ const StyledPaper = styled(Paper)(({ theme }) => ({
   maxWidth: "1170px",
   margin: "2rem auto",
   borderRadius: "12px",
-  marginBottom:"100px"
+  marginBottom: "100px",
 }));
 const StyledButton = styled(Button)(({ theme }) => ({
   margin: "1rem 0.5rem",
@@ -262,22 +262,22 @@ const PointTransferStepper = () => {
       });
     }
   };
+
   useEffect(() => {
     if (activeStep === 2) {
       sendOtp(); // Automatically send OTP when moving to step 2
     } else if (activeStep === 3) {
     }
-  }, [activeStep, sendOtp]);
+  }, [activeStep]);
   const sendOtp = async () => {
     const requestBody = {
       phoneNumber: Number(userData.phone), // Use the phone number here or get it dynamically
       text: `Хэрвээ өөрөө биш бол баталгаажуулах кодоо нууцлан уу. Шилжүүлэг хийх дүн ${formData.TransactionPoint}P`, // Custom message for the OTP
       type: "transaction",
     };
-
+    console.log(requestBody);
     try {
       const response = await a4axios.post("/sendotp", requestBody);
-
       if (response.status === 200) {
         setToken(response.data.token);
         console.log(response.data.token);
@@ -493,7 +493,7 @@ const PointTransferStepper = () => {
   };
   const handleBackWallet = () => {
     // Navigate to the wallet route
-    navigation('/wallet');
+    navigation("/wallet");
   };
 
   return (

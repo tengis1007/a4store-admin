@@ -1,5 +1,5 @@
 /* eslint-disable react/jsx-pascal-case */
-import { useMemo, useState } from "react";
+import { useMemo, useState, useRef } from "react";
 import {
   MRT_EditActionButtons,
   MaterialReactTable,
@@ -17,7 +17,8 @@ import {
   Typography,
   useTheme,
   ThemeProvider,
-  createTheme,Chip
+  createTheme,
+  Chip,
 } from "@mui/material";
 import {
   QueryClient,
@@ -42,57 +43,21 @@ import {
   query,
 } from "firebase/database";
 import { db, auth } from "refrence/realConfig";
+import { read, utils } from "xlsx";
 import axios from "storeaxios";
-
+import { ElevenMpOutlined } from "@mui/icons-material";
 const csvConfig = mkConfig({
   filename: `Худалдан Авалт-${dayjs().format("YYYY-MM-DD HH:mm:ss")}`,
-  fieldSeparator: ",",
-  decimalSeparator: ".",
+
   columnHeaders: [
-    {
-      key: "MemberId",
-      displayLabel: "Утас",
-    },
-    {
-      key: "QuantityName",
-      displayLabel: "Нэр",
-    },
-    {
-      key: "timeStamp",
-      displayLabel: "Огноо",
-    },
-    {
-      key: "Level",
-      displayLabel: "Шат",
-    },
-    {
-      key: "RankName",
-      displayLabel: "Цол",
-    },
-    {
-      key: "InviterPercent",
-      displayLabel: "Уригчид олгох хувь",
-    },
-    {
-      key: "SponsorId",
-      displayLabel: "Спонсор Id",
-    },
-    {
-      key: "SponsorName",
-      displayLabel: "Спонсорын нэр",
-    },
-    {
-      key: "InviterId",
-      displayLabel: "Уригчийн Id",
-    },
-    {
-      key: "InviterName",
-      displayLabel: "Уригчийн нэр",
-    },
-    {
-      key: "isBlackMember",
-      displayLabel: "BlackVIP",
-    },
+    { key: "id", displayLabel: "id" }, // Skip if you don't want to include `id`
+    { key: "type", displayLabel: "Төрөл" },
+    { key: "amount", displayLabel: "Шилжүүлсэн дүн" },
+    { key: "fee", displayLabel: "Шимтгэл" },
+    { key: "receiverId", displayLabel: "Хүлээн авагч" },
+    { key: "senderId", displayLabel: "Шилжүүлэгч" },
+    { key: "timestamp", displayLabel: "Огноо" },
+    { key: "totalDeduction", displayLabel: "Нийт дүн" },
   ],
 });
 
@@ -102,18 +67,16 @@ function validateUser(user) {
 
 // Export CSV data
 const exportToExcel = (data) => {
-  const columnsToRemove = ["id"];
-  // Function to exclude specific columns from the data
-  const excludeColumns = (data, columnsToRemove) => {
-    return data.map((item) => {
-      const newItem = { ...item }; // Create a copy of the item
-      columnsToRemove.forEach((column) => delete newItem[column]); // Delete unwanted columns
-      return newItem;
-    });
-  };
-  const removedId = excludeColumns(data, columnsToRemove);
+  console.log(data);
+  const convertedData = data.map((element) => ({
+    ...element,
+    timestamp: dayjs(element.timestamp).format("YYYY-MM-DD HH:mm:ss"),
+    id: element.id.toString(),
+  }));
+  // First, convert your data to CSV string using your csvConfig
+  const csv = generateCsv(csvConfig)(convertedData);
 
-  const csv = generateCsv(csvConfig)(removedId);
+  // Then, trigger download
   download(csvConfig)(csv);
 };
 
@@ -122,6 +85,7 @@ const Example = () => {
   const [searchTerm, setSearchTerm] = useState(""); // User input for search
   const [fetchAll, setFetchAll] = useState(false); // Flag to control data fetching
   const { data: fetchedUsers = [], isError, isLoading } = useGetUsers();
+  const [importData, setImportData] = useState([]);
   const columns = useMemo(
     () => [
       {
@@ -204,6 +168,7 @@ const Example = () => {
       },
     });
   };
+
   function useGetUsers() {
     return useQuery({
       queryKey: ["transactions", searchTerm, fetchAll],
@@ -211,10 +176,11 @@ const Example = () => {
         try {
           const user = auth.currentUser;
           const token = await user.getIdToken();
+          console.log("token", token);
           if (fetchAll) {
             console.log("fetchAll enabled");
             const result = await axios.post(
-              `/getTransactions`,
+              `/transactions/get-all`,
               {
                 senderId: null,
               },
@@ -308,28 +274,28 @@ const Example = () => {
     useUpdateUser();
   const { mutateAsync: deleteUser, isPending: isDeletingUser } =
     useDeleteUser();
-
-  const handleCreateUser = async ({ values, table }) => {
-    if (!values) {
-      console.error("User values are undefined");
+  const handleCreateTransactions = async ({ values, table }) => {
+    if (!importData) {
+      alert("Файл оруулаагүй байна.");
       return;
     }
-
-    const newValidationErrors = validateUser(values);
-
-    if (Object.values(newValidationErrors).some((error) => error)) {
-      setValidationErrors(newValidationErrors);
-      return;
-    }
-    setValidationErrors({});
-
     try {
-      await createUser(values);
-    } catch (error) {
-      console.error("Error creating user:", error);
-    }
+      const response = await axios.post(
+        `/transactions/add-multiple`,
+        importData
+      );
 
-    table.setCreatingRow(null);
+      if (response.status === 200) {
+        alert("Амжилттай");
+      } else {
+        alert("Алдаа гарлаа. Та дахин оролдоно уу.");
+      }
+
+      table.setCreatingRow(null);
+    } catch (error) {
+      console.error("Error creating transactions:", error);
+      alert("Сүлжээний алдаа гарлаа. Та дахин оролдоно уу.");
+    }
   };
 
   const handleSaveUser = async ({ values, table }) => {
@@ -370,6 +336,92 @@ const Example = () => {
       ) : null
     );
   };
+  const fileUrl =
+    "https://firebasestorage.googleapis.com/v0/b/a4youandme-store.firebasestorage.app/o/%D0%97%D0%B0%D0%B3%D0%B2%D0%B0%D1%80_%D0%A4%D0%B0%D0%B9%D0%BB%20(4).xlsx?alt=media&token=130c1663-7be3-4541-975d-ad0903950532";
+
+  const handleDownloadExel = () => {
+    const link = document.createElement("a");
+    link.href = fileUrl;
+    link.setAttribute("download", "Загвар_Файл.xlsx"); // Optional: renames the file
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+  const handleFileChange = (event) => {
+    const file = event.target.files[0];
+    if (file) {
+      processExcelFile(file, event);
+    }
+  };
+  const processExcelFile = async (file) => {
+    const reader = new FileReader();
+
+    reader.onload = async (event) => {
+      try {
+        const workbook = read(event.target.result, {
+          type: "array",
+          cellDates: true,
+          cellNF: false,
+          cellText: false,
+        });
+        const sheetName = workbook.SheetNames[0];
+        const sheet = workbook.Sheets[sheetName];
+        // Эхний мөрийг headers болгож, үлдсэн мөрүүдийг өгөгдөл болгоно
+        const data = utils.sheet_to_json(sheet, {
+          defval: "", // Хоосон нүдэнд default утга
+        });
+        let realData = [];
+        data.forEach((element) => {
+          if (element.register > 0) {
+            realData.push({
+              senderId: element.senderId,
+              receiverId: element.receiverId,
+              amount: element.register,
+              description: "Бүртгүүлсэн 5000p",
+              type: "promotion",
+              fee: 0,
+            });
+          }
+          if (element.invite > 0) {
+            realData.push({
+              senderId: element.senderId,
+              receiverId: element.receiverId,
+              amount: element.invite,
+              description: "Урьсан 5000p",
+              type: "promotion",
+              fee: 0,
+            });
+          }
+          if (element.rank > 0) {
+            realData.push({
+              senderId: element.senderId,
+              receiverId: element.receiverId,
+              amount: element.rank,
+              description: "Зэрэглэл Point",
+              type: "promotion",
+              fee: 0,
+            });
+          }
+          if (element.member > 0) {
+            realData.push({
+              senderId: element.senderId,
+              receiverId: element.receiverId,
+              amount: element.member,
+              description: "Гишүүн 50000p",
+              type: "promotion",
+              fee: 0,
+            });
+          }
+        });
+        
+        setImportData(realData);
+      } catch (error) {
+        console.error("Error processing file:", error);
+      }
+    };
+    reader.readAsArrayBuffer(file);
+  };
+  const inputRef = useRef(null);
   const table = useMaterialReactTable({
     columns,
     data: fetchedUsers,
@@ -382,31 +434,51 @@ const Example = () => {
       : undefined,
     muiTableContainerProps: { sx: { minHeight: "500px" } },
     onCreatingRowCancel: () => setValidationErrors({}),
-    onCreatingRowSave: handleCreateUser,
+    onCreatingRowSave: handleCreateTransactions,
     onEditingRowCancel: () => setValidationErrors({}),
     onEditingRowSave: handleSaveUser,
     renderCreateRowDialogContent: ({ table, row }) => (
       <>
-        <DialogTitle variant="h3">Худалдан авалт нэмэх</DialogTitle>
+        <DialogTitle variant="h3">Мэдээлэл оруулах</DialogTitle>
         <DialogContent
           sx={{ display: "flex", flexDirection: "column", gap: "1rem" }}
         >
-          {renderValidationErrors(validationErrors)}
-          <TextField
-            label="ID"
-            variant="outlined"
-            fullWidth
-            value={row.original?.id || ""}
-            onChange={(e) =>
-              row.table.setRowEditing({ ...row.original, id: e.target.value })
-            }
-            inputProps={{
-              maxLength: 8,
-              inputMode: "numeric",
-              pattern: "[0-9]*",
+          <MaterialReactTable
+            columns={[
+              {
+                accessorKey: "senderId",
+                header: "sender id",
+              },
+              {
+                accessorKey: "receiverId",
+                header: "receiver Id",
+              },
+              {
+                accessorKey: "amount",
+                header: "amount",
+              },
+              {
+                accessorKey: "description",
+                header: "description",
+              },
+              {
+                accessorKey: "type",
+                header: "type",
+              },
+              {
+                accessorKey: "fee",
+                header: "fee",
+              },
+            ]}
+            data={importData}
+            enableSorting
+            enableColumnOrdering
+            initialState={{ showGlobalFilter: true }}
+            dialogProps={{
+              maxWidth: "sm", // Adjust the max width if needed
+              fullWidth: true, // Make the dialog full width
             }}
           />
-          {/* Add more fields here as needed */}
         </DialogContent>
         <DialogActions>
           <MRT_EditActionButtons variant="text" table={table} row={row} />
@@ -449,6 +521,31 @@ const Example = () => {
           onClick={() => exportToExcel(fetchedUsers)}
         >
           Татаж авах
+        </Button>
+
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={() => inputRef.current && inputRef.current.click()}
+        >
+          Оруулах
+        </Button>
+        <input
+          type="file"
+          accept=".xlsx, .xls"
+          ref={inputRef}
+          style={{ display: "none" }}
+          onChange={(e) => {
+            handleFileChange(e);
+            table.setCreatingRow(true);
+          }}
+        />
+        <Button
+          variant="contained"
+          startIcon={<RiFileExcel2Fill />}
+          onClick={handleDownloadExel}
+        >
+          Загвар файл татах
         </Button>
       </Box>
     ),
