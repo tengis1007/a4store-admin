@@ -9,10 +9,10 @@ import {
   Box,
   Button,
   CircularProgress,
-  ListItemIcon,
-  MenuItem,
   Typography,
   Stack,
+  Tooltip,
+  IconButton,
   TextField,
   InputAdornment,
 } from "@mui/material";
@@ -20,24 +20,40 @@ import SearchIcon from "@mui/icons-material/Search";
 import { DataGrid } from "@mui/x-data-grid";
 import * as XLSX from "xlsx";
 // Firestore Imports
-import { collection, getDocs, query, where, doc } from "firebase/firestore";
-import { firestore } from "../../../refrence/storeConfig"; // Adjust the path to your Firestore config
+import {
+  collection,
+  getDocs,
+  query,
+  where,
+  doc,
+  updateDoc,
+} from "firebase/firestore";
 // Date Picker Imports
 import { AdapterDayjs } from "@mui/x-date-pickers/AdapterDayjs";
 import { LocalizationProvider } from "@mui/x-date-pickers/LocalizationProvider";
 import EditIcon from "@mui/icons-material/Edit";
+import {
+  QueryClient,
+  QueryClientProvider,
+  useMutation,
+  useQueryClient,
+} from "@tanstack/react-query";
 import dayjs from "dayjs";
-import DeleteIcon from "@mui/icons-material/Delete";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { CssBaseline } from "@mui/material";
 import { RiFileExcel2Fill } from "react-icons/ri";
 import TugrikFormatter from "components/TugrikFormatter";
+import { firestore } from "refrence/storeConfig"; // Adjust the path to your Firestore config
+
 const Example = () => {
   // State to hold the table data
   const [tableData, setTableData] = useState([]);
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState(null);
   const [tableDataLength, setTableDataLength] = useState(0);
+  const { mutateAsync: updateUser, isPending: isUpdatingUser } =
+    useUpdateUser();
+
   // Function to fetch all data`
   const handleFetchAllData = async () => {
     try {
@@ -112,6 +128,43 @@ const Example = () => {
       throw error; // Re-throw the error to handle it in the calling function
     }
   };
+
+  // UPDATE hook (put user in api)
+  function useUpdateUser() {
+    const queryClient = useQueryClient();
+    return useMutation({
+      mutationFn: async (user) => {
+        let updatedData = {
+          ...user, // Spread the original row data
+          createdAt: new Date(user.createdAt),
+          lastName: user.name.split(" ")[0],
+          firstName: user.name.split(" ")[1],
+        };
+
+        const userRef = doc(firestore, `users/${updatedData.id}`);
+        const {
+          id,
+          name,
+          package: userPackage,
+          Оноо,
+          Хэтэвч,
+          ...rest
+        } = updatedData; // Destructure to remove id
+        console.log("updatedData", rest);
+        await updateDoc(userRef, rest);
+        return Promise.resolve();
+      },
+      onMutate: (newUserInfo) => {
+        queryClient.setQueryData(["users"], (prevUsers) =>
+          prevUsers?.map((prevUser) =>
+            prevUser.id === newUserInfo.id ? newUserInfo : prevUser
+          )
+        );
+      },
+      onSettled: () => queryClient.invalidateQueries(["users"]), // Refetch users after mutation
+    });
+  }
+
   const handleSearch = async (e) => {
     if (e.length === 8) {
       setIsLoading(true);
@@ -211,23 +264,24 @@ const Example = () => {
       },
     },
   });
+
   const TotalMemberCount = useMemo(() => {
     const realData = tableData.filter((item) => item.isMember === true).length;
-    console.log("realDatarealData", realData);
     return realData;
   }, [tableData]);
+
   const totalWalletBalance = useMemo(() => {
     return tableData.reduce((total, user) => {
       return total + (user.wallets?.[0] ? Number(user.wallets[0].balance) : 0);
     }, 0);
   }, [tableData]);
-  
+
   const totalPointBalance = useMemo(() => {
     return tableData.reduce((total, user) => {
       return total + (user.points?.[0] ? Number(user.points[0].balance) : 0);
     }, 0);
   }, [tableData]);
-  
+
   const columns = useMemo(
     () => [
       {
@@ -326,7 +380,9 @@ const Example = () => {
             Footer: () => (
               <Stack>
                 Нийт оноо:
-                <Box color="warning.main">{TugrikFormatter(totalPointBalance)}P</Box>
+                <Box color="warning.main">
+                  {TugrikFormatter(totalPointBalance)}P
+                </Box>
               </Stack>
             ),
           },
@@ -364,7 +420,9 @@ const Example = () => {
             Footer: () => (
               <Stack>
                 Нийт мөнгө:
-                <Box color="warning.main">{TugrikFormatter(totalWalletBalance)}₮</Box>
+                <Box color="warning.main">
+                  {TugrikFormatter(totalWalletBalance)}₮
+                </Box>
               </Stack>
             ),
           },
@@ -413,8 +471,9 @@ const Example = () => {
         ],
       },
     ],
-    [tableDataLength, TotalMemberCount,totalWalletBalance,totalPointBalance]
+    [tableDataLength, TotalMemberCount, totalWalletBalance, totalPointBalance]
   );
+
   const columnsTransaction = [
     {
       field: "tranAmount",
@@ -473,7 +532,6 @@ const Example = () => {
             return "N/A";
           }
 
-
           // Case 1: Firestore Timestamp
           if (
             dateField &&
@@ -496,6 +554,21 @@ const Example = () => {
       },
     },
   ];
+
+  const handleSaveUser = async ({ values, table }) => {
+    if (!values) {
+      console.error("User values are undefined");
+      return;
+    }
+
+    try {
+      await updateUser(values);
+    } catch (error) {
+      console.error("Error updating user:", error);
+    }
+
+    table.setEditingRow(null);
+  };
 
   const table = useMaterialReactTable({
     columns,
@@ -529,12 +602,15 @@ const Example = () => {
     },
     muiPaginationProps: {
       color: "secondary",
-      rowsPerPageOptions: [10, 20, 30],
+      rowsPerPageOptions: [10, 20, 30, 50, 100],
       shape: "rounded",
       variant: "outlined",
     },
+    getRowId: (row) => row.id,
+    onEditingRowSave: handleSaveUser,
     state: {
       isLoading,
+      isSaving: isUpdatingUser,
       showProgressBars: isLoading,
     },
     renderDetailPanel: ({ row }) => (
@@ -563,32 +639,15 @@ const Example = () => {
         </Box>
       </ThemeProvider>
     ),
-    renderRowActionMenuItems: ({ closeMenu }) => [
-      <MenuItem
-        key={0}
-        onClick={() => {
-          closeMenu();
-        }}
-        sx={{ m: 0 }}
-      >
-        <ListItemIcon>
-          <EditIcon style={{ color: "blue" }} />
-        </ListItemIcon>
-        Засах
-      </MenuItem>,
-      <MenuItem
-        key={1}
-        onClick={() => {
-          closeMenu();
-        }}
-        sx={{ m: 0 }}
-      >
-        <ListItemIcon>
-          <DeleteIcon style={{ color: "red" }} />
-        </ListItemIcon>
-        Устгах
-      </MenuItem>,
-    ],
+    renderRowActions: ({ row, table }) => (
+      <Box sx={{ display: "flex", gap: "1rem" }}>
+        <Tooltip title="Edit">
+          <IconButton onClick={() => table.setEditingRow(row)}>
+            <EditIcon />
+          </IconButton>
+        </Tooltip>
+      </Box>
+    ),
     renderTopToolbarCustomActions: () => (
       <Box sx={{ display: "flex", alignItems: "center", gap: 2 }}>
         <TextField
@@ -678,11 +737,15 @@ const Example = () => {
   return <MaterialReactTable table={table} />;
 };
 
+const queryClient = new QueryClient();
+
 // Wrap the component with LocalizationProvider
 const ExampleWithLocalizationProvider = () => (
-  <LocalizationProvider dateAdapter={AdapterDayjs}>
-    <Example />
-  </LocalizationProvider>
+  <QueryClientProvider client={queryClient}>
+    <LocalizationProvider dateAdapter={AdapterDayjs}>
+      <Example />
+    </LocalizationProvider>
+  </QueryClientProvider>
 );
 
 export default ExampleWithLocalizationProvider;
