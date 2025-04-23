@@ -660,7 +660,7 @@ const Example = () => {
       Утас: user.phone,
       Хэтэвч: user.wallets?.[0]?.balance || 0, // Handle undefined wallets
       Оноо: user.points?.[0]?.balance || 0, // Handle undefined points
-      "Бүртгүүлсэн огноо": user.createdAt,
+      "Бүртгүүлсэн огноо": user.createdAt ? new Date(user.createdAt) : null,
       Төрөл: user.isMember ? "Гишүүн" : "Хэрэглэгч",
       inviteNumber: user.inviteNumber,
       package: user.package,
